@@ -27,11 +27,14 @@ import org.openmrs.api.impl.BaseOpenmrsService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openmrs.module.dhisconnector.api.DHISConnectorService;
+import org.openmrs.module.dhisconnector.api.model.DHISMapping;
+import org.openmrs.module.reporting.report.definition.PeriodIndicatorReportDefinition;
 import org.openmrs.module.reporting.report.definition.ReportDefinition;
 import org.openmrs.module.reporting.report.definition.service.ReportDefinitionService;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -187,5 +190,25 @@ public class DHISConnectorServiceImpl extends BaseOpenmrsService implements DHIS
 		}
 
 		return success;
+	}
+
+	@Override
+	public List<DHISMapping> getMappings() {
+		return null;
+	}
+
+	@Override
+	public List<PeriodIndicatorReportDefinition> getReportWithMappings(List<DHISMapping> mappings) {
+		List<ReportDefinition> all = Context.getService(ReportDefinitionService.class).getAllDefinitions(false);
+
+		List<PeriodIndicatorReportDefinition> pireports = new ArrayList<PeriodIndicatorReportDefinition>();
+
+		for(ReportDefinition r : all) {
+			if(r instanceof PeriodIndicatorReportDefinition) {
+				pireports.add((PeriodIndicatorReportDefinition)r);
+			}
+		}
+
+		return pireports;
 	}
 }

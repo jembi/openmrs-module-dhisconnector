@@ -27,7 +27,7 @@ public class DHISMapping {
 	@JsonProperty("periodType")
 	private String periodType;
 	@JsonProperty("created")
-	private long created;
+	private Long created;
 	@JsonProperty("dataSetUID")
 	private String dataSetUID;
 	@JsonProperty("periodIndicatorReportGUID")
@@ -81,7 +81,7 @@ public class DHISMapping {
 	 * The created
 	 */
 	@JsonProperty("created")
-	public long getCreated() {
+	public Long getCreated() {
 		return created;
 	}
 
@@ -91,7 +91,7 @@ public class DHISMapping {
 	 * The created
 	 */
 	@JsonProperty("created")
-	public void setCreated(long created) {
+	public void setCreated(Long created) {
 		this.created = created;
 	}
 
@@ -155,4 +155,12 @@ public class DHISMapping {
 		this.elements = elements;
 	}
 
+
+	public void addElement(DHISMappingElement el) {
+		if(this.elements == null) {
+			this.elements = new ArrayList<DHISMappingElement>();
+		}
+
+		this.elements.add(el);
+	}
 }

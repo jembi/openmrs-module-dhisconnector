@@ -5,6 +5,7 @@ import org.openmrs.api.context.Context;
 import org.openmrs.module.dhisconnector.api.DHISConnectorService;
 import org.openmrs.module.dhisconnector.api.model.DHISCategoryCombo;
 import org.openmrs.module.dhisconnector.api.model.DHISMapping;
+import org.openmrs.module.dhisconnector.api.model.DHISMappingElement;
 import org.openmrs.module.dhisconnector.web.controller.DHISConnectorRestController;
 import org.openmrs.module.webservices.rest.web.RequestContext;
 import org.openmrs.module.webservices.rest.web.RestConstants;
@@ -16,9 +17,10 @@ import org.openmrs.module.webservices.rest.web.resource.impl.DataDelegatingCrudR
 import org.openmrs.module.webservices.rest.web.resource.impl.DelegatingResourceDescription;
 import org.openmrs.module.webservices.rest.web.resource.impl.NeedsPaging;
 import org.openmrs.module.webservices.rest.web.response.ResponseException;
+import org.openmrs.util.OpenmrsUtil;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.io.File;
+import java.util.*;
 
 @Resource(name = RestConstants.VERSION_1 + DHISConnectorRestController.DHISCONNECTOR_NAMESPACE + "/mappings", supportedClass = DHISMapping.class, supportedOpenmrsVersions = {"1.8.*", "1.9.*, 1.10.*, 1.11.*", "1.12.*", "2.0.*"})
 public class MappingResource extends DataDelegatingCrudResource implements Retrievable {
@@ -52,14 +54,38 @@ public class MappingResource extends DataDelegatingCrudResource implements Retri
 	}
 
 	/**
-	 * Annotated setter for Concept
+	 * Annotated setter for elements
 	 *
-	 * @param obs
+	 * TODO: Figure out the correct way to do this
+	 *
+	 * @param dm
 	 * @param value
 	 */
 	@PropertySetter("elements")
-	public static void setConcept(DHISMapping obs, Object value) {
-		System.out.println("test");
+	public static void setConcept(DHISMapping dm, Object value) {
+		ArrayList<LinkedHashMap<String, String>> mappings = (ArrayList<LinkedHashMap<String, String>>)value;
+		List<DHISMappingElement> elements = new ArrayList<DHISMappingElement>();
+
+		for(LinkedHashMap<String, String> mapping : mappings) {
+			Iterator it = mapping.entrySet().iterator();
+
+			DHISMappingElement dme = new DHISMappingElement();
+
+			while (it.hasNext()) {
+				Map.Entry pair = (Map.Entry) it.next();
+
+				if(pair.getKey().equals("indicator")) {
+					dme.setIndicator((String)pair.getValue());
+				} else if(pair.getKey().equals("dataElement")) {
+					dme.setDataElement((String)pair.getValue());
+				} else if(pair.getKey().equals("comboOption")) {
+					dme.setComboOption((String)pair.getValue());
+				}
+
+
+			}
+			dm.addElement(dme);
+		}
 	}
 
 	protected NeedsPaging<DHISMapping> doGetAll(RequestContext context) {
@@ -76,16 +102,37 @@ public class MappingResource extends DataDelegatingCrudResource implements Retri
 
 	@Override
 	public Object save(Object o) {
+		String mappingsDirecoryPath = OpenmrsUtil.getApplicationDataDirectory() + "dhisconnector/mappings";
 
-		System.out.println("testsetet");
-		return null;
+		File mappingsDirecory = new File(mappingsDirecoryPath);
+
+		if(!mappingsDirecory.exists()) {
+			try {
+				if(!mappingsDirecory.mkdirs()) {
+					return null;
+				}
+			} catch(Exception e) {
+				e.printStackTrace();
+				return e;
+			}
+		}
+
+		DHISMapping dm = (DHISMapping)o;
+		String filename = dm.getName() + "." + dm.getCreated() + ".mapping.json";
+
+		File newMappingFile = new File(mappingsDirecoryPath + "/" + filename);
+
+		ObjectMapper mapper = new ObjectMapper();
+
+		try {
+			mapper.writeValue(newMappingFile, dm);
+		} catch(Exception e) {
+			e.printStackTrace();
+			return e;
+		}
+
+		return o;
 	}
-
-//	@Override
-//	public DHISMapping save(DHISMapping o) {
-//		System.out.println("test");
-//		return null;
-//	}
 
 	public DelegatingResourceDescription getCreatableProperties() {
 

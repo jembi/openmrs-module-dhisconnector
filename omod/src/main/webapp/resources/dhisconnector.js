@@ -221,6 +221,19 @@ function dragulaAcceptsFunction(el, target, source, sibling) {
     return dataElementDrag || comboOptionDrag;
 }
 
+function getDefault() {
+    var comboOptions = jQuery('.comboOptionDragSource > .box');
+
+    for(var i = 0; i < comboOptions.length; i++) {
+        var option = jQuery(comboOptions.get(i));
+        if(option.html() == "(default)") {
+            return option.attr('data-uid');
+        }
+    }
+
+    return null;
+}
+
 function saveMapping(event) {
     var mapping = {};
 
@@ -249,8 +262,31 @@ function saveMapping(event) {
         });
     }
 
+    // remove unmapped indicators
+    mapping.elements = mapping.elements.filter(function(value) { return value.dataElement != undefined; });
+
+    // associate default combooption with blank category mappings
+    var def = getDefault();
+    var noMapping = [];
+    for(var j = 0; j < mapping.elements.length; j++) {
+        if(mapping.elements[j].dataElement == undefined) {
+            noMapping.push(j);
+        } else if(mapping.elements[j].comboOption == undefined) {
+            mapping.elements[j].comboOption = def;
+        }
+    }
+
     // post json obect
-    console.log(mapping);
+    jQuery.ajax({
+        url: "/openmrs/ws/rest/v1/dhisconnector/mappings",
+        type: "POST",
+        data: JSON.stringify(mapping),
+        contentType: "application/json; charset=utf-8",
+        dataType: "json",
+        success: function (data) {
+            window.location = '/openmrs/module/dhisconnector/runReports.form';
+        },
+    });
 }
 
 jQuery(function(){
