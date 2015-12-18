@@ -17,6 +17,7 @@ import org.openmrs.GlobalProperty;
 import org.openmrs.api.AdministrationService;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.dhisconnector.api.DHISConnectorService;
+import org.openmrs.module.reporting.report.definition.PeriodIndicatorReportDefinition;
 import org.openmrs.web.WebConstants;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
@@ -27,6 +28,7 @@ import org.springframework.web.context.request.WebRequest;
 
 import java.text.ParseException;
 import java.util.Date;
+import java.util.List;
 
 /**
  * Controller for the DHIS Connector Module admin pages
@@ -105,9 +107,6 @@ public class DHISConnectorController {
 
 	@RequestMapping(value = "/module/dhisconnector/runReports", method = RequestMethod.GET)
 	public void showRunReports(ModelMap model) {
-		//model.addAttribute("user", Context.getAuthenticatedUser());
-
-		//Context.getService(DHISConnectorService.class).getPeriodIndicatorReports();
 	}
 
 	@RequestMapping(value = "/module/dhisconnector/runReports", method = RequestMethod.POST)
@@ -116,7 +115,11 @@ public class DHISConnectorController {
 	Date date, @RequestParam(value = "date", required = true)
 	Integer locationId, WebRequest req)
 			throws ParseException {
-		//model.addAttribute("user", Context.getAuthenticatedUser());
+		DHISConnectorService dcs = Context.getService(DHISConnectorService.class);
+
+		List<PeriodIndicatorReportDefinition> reportsWithMappings = dcs.getReportWithMappings(dcs.getMappings());
+
+		model.addAttribute("reports", reportsWithMappings);
 
 		//Context.getService(DHISConnectorService.class).getPeriodIndicatorReports();
 	}

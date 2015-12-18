@@ -62,7 +62,7 @@ public class MappingResource extends DataDelegatingCrudResource implements Retri
 	 * @param value
 	 */
 	@PropertySetter("elements")
-	public static void setConcept(DHISMapping dm, Object value) {
+	public static void setElements(DHISMapping dm, Object value) {
 		ArrayList<LinkedHashMap<String, String>> mappings = (ArrayList<LinkedHashMap<String, String>>)value;
 		List<DHISMappingElement> elements = new ArrayList<DHISMappingElement>();
 
@@ -90,7 +90,7 @@ public class MappingResource extends DataDelegatingCrudResource implements Retri
 
 	protected NeedsPaging<DHISMapping> doGetAll(RequestContext context) {
 
-		List<DHISMapping> mappings = new ArrayList<DHISMapping>();
+		List<DHISMapping> mappings = Context.getService(DHISConnectorService.class).getMappings();
 
 		return new NeedsPaging<DHISMapping>(mappings, context);
 	}
@@ -102,36 +102,7 @@ public class MappingResource extends DataDelegatingCrudResource implements Retri
 
 	@Override
 	public Object save(Object o) {
-		String mappingsDirecoryPath = OpenmrsUtil.getApplicationDataDirectory() + "dhisconnector/mappings";
-
-		File mappingsDirecory = new File(mappingsDirecoryPath);
-
-		if(!mappingsDirecory.exists()) {
-			try {
-				if(!mappingsDirecory.mkdirs()) {
-					return null;
-				}
-			} catch(Exception e) {
-				e.printStackTrace();
-				return e;
-			}
-		}
-
-		DHISMapping dm = (DHISMapping)o;
-		String filename = dm.getName() + "." + dm.getCreated() + ".mapping.json";
-
-		File newMappingFile = new File(mappingsDirecoryPath + "/" + filename);
-
-		ObjectMapper mapper = new ObjectMapper();
-
-		try {
-			mapper.writeValue(newMappingFile, dm);
-		} catch(Exception e) {
-			e.printStackTrace();
-			return e;
-		}
-
-		return o;
+		return Context.getService(DHISConnectorService.class).saveMapping((DHISMapping)o);
 	}
 
 	public DelegatingResourceDescription getCreatableProperties() {

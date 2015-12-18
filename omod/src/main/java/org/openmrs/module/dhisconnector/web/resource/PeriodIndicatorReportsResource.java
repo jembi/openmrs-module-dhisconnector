@@ -1,6 +1,7 @@
 package org.openmrs.module.dhisconnector.web.resource;
 
 import org.openmrs.api.context.Context;
+import org.openmrs.module.dhisconnector.api.DHISConnectorService;
 import org.openmrs.module.reporting.dataset.definition.CohortIndicatorDataSetDefinition;
 import org.openmrs.module.reporting.report.definition.PeriodIndicatorReportDefinition;
 import org.openmrs.module.reporting.report.definition.ReportDefinition;
@@ -11,10 +12,9 @@ import org.openmrs.module.webservices.rest.web.RequestContext;
 import org.openmrs.module.webservices.rest.web.RestConstants;
 import org.openmrs.module.webservices.rest.web.annotation.Resource;
 import org.openmrs.module.webservices.rest.web.representation.Representation;
+import org.openmrs.module.webservices.rest.web.resource.api.PageableResult;
 import org.openmrs.module.webservices.rest.web.resource.api.Retrievable;
-import org.openmrs.module.webservices.rest.web.resource.impl.DataDelegatingCrudResource;
-import org.openmrs.module.webservices.rest.web.resource.impl.DelegatingResourceDescription;
-import org.openmrs.module.webservices.rest.web.resource.impl.NeedsPaging;
+import org.openmrs.module.webservices.rest.web.resource.impl.*;
 import org.openmrs.module.webservices.rest.web.response.ResponseException;
 
 import java.util.ArrayList;
@@ -40,6 +40,23 @@ public class PeriodIndicatorReportsResource extends DataDelegatingCrudResource i
     }
 
     return new NeedsPaging<PeriodIndicatorReportDefinition>(pireports, context);
+  }
+
+
+  // TODO do this properly
+  @Override
+  protected PageableResult doSearch(RequestContext context) {
+    String query = context.getParameter("q");
+    if (query == null) {
+      return new EmptySearchResult();
+    }
+
+    DHISConnectorService dcs = Context.getService(DHISConnectorService.class);
+
+    List<PeriodIndicatorReportDefinition> reports = dcs.getReportWithMappings(dcs.getMappings());
+
+    return new AlreadyPaged<PeriodIndicatorReportDefinition>(context, reports, false);
+
   }
 
 //  protected NeedsPaging<PeriodIndicatorReportDefinition> doGetAll(RequestContext context) {

@@ -13,6 +13,7 @@ package org.openmrs.module.dhisconnector.api;
 
 import org.openmrs.api.OpenmrsService;
 import org.openmrs.module.dhisconnector.api.model.DHISMapping;
+import org.openmrs.module.dhisconnector.api.model.DHISOrganisationUnit;
 import org.openmrs.module.reporting.report.definition.PeriodIndicatorReportDefinition;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -58,7 +59,12 @@ public interface DHISConnectorService extends OpenmrsService {
 	 */
 	public boolean testDHISServerDetails(String url, String user, String pass);
 
+
+	public Object saveMapping(DHISMapping mapping);
+
 	public List<DHISMapping> getMappings();
 
 	public List<PeriodIndicatorReportDefinition> getReportWithMappings(List<DHISMapping> mappings);
+
+	public List<DHISOrganisationUnit> getDHISOrgUnits();
 }

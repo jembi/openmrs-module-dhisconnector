@@ -22,19 +22,27 @@ import org.apache.http.impl.auth.BasicScheme;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.protocol.BasicHttpContext;
 import org.apache.http.util.EntityUtils;
+import org.codehaus.jackson.JsonNode;
+import org.codehaus.jackson.map.ObjectMapper;
 import org.openmrs.api.context.Context;
 import org.openmrs.api.impl.BaseOpenmrsService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openmrs.module.dhisconnector.api.DHISConnectorService;
+import org.openmrs.module.dhisconnector.api.model.DHISDataSet;
 import org.openmrs.module.dhisconnector.api.model.DHISMapping;
+import org.openmrs.module.dhisconnector.api.model.DHISOrganisationUnit;
 import org.openmrs.module.reporting.report.definition.PeriodIndicatorReportDefinition;
 import org.openmrs.module.reporting.report.definition.ReportDefinition;
 import org.openmrs.module.reporting.report.definition.service.ReportDefinitionService;
+import org.openmrs.util.OpenmrsUtil;
 
+import java.io.File;
+import java.io.FilenameFilter;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -42,11 +50,17 @@ import java.util.List;
  */
 public class DHISConnectorServiceImpl extends BaseOpenmrsService implements DHISConnectorService {
 
+	public static final String DHISCONNECTOR_MAPPINGS_FOLDER = "dhisconnector/mappings";
+
+	public static final String DHISCONNECTOR_MAPPING_FILE_SUFFIX = ".mapping.json";
+
 	protected final Log log = LogFactory.getLog(this.getClass());
 
 	public static final String REST_URL_PREFIX_GLOBAL_PROPERTY_NAME = "webservices.rest.uriPrefix";
 
 	public static final String REPORT_DEFINITION_RESOURCE = "/ws/rest/v1/reportingrest/reportDefinition?v=full";
+
+	public static final String  DHISCONNECTOR_ORGUNIT_RESOURCE = "/api/organisationUnits.json?paging=false";
 
 	@Override
 	public List<String> getPeriodIndicatorReports() {
@@ -193,8 +207,65 @@ public class DHISConnectorServiceImpl extends BaseOpenmrsService implements DHIS
 	}
 
 	@Override
+	public Object saveMapping(DHISMapping mapping) {
+		String mappingsDirecoryPath = OpenmrsUtil.getApplicationDataDirectory() + DHISCONNECTOR_MAPPINGS_FOLDER;
+
+		File mappingsDirecory = new File(mappingsDirecoryPath);
+
+		if(!mappingsDirecory.exists()) {
+			try {
+				if(!mappingsDirecory.mkdirs()) {
+					return null;
+				}
+			} catch(Exception e) {
+				e.printStackTrace();
+				return e;
+			}
+		}
+
+		String filename = mapping.getName() + "." + mapping.getCreated() + ".mapping.json";
+
+		File newMappingFile = new File(mappingsDirecoryPath + "/" + filename);
+
+		ObjectMapper mapper = new ObjectMapper();
+
+		try {
+			mapper.writeValue(newMappingFile, mapping);
+		} catch(Exception e) {
+			e.printStackTrace();
+			return e;
+		}
+
+		return mapping;
+	}
+
+	@Override
 	public List<DHISMapping> getMappings() {
-		return null;
+		List<DHISMapping> mappings = new ArrayList<DHISMapping>();
+
+		ObjectMapper mapper = new ObjectMapper();
+
+
+		String mappingsDirecoryPath = OpenmrsUtil.getApplicationDataDirectory() + DHISCONNECTOR_MAPPINGS_FOLDER;
+
+		File mappingsDirecory = new File(mappingsDirecoryPath);
+
+		File[] files = mappingsDirecory.listFiles(new FilenameFilter() {
+			@Override
+			public boolean accept(File dir, String name) {
+				return name.endsWith(DHISCONNECTOR_MAPPING_FILE_SUFFIX);
+			}
+		});
+
+		for(File f : files) {
+			try {
+				mappings.add(mapper.readValue(f, DHISMapping.class));
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+
+		return mappings;
 	}
 
 	@Override
@@ -204,11 +275,42 @@ public class DHISConnectorServiceImpl extends BaseOpenmrsService implements DHIS
 		List<PeriodIndicatorReportDefinition> pireports = new ArrayList<PeriodIndicatorReportDefinition>();
 
 		for(ReportDefinition r : all) {
-			if(r instanceof PeriodIndicatorReportDefinition) {
+			if(r instanceof PeriodIndicatorReportDefinition && mappingsHasGUID(mappings, r.getUuid())) {
 				pireports.add((PeriodIndicatorReportDefinition)r);
 			}
 		}
 
 		return pireports;
 	}
+
+	@Override
+	public List<DHISOrganisationUnit> getDHISOrgUnits() {
+		List<DHISOrganisationUnit> orgUnits = new ArrayList<DHISOrganisationUnit>();
+
+		ObjectMapper mapper = new ObjectMapper();
+		String jsonResponse = new String();
+		JsonNode node;
+
+		jsonResponse = Context.getService(DHISConnectorService.class).getDataFromDHISEndpoint(DHISCONNECTOR_ORGUNIT_RESOURCE);
+
+		try {
+			node = mapper.readTree(jsonResponse);
+			orgUnits = Arrays.asList(mapper.readValue(node.get("organisationUnits").toString(), DHISOrganisationUnit[].class));
+		}catch ( Exception ex )
+		{
+			System.out.print(ex.getMessage());
+		}
+
+		return orgUnits;
+	}
+
+	private boolean mappingsHasGUID(List<DHISMapping> mappings, String GUID) {
+		for(DHISMapping mapping : mappings) {
+			if(mapping.getPeriodIndicatorReportGUID().equals(GUID)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
 }
