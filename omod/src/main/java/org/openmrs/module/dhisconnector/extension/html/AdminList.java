@@ -21,7 +21,7 @@ import org.openmrs.module.web.extension.AdministrationSectionExt;
 
 /**
  * This class defines the links that will appear on the administration page under the
- * "reportingresttodhis.title" heading. 
+ * DHIS Connector Module heading.
  */
 public class AdminList extends AdministrationSectionExt {
 	
@@ -36,7 +36,7 @@ public class AdminList extends AdministrationSectionExt {
 	 * @see AdministrationSectionExt#getTitle()
 	 */
 	public String getTitle() {
-		return "reportingresttodhis.title";
+		return "dhisconnector.title";
 	}
 	
 	/**
@@ -44,8 +44,9 @@ public class AdminList extends AdministrationSectionExt {
 	 */
 	public Map<String, String> getLinks() {
 		LinkedHashMap<String, String> map = new LinkedHashMap<String, String>();
-		map.put("/module/reportingresttodhis/manage.form", "reportingresttodhis.manage");
-		map.put("/module/reportingresttodhis/createMapping.form", "reportingresttodhis.createMapping");
+		map.put("/module/dhisconnector/configureServer.form", "dhisconnector.configureServer");
+		map.put("/module/dhisconnector/createMapping.form", "dhisconnector.createMapping");
+		map.put("/module/dhisconnector/runReports.form", "dhisconnector.runReports");
 		return map;
 	}
 	

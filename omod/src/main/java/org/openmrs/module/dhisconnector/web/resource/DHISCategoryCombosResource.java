@@ -14,7 +14,7 @@ import org.openmrs.module.webservices.rest.web.resource.impl.DataDelegatingCrudR
 import org.openmrs.module.webservices.rest.web.resource.impl.DelegatingResourceDescription;
 import org.openmrs.module.webservices.rest.web.response.ResponseException;
 
-@Resource(name = RestConstants.VERSION_1 + DHISConnectorRestController.REPORTINGREST_TO_DHIS_NAMESPACE + "/dhiscategorycombos", supportedClass = DHISCategoryCombo.class, supportedOpenmrsVersions = {"1.8.*", "1.9.*, 1.10.*, 1.11.*", "1.12.*", "2.0.*"})
+@Resource(name = RestConstants.VERSION_1 + DHISConnectorRestController.DHISCONNECTOR_NAMESPACE + "/dhiscategorycombos", supportedClass = DHISCategoryCombo.class, supportedOpenmrsVersions = {"1.8.*", "1.9.*, 1.10.*, 1.11.*", "1.12.*", "2.0.*"})
 public class DHISCategoryCombosResource extends DataDelegatingCrudResource implements Retrievable {
 
   public static final String CATEGORYCOMBOS_PATH = "/api/categoryCombos";

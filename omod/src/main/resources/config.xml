@@ -18,11 +18,6 @@
 	
 	<!-- Required Modules -->
 	<require_modules>
-																											
-		<require_module version="1.1">
-			org.openmrs.module.dhisreport
-		</require_module>
-																											
 		<require_module version="1.5">
 			org.openmrs.module.reportingrest
 		</require_module>
@@ -30,12 +25,11 @@
 		<require_module version="0.9.4">
 			org.openmrs.module.reporting
 		</require_module>
-			
 	</require_modules>
 	<!-- / Required Modules -->
 	
 	<!-- Module Activator -->
-	<activator>${project.parent.groupId}.${project.parent.artifactId}.ReportingRESTtoDHISActivator</activator>
+	<activator>${project.parent.groupId}.${project.parent.artifactId}.DHISConnectorActivator</activator>
 	
 	
 	<!-- Adds link to admin page -->
@@ -47,9 +41,30 @@
 	<!-- Maps hibernate file's, if present -->
 	<mappingFiles>
 				
-		ReportingRESTtoDHIS.hbm.xml
-				
 	</mappingFiles>
+
+	<!-- Global properties -->
+	<globalProperty>
+		<property>${project.parent.artifactId}.url</property>
+		<defaultValue>http://localhost:8080/dhis</defaultValue>
+		<description>
+			DHIS Server URL.
+		</description>
+	</globalProperty>
+	<globalProperty>
+		<property>${project.parent.artifactId}.user</property>
+		<defaultValue>admin</defaultValue>
+		<description>
+			DHIS Username.
+		</description>
+	</globalProperty>
+	<globalProperty>
+		<property>${project.parent.artifactId}.pass</property>
+		<defaultValue>district</defaultValue>
+		<description>
+			DHIS Password.
+		</description>
+	</globalProperty>
 
 	<!-- Internationalization -->
 	<!-- All message codes should start with ${project.parent.artifactId}. -->

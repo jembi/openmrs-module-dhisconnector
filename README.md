@@ -1,1 +1,1 @@
-# WIP openmrs-module-reportingresttodhis
+# WIP DHIS Connector Module

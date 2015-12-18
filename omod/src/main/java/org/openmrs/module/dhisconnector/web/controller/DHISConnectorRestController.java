@@ -19,16 +19,16 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 @Controller
-@RequestMapping("/rest/" + RestConstants.VERSION_1 + DHISConnectorRestController.REPORTINGREST_TO_DHIS_NAMESPACE)
+@RequestMapping("/rest/" + RestConstants.VERSION_1 + DHISConnectorRestController.DHISCONNECTOR_NAMESPACE)
 public class DHISConnectorRestController extends MainResourceController {
 
-  public static final String REPORTINGREST_TO_DHIS_NAMESPACE = "/reportingresttodhis";
+  public static final String DHISCONNECTOR_NAMESPACE = "/dhisconnector";
 
   /**
    * @see org.openmrs.module.webservices.rest.web.v1_0.controller.BaseRestController#getNamespace()
    */
   @Override
   public String getNamespace() {
-    return RestConstants.VERSION_1 + REPORTINGREST_TO_DHIS_NAMESPACE;
+    return RestConstants.VERSION_1 + DHISCONNECTOR_NAMESPACE;
   }
 }

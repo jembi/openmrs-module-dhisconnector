@@ -20,7 +20,7 @@ function renderCategoryComboOptions() {
     for (var comboOption in categoryComboOptions) {
         if (categoryComboOptions.hasOwnProperty(comboOption)) {
             var comboOptionRow = jQuery('<div class="reportRow row"></div>');
-            var comboOptionBox = jQuery('<div class="reportIndicator box">'+categoryComboOptions[comboOption].name+'</div>');
+            var comboOptionBox = jQuery('<div class="reportIndicator box" data-uid="'+categoryComboOptions[comboOption].id+'">'+categoryComboOptions[comboOption].name+'</div>');
 
             var comboOptionBoxContainer = jQuery('<div class="comboOptionDragSource reportIndicatorCol col-xs"></div>');
             comboOptionRow.append(comboOptionBoxContainer.append(comboOptionBox));
@@ -37,9 +37,9 @@ function getCategoryComboOptions(dataElementId, requests) {
     var requests = [];
 
     // fetch data element details
-    jQuery.get( "/openmrs/ws/rest/v1/reportingresttodhis/dhisdataelements/" + dataElementId + "?v=full&limit=100", function( dataelement ) {
+    jQuery.get( "/openmrs/ws/rest/v1/dhisconnector/dhisdataelements/" + dataElementId + "?v=full&limit=100", function( dataelement ) {
         // fetch the category combo options
-        requests.push(jQuery.get( "/openmrs/ws/rest/v1/reportingresttodhis/dhiscategorycombos/" + dataelement.categoryCombo.id  + "?v=full&limit=100", function( categorycombo ) {
+        requests.push(jQuery.get( "/openmrs/ws/rest/v1/dhisconnector/dhiscategorycombos/" + dataelement.categoryCombo.id  + "?v=full&limit=100", function( categorycombo ) {
             //var dataElementOptionRow = jQuery('<div class="comboOptionDragSource reportRow row"></div>');
             for(var i = 0; i < categorycombo.categoryOptionCombos.length; i++) {
                 //dataElementOptionRow.append('<div class="reportIndicator box">'+categorycombo.categoryOptionCombos[i].name+'</div>');
@@ -63,21 +63,24 @@ function getDataElementsAndCategoryComboOptions() {
     var requests = [];
 
     // fetch dataset details
-    jQuery.get( "/openmrs/ws/rest/v1/reportingresttodhis/dhisdatasets/" + jQuery('#dataSetSelect').val() + "?v=full&limit=100", function( data ) {
+    jQuery.get( "/openmrs/ws/rest/v1/dhisconnector/dhisdatasets/" + jQuery('#dataSetSelect').val() + "?v=full&limit=100", function( data ) {
+
+        jQuery('#periodType').html(data.periodType);
 
         dataElements = data.dataElements;
         var dataElementsOptionsCol = jQuery('#dataElementsOptions');
         dataElementsOptionsCol.html("");
+        jQuery('#categoryComboOptions').html("");
         categoryComboOptions = {};
 
 
        dataElementsOptionsCol.append('<div class="reportRow row"><div class="reportIndicatorCol col-xs"><div class="reportIndicator box"><h4>Data Element Options</h4></div></div></div>');
-       jQuery('#categoryComboOptions').append('<div class="reportRow row"><div class="reportIndicatorCol col-xs"><div class="reportIndicator box"><h4>Category Options</h4></div></div></div><img id="categoryComboLoader" class="spinner" src="/openmrs/moduleResources/reportingresttodhis/loading.gif"/>');
+       jQuery('#categoryComboOptions').append('<div class="reportRow row"><div class="reportIndicatorCol col-xs"><div class="reportIndicator box"><h4>Category Options</h4></div></div></div><img id="categoryComboLoader" class="spinner" src="/openmrs/moduleResources/dhisconnector/loading.gif"/>');
 
 
         for(var i = 0; i < dataElements.length; i++) {
             var dataElementOptionRow = jQuery('<div class="reportRow row"></div>');
-            var dataElementOptionBox = jQuery('<div class="reportIndicator box">'+dataElements[i].name+'</div>');
+            var dataElementOptionBox = jQuery('<div class="reportIndicator box" data-uid="'+dataElements[i].id+'">'+dataElements[i].name+'</div>');
             //var categoryComboOptionOptionBox = jQuery('<div class="reportDimension box">&nbsp; </div>');
 
             //getCategoryComboOptions(dataElements[i].id, categoryComboOptionOptionBox);
@@ -118,6 +121,7 @@ function onReportSelect() {
 
     var selectedSchema = reports.filter(function(val) { return val.uuid === jQuery('#reportSelect').val(); })[0].schema;
 
+    var rowCounter = 0;
     for (var property in selectedSchema.columns) {
         if (selectedSchema.columns.hasOwnProperty(property)) {
             var indicatorBox = jQuery('<div class="reportIndicator box"></div>');
@@ -143,18 +147,20 @@ function onReportSelect() {
             var row = jQuery('<div class="reportRow row"></div>');
             var dataSetRow = jQuery('<div class="reportRow row"></div>');
 
-            row.append(jQuery('<div class="reportIndicatorCol col-xs"></div>').append(indicatorBox));
-            row.append(jQuery('<div class="reportDimensionCol col-xs"></div>').append(dimensionsBox));
+            row.append(jQuery('<div class="indicatorContainer reportIndicatorCol col-xs row-' + rowCounter + '"></div>').append(indicatorBox));
+            row.append(jQuery('<div class="dimensionContainer reportDimensionCol col-xs row-' + rowCounter + '"></div>').append(dimensionsBox));
             reportIndicators.append(row);
 
-            var dataElementMappingContainer = jQuery('<div class="dataElementDragDestination reportIndicatorCol col-xs"></div>');
+            var dataElementMappingContainer = jQuery('<div class="dataElementContainer dataElementDragDestination reportIndicatorCol col-xs row-' + rowCounter + '"></div>');
             dataSetRow.append(dataElementMappingContainer);//.append(dataElementMappingBox));
-            var comboMappingContainer = jQuery('<div class="comboOptionDragDestination reportDimensionCol col-xs"></div>');
+            var comboMappingContainer = jQuery('<div class="comboOptionContainer comboOptionDragDestination reportDimensionCol col-xs row-' + rowCounter + '"></div>');
             dataSetRow.append(comboMappingContainer)//.append(categoryComboOptionMappingBox));
             dateElementMappings.append(dataSetRow);
 
             drake.containers.push(dataElementMappingContainer.get(0));
             drake.containers.push(comboMappingContainer.get(0));
+
+            rowCounter++;
         }
     }
     reportIndicators.hide().fadeIn("slow");
@@ -163,7 +169,7 @@ function onReportSelect() {
 
 function populateReportsDropdown() {
     // fetch reports
-    jQuery.get( "/openmrs/ws/rest/v1/reportingresttodhis/periodindicatorreports?limit=100", function( data ) {
+    jQuery.get( "/openmrs/ws/rest/v1/dhisconnector/periodindicatorreports?limit=100", function( data ) {
 
         var reportSelect = jQuery('<select id="reportSelect"></select>');
         reportSelect.on('change', onReportSelect);
@@ -184,7 +190,7 @@ function populateReportsDropdown() {
 
 function populateDataSetsDropdown() {
     // fetch datasets
-     jQuery.get( "/openmrs/ws/rest/v1/reportingresttodhis/dhisdatasets?v=full&limit=100", function( data ) {
+     jQuery.get( "/openmrs/ws/rest/v1/dhisconnector/dhisdatasets?v=full&limit=100", function( data ) {
 
         var reportSelect = jQuery('<select id="dataSetSelect"></select>');
         reportSelect.on('change', onDataSetSelect);
@@ -209,22 +215,42 @@ function dragulaCopyFunction(el, source) {
 }
 
 function dragulaAcceptsFunction(el, target, source, sibling) {
-    //console.log(target);
-
-//     console.log('===');
-//     console.log(jQuery(target));
-//     console.log(jQuery(target).hasClass('dataElementDragDestination'));
-//     console.log('---')
-//     console.log(jQuery(source));
-//     console.log(jQuery(source).hasClass('dataElementDragSource'));
-//     console.log('===');
-
     var dataElementDrag = (jQuery(target).hasClass('dataElementDragDestination') && jQuery(source).hasClass('dataElementDragSource'));
     var comboOptionDrag = (jQuery(target).hasClass('comboOptionDragDestination') && jQuery(source).hasClass('comboOptionDragSource'));
 
     return dataElementDrag || comboOptionDrag;
+}
 
-    //return true;  
+function saveMapping(event) {
+    var mapping = {};
+
+    jQuery('#nameEmptyError').remove();
+    if(jQuery('#mappingName').val().length == 0) {
+        jQuery('#mappingName').parent().append('<span class="error" id="nameEmptyError">Mapping name cannot be empty.</span>');
+        event.preventDefault();
+        return;
+    }
+
+    // build mapping json
+    mapping.name = jQuery('#mappingName').val();
+    mapping.periodType = jQuery('#periodType').html();
+    mapping.created = Date.now();
+    mapping.dataSetUID = jQuery('#dataSetSelect').val();
+    mapping.periodIndicatorReportGUID = jQuery('#reportSelect').val();
+
+    mapping.elements = [];
+    for(var i = 0; i < jQuery('.indicatorContainer').length; i++) {
+        var row =
+
+        mapping.elements.push({
+           indicator: jQuery('.row-'+i+'.indicatorContainer > .box').html(),
+           dataElement: jQuery('.row-'+i+'.dataElementContainer > .box').attr('data-uid'),
+           comboOption: jQuery('.row-'+i+'.comboOptionContainer > .box').attr('data-uid')
+        });
+    }
+
+    // post json obect
+    console.log(mapping);
 }
 
 jQuery(function(){
@@ -234,6 +260,17 @@ jQuery(function(){
         copy: dragulaCopyFunction,
         accepts: dragulaAcceptsFunction,
         removeOnSpill: true
+    });
+
+    jQuery('#saveMappingPopup').dialog({
+        autoOpen: false,
+        modal: true,
+        title: 'Save DHIS Mapping',
+        width: '90%'
+    });
+
+    jQuery('#saveMappingButton').click(function() {
+        $j('#saveMappingPopup').dialog('open');
     });
 });
 
