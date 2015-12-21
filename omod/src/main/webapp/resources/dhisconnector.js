@@ -14,7 +14,6 @@ function allowMappingRemoval(el, container, source) {
 function renderCategoryComboOptions() {
     var comboOptionsCol = jQuery('#categoryComboOptions');
 
-    console.log(categoryComboOptions);
     jQuery('#categoryComboLoader').remove();
 
     for (var comboOption in categoryComboOptions) {
