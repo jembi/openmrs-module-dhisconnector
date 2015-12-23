@@ -12,6 +12,8 @@
 package org.openmrs.module.dhisconnector.api;
 
 import org.openmrs.api.OpenmrsService;
+import org.openmrs.module.dhisconnector.api.model.DHISDataValueSet;
+import org.openmrs.module.dhisconnector.api.model.DHISImportSummary;
 import org.openmrs.module.dhisconnector.api.model.DHISMapping;
 import org.openmrs.module.dhisconnector.api.model.DHISOrganisationUnit;
 import org.openmrs.module.reporting.report.definition.PeriodIndicatorReportDefinition;
@@ -48,6 +50,8 @@ public interface DHISConnectorService extends OpenmrsService {
 	 */
 	public String getDataFromDHISEndpoint(String endpoint);
 
+	public String postDataToDHISEndpoint(String endpoint, String jsonPayload);
+
 	/**
 	 * Tests to check if the given DHIS server details are correct
 	 *
@@ -61,6 +65,8 @@ public interface DHISConnectorService extends OpenmrsService {
 
 
 	public Object saveMapping(DHISMapping mapping);
+
+	public DHISImportSummary postDataValueSet(DHISDataValueSet dataValueSet);
 
 	public List<DHISMapping> getMappings();
 

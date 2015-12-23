@@ -5,13 +5,16 @@
 <openmrs:htmlInclude file="/moduleResources/dhisconnector/dhisconnector-runreports.js"/>
 <openmrs:htmlInclude file="/moduleResources/dhisconnector/jquery.monthpicker.js"/>
 
+<openmrs:htmlInclude file="/moduleResources/dhisconnector/highlight.min.js"/>
+<openmrs:htmlInclude file="/moduleResources/dhisconnector/default.min.css"/>
+
 <%@ include file="template/localHeader.jsp" %>
 
 <h3><spring:message code="dhisconnector.runReports"/></h3>
 
 <form method="POST">
   <table>
-    <tbody>
+    <tbody id="tableBody">
     <tr>
       <th class="runHeader"><spring:message code="dhisconnector.report"/></th>
       <td>
@@ -49,7 +52,7 @@
     </tr>
     <tr>
       <th class="runHeader"><spring:message code="dhisconnector.action"/></th>
-      <td><input name="submit" type="button" onClick="sendDataToDHIS()" value="<spring:message code="dhisconnector.post" />"/> <input name="submit" type="button" value="<spring:message code="dhisconnector.download" />"/></td>
+      <td><input name="submit" type="button" onClick="sendDataToDHIS()" value="<spring:message code="dhisconnector.post" />"/> <input name="submit" type="button" onClick="generateDXFDownload()" value="<spring:message code="dhisconnector.download" />"/></td>
     </tr>
     </tbody>
   </table>

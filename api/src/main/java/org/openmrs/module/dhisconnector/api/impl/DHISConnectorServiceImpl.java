@@ -18,20 +18,22 @@ import org.apache.http.HttpResponse;
 import org.apache.http.auth.Credentials;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.auth.BasicScheme;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.protocol.BasicHttpContext;
 import org.apache.http.util.EntityUtils;
 import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.map.ObjectMapper;
+import org.codehaus.jackson.node.ObjectNode;
+import org.codehaus.jackson.type.TypeReference;
 import org.openmrs.api.context.Context;
 import org.openmrs.api.impl.BaseOpenmrsService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openmrs.module.dhisconnector.api.DHISConnectorService;
-import org.openmrs.module.dhisconnector.api.model.DHISDataSet;
-import org.openmrs.module.dhisconnector.api.model.DHISMapping;
-import org.openmrs.module.dhisconnector.api.model.DHISOrganisationUnit;
+import org.openmrs.module.dhisconnector.api.model.*;
 import org.openmrs.module.reporting.report.definition.PeriodIndicatorReportDefinition;
 import org.openmrs.module.reporting.report.definition.ReportDefinition;
 import org.openmrs.module.reporting.report.definition.service.ReportDefinitionService;
@@ -41,9 +43,7 @@ import java.io.File;
 import java.io.FilenameFilter;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 /**
  * It is a default implementation of {@link DHISConnectorService}.
@@ -62,41 +62,13 @@ public class DHISConnectorServiceImpl extends BaseOpenmrsService implements DHIS
 
 	public static final String  DHISCONNECTOR_ORGUNIT_RESOURCE = "/api/organisationUnits.json?paging=false";
 
+	public static final String DATASETS_PATH = "/api/dataValueSets";
+
 	@Override
 	public List<String> getPeriodIndicatorReports() {
-		//    String restUriPefixProperty = Context.getService(AdministrationService.class).getGlobalProperty(REST_URL_PREFIX_GLOBAL_PROPERTY_NAME);
-		//
-		//    HttpGet httpGet = new HttpGet(restUriPefixProperty + REPORT_DEFINITION_RESOURCE );
-		//    httpGet.addHeader( "Content-Type", "application/json" );
-		//
-		//    HttpHost targetHost = new HttpHost( "localhost", 8080, "http" );
-		//    DefaultHttpClient httpclient = new DefaultHttpClient();
-		//    BasicHttpContext localcontext = new BasicHttpContext();
-		//
-		//    try {
-		//      HttpResponse response = httpclient.execute(targetHost, httpGet, localcontext);
-		//
-		//      System.out.println(EntityUtils.toString(response.getEntity()));
-		//    } catch (Exception e) {
-		//      System.out.println("## TEST: " + e.getMessage());
-		//    }
-
 		List<ReportDefinition> reportSchemas = Context.getService(ReportDefinitionService.class).getAllDefinitions(false);
 
-		//    Credentials creds = new UsernamePasswordCredentials( username, password );
-		//    Header bs = new BasicScheme().authenticate( creds, httpPost, localcontext );
-		//    httpPost.addHeader( "Authorization", bs.getValue() );
-		//    httpPost.addHeader( "Content-Type", "application/xml" );
-		//    httpPost.addHeader( "Accept", "application/xml" );
-		//
-		//    httpPost.setEntity( new StringEntity( xmlReport.toString() ) );
-		//    HttpResponse response = httpclient.execute( targetHost, httpPost, localcontext );
-		//    HttpEntity entity = response.getEntity();
-		//
-		//    if ( response.getStatusLine().getStatusCode() != 200 )
-		//    {
-		//      throw new Dhis2Exception( this, response.getStatusLine().getReasonPhrase(), null );
-		//    }
+		//    TODO: figure out what's going on here
 		return null;
 	}
 
@@ -149,6 +121,57 @@ public class DHISConnectorServiceImpl extends BaseOpenmrsService implements DHIS
 			// EntityUtils.consume( entity );
 
 			// TODO: fix these catches ...
+		}
+		catch (Exception ex) {
+			ex.printStackTrace();
+		}
+		finally {
+			if(client != null) {
+				client.getConnectionManager().shutdown();
+			}
+		}
+
+		return payload;
+	}
+
+	@Override
+	public String postDataToDHISEndpoint(String endpoint, String jsonPayload) {
+		String url = Context.getAdministrationService().getGlobalProperty("dhisconnector.url");
+		String user = Context.getAdministrationService().getGlobalProperty("dhisconnector.user");
+		String pass = Context.getAdministrationService().getGlobalProperty("dhisconnector.pass");
+
+		DefaultHttpClient client = null;
+		String payload = "";
+
+		try {
+
+			URL dhisURL = new URL(url);
+
+			String host = dhisURL.getHost();
+			int port = dhisURL.getPort();
+
+			HttpHost targetHost = new HttpHost(host, port, dhisURL.getProtocol());
+			client = new DefaultHttpClient();
+			BasicHttpContext localcontext = new BasicHttpContext();
+
+			HttpPost httpPost = new HttpPost(dhisURL.getPath() + endpoint);
+
+			Credentials creds = new UsernamePasswordCredentials(user, pass);
+			Header bs = new BasicScheme().authenticate(creds, httpPost, localcontext);
+			httpPost.addHeader("Authorization", bs.getValue());
+			httpPost.addHeader("Content-Type", "application/json");
+			httpPost.addHeader("Accept", "application/json");
+
+			httpPost.setEntity(new StringEntity(jsonPayload));
+
+			HttpResponse response = client.execute(targetHost, httpPost, localcontext);
+			HttpEntity entity = response.getEntity();
+
+			if (entity != null) {
+				payload = EntityUtils.toString(entity);
+			} else {
+				// TODO: figure out what to do here
+			}
 		}
 		catch (Exception ex) {
 			ex.printStackTrace();
@@ -237,6 +260,25 @@ public class DHISConnectorServiceImpl extends BaseOpenmrsService implements DHIS
 		}
 
 		return mapping;
+	}
+
+	@Override
+	public DHISImportSummary postDataValueSet(DHISDataValueSet dataValueSet) {
+		ObjectMapper mapper = new ObjectMapper();
+		String jsonString;
+		DHISImportSummary response;
+
+		try {
+			jsonString = mapper.writeValueAsString(dataValueSet);
+
+			String responseString = postDataToDHISEndpoint(DATASETS_PATH, jsonString);
+
+			response =  mapper.readValue(responseString, DHISImportSummary.class);
+		} catch (Exception e) {
+			return null;
+		}
+
+		return response;
 	}
 
 	@Override
