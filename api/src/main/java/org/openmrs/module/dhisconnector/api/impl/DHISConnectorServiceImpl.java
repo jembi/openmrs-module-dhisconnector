@@ -11,6 +11,7 @@
  */
 package org.openmrs.module.dhisconnector.api.impl;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpHost;
@@ -41,6 +42,7 @@ import org.openmrs.util.OpenmrsUtil;
 
 import java.io.File;
 import java.io.FilenameFilter;
+import java.io.PrintWriter;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.*;
@@ -51,6 +53,8 @@ import java.util.*;
 public class DHISConnectorServiceImpl extends BaseOpenmrsService implements DHISConnectorService {
 
 	public static final String DHISCONNECTOR_MAPPINGS_FOLDER = "dhisconnector/mappings";
+
+	public static final String DHISCONNECTOR_CACHE_FOLDER = "dhisconnector/cache";
 
 	public static final String DHISCONNECTOR_MAPPING_FILE_SUFFIX = ".mapping.json";
 
@@ -70,6 +74,67 @@ public class DHISConnectorServiceImpl extends BaseOpenmrsService implements DHIS
 
 		//    TODO: figure out what's going on here
 		return null;
+	}
+
+	private String getFromCache(String path) {
+		String cacheFilePath = OpenmrsUtil.getApplicationDataDirectory() + DHISCONNECTOR_CACHE_FOLDER + path;
+
+		File cacheFile = new File(cacheFilePath);
+
+		if(cacheFile.exists()) {
+			try {
+				return FileUtils.readFileToString(cacheFile);
+			} catch (Exception e) {
+				e.printStackTrace();;
+				return null;
+			}
+		}
+
+		return null;
+	}
+
+	// TODO: error handling
+	private void saveToCache(String path, String jsonResponse) {
+		String cacheDirecoryPath = OpenmrsUtil.getApplicationDataDirectory() + DHISCONNECTOR_CACHE_FOLDER;
+
+		File cacheDirecory = new File(cacheDirecoryPath);
+
+		if(!cacheDirecory.exists()) {
+			try {
+				if(!cacheDirecory.mkdirs()) {
+					return;
+				}
+			} catch(Exception e) {
+				e.printStackTrace();
+				return;
+			}
+		}
+
+		String directoryStructure = OpenmrsUtil.getApplicationDataDirectory() + DHISCONNECTOR_CACHE_FOLDER + path.substring(0, path.lastIndexOf("/"));
+
+		File directory = new File(directoryStructure);
+
+
+		if(!directory.exists()) {
+			try {
+				if(!directory.mkdirs()) {
+					return;
+				}
+			} catch(Exception e) {
+				e.printStackTrace();
+				return;
+			}
+		}
+
+		try {
+			PrintWriter enpointCache = new PrintWriter(OpenmrsUtil.getApplicationDataDirectory() + DHISCONNECTOR_CACHE_FOLDER + path, "utf-8");
+			enpointCache.write(jsonResponse);
+			enpointCache.close();
+		} catch (Exception e) {
+			return;
+		}
+
+		return;
 	}
 
 	@Override
@@ -114,9 +179,12 @@ public class DHISConnectorServiceImpl extends BaseOpenmrsService implements DHIS
 				//List<MyClass> myObjects = Arrays.asList(mapper.readValue(json, MyClass[].class))
 
 				payload = EntityUtils.toString(entity);
+
+				saveToCache(endpoint, payload);
 			} else {
 				//        summary = new ImportSummary();
 				//        summary.setStatus( ImportStatus.ERROR );
+				payload = getFromCache(endpoint);
 			}
 			// EntityUtils.consume( entity );
 
@@ -124,6 +192,8 @@ public class DHISConnectorServiceImpl extends BaseOpenmrsService implements DHIS
 		}
 		catch (Exception ex) {
 			ex.printStackTrace();
+
+			payload = getFromCache(endpoint);
 		}
 		finally {
 			if(client != null) {
