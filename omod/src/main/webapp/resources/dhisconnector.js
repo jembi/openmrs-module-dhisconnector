@@ -217,6 +217,11 @@ function dragulaAcceptsFunction(el, target, source, sibling) {
     var dataElementDrag = (jQuery(target).hasClass('dataElementDragDestination') && jQuery(source).hasClass('dataElementDragSource'));
     var comboOptionDrag = (jQuery(target).hasClass('comboOptionDragDestination') && jQuery(source).hasClass('comboOptionDragSource'));
 
+    // Ensure we can only create one mapping per indicator
+    if(jQuery(target).children().length > 1) {
+        return false;
+    }
+
     return dataElementDrag || comboOptionDrag;
 }
 
@@ -288,6 +293,21 @@ function saveMapping(event) {
     });
 }
 
+function addCloseButtons() {
+    var mappings = jQuery('#dataElementsMappings .box');
+
+    for (var i = 0; i < mappings.length; i++) {
+        if(jQuery(mappings[i]).attr('data-uid') && jQuery(mappings[i]).children().length == 0) { // don't add button to headings
+            jQuery(mappings[i]).append('<span onClick="deleteMapping(this);" class="close">x</span>');
+        }
+    }
+
+}
+
+function deleteMapping(el) {
+    jQuery(el).parent().remove();
+}
+
 jQuery(function(){
     populateReportsDropdown();
     populateDataSetsDropdown();
@@ -307,5 +327,6 @@ jQuery(function(){
     jQuery('#saveMappingButton').click(function() {
         $j('#saveMappingPopup').dialog('open');
     });
+    drake.on('drop', addCloseButtons);
 });
 
