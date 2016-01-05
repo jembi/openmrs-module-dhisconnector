@@ -27,14 +27,13 @@ import org.apache.http.protocol.BasicHttpContext;
 import org.apache.http.util.EntityUtils;
 import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.map.ObjectMapper;
-import org.codehaus.jackson.node.ObjectNode;
-import org.codehaus.jackson.type.TypeReference;
 import org.openmrs.api.context.Context;
 import org.openmrs.api.impl.BaseOpenmrsService;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.openmrs.module.dhisconnector.api.DHISConnectorService;
-import org.openmrs.module.dhisconnector.api.model.*;
+import org.openmrs.module.dhisconnector.api.model.DHISDataValueSet;
+import org.openmrs.module.dhisconnector.api.model.DHISImportSummary;
+import org.openmrs.module.dhisconnector.api.model.DHISMapping;
+import org.openmrs.module.dhisconnector.api.model.DHISOrganisationUnit;
 import org.openmrs.module.reporting.report.definition.PeriodIndicatorReportDefinition;
 import org.openmrs.module.reporting.report.definition.ReportDefinition;
 import org.openmrs.module.reporting.report.definition.service.ReportDefinitionService;
@@ -45,7 +44,9 @@ import java.io.FilenameFilter;
 import java.io.PrintWriter;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * It is a default implementation of {@link DHISConnectorService}.
@@ -58,34 +59,21 @@ public class DHISConnectorServiceImpl extends BaseOpenmrsService implements DHIS
 
 	public static final String DHISCONNECTOR_MAPPING_FILE_SUFFIX = ".mapping.json";
 
-	protected final Log log = LogFactory.getLog(this.getClass());
-
-	public static final String REST_URL_PREFIX_GLOBAL_PROPERTY_NAME = "webservices.rest.uriPrefix";
-
-	public static final String REPORT_DEFINITION_RESOURCE = "/ws/rest/v1/reportingrest/reportDefinition?v=full";
-
-	public static final String  DHISCONNECTOR_ORGUNIT_RESOURCE = "/api/organisationUnits.json?paging=false";
+	public static final String DHISCONNECTOR_ORGUNIT_RESOURCE = "/api/organisationUnits.json?paging=false";
 
 	public static final String DATASETS_PATH = "/api/dataValueSets";
-
-	@Override
-	public List<String> getPeriodIndicatorReports() {
-		List<ReportDefinition> reportSchemas = Context.getService(ReportDefinitionService.class).getAllDefinitions(false);
-
-		//    TODO: figure out what's going on here
-		return null;
-	}
 
 	private String getFromCache(String path) {
 		String cacheFilePath = OpenmrsUtil.getApplicationDataDirectory() + DHISCONNECTOR_CACHE_FOLDER + path;
 
 		File cacheFile = new File(cacheFilePath);
 
-		if(cacheFile.exists()) {
+		if (cacheFile.exists()) {
 			try {
 				return FileUtils.readFileToString(cacheFile);
-			} catch (Exception e) {
-				e.printStackTrace();;
+			}
+			catch (Exception e) {
+				e.printStackTrace();
 				return null;
 			}
 		}
@@ -99,38 +87,42 @@ public class DHISConnectorServiceImpl extends BaseOpenmrsService implements DHIS
 
 		File cacheDirecory = new File(cacheDirecoryPath);
 
-		if(!cacheDirecory.exists()) {
+		if (!cacheDirecory.exists()) {
 			try {
-				if(!cacheDirecory.mkdirs()) {
+				if (!cacheDirecory.mkdirs()) {
 					return;
 				}
-			} catch(Exception e) {
+			}
+			catch (Exception e) {
 				e.printStackTrace();
 				return;
 			}
 		}
 
-		String directoryStructure = OpenmrsUtil.getApplicationDataDirectory() + DHISCONNECTOR_CACHE_FOLDER + path.substring(0, path.lastIndexOf("/"));
+		String directoryStructure = OpenmrsUtil.getApplicationDataDirectory() + DHISCONNECTOR_CACHE_FOLDER + path
+				.substring(0, path.lastIndexOf("/"));
 
 		File directory = new File(directoryStructure);
 
-
-		if(!directory.exists()) {
+		if (!directory.exists()) {
 			try {
-				if(!directory.mkdirs()) {
+				if (!directory.mkdirs()) {
 					return;
 				}
-			} catch(Exception e) {
+			}
+			catch (Exception e) {
 				e.printStackTrace();
 				return;
 			}
 		}
 
 		try {
-			PrintWriter enpointCache = new PrintWriter(OpenmrsUtil.getApplicationDataDirectory() + DHISCONNECTOR_CACHE_FOLDER + path, "utf-8");
+			PrintWriter enpointCache = new PrintWriter(
+					OpenmrsUtil.getApplicationDataDirectory() + DHISCONNECTOR_CACHE_FOLDER + path, "utf-8");
 			enpointCache.write(jsonResponse);
 			enpointCache.close();
-		} catch (Exception e) {
+		}
+		catch (Exception e) {
 			return;
 		}
 
@@ -166,28 +158,17 @@ public class DHISConnectorServiceImpl extends BaseOpenmrsService implements DHIS
 			HttpEntity entity = response.getEntity();
 
 			if (response.getStatusLine().getStatusCode() != 200) {
-				//throw new Dhis2Exception( this, response.getStatusLine().getReasonPhrase(), null );
-
+				// TODO: Handle this
 			}
 
 			if (entity != null) {
-				//        JAXBContext jaxbImportSummaryContext = JAXBContext.newInstance( ImportSummary.class );
-				//        Unmarshaller importSummaryUnMarshaller = jaxbImportSummaryContext.createUnmarshaller();
-				//        summary = (ImportSummary) importSummaryUnMarshaller.unmarshal( entity.getContent() );
-
-				//dataSets = mapper.readValue(EntityUtils.toString(entity), new TypeReference<List<DHISDataSet>>(){});
-				//List<MyClass> myObjects = Arrays.asList(mapper.readValue(json, MyClass[].class))
-
 				payload = EntityUtils.toString(entity);
 
 				saveToCache(endpoint, payload);
 			} else {
-				//        summary = new ImportSummary();
-				//        summary.setStatus( ImportStatus.ERROR );
+				// load from cache
 				payload = getFromCache(endpoint);
 			}
-			// EntityUtils.consume( entity );
-
 			// TODO: fix these catches ...
 		}
 		catch (Exception ex) {
@@ -196,7 +177,7 @@ public class DHISConnectorServiceImpl extends BaseOpenmrsService implements DHIS
 			payload = getFromCache(endpoint);
 		}
 		finally {
-			if(client != null) {
+			if (client != null) {
 				client.getConnectionManager().shutdown();
 			}
 		}
@@ -247,7 +228,7 @@ public class DHISConnectorServiceImpl extends BaseOpenmrsService implements DHIS
 			ex.printStackTrace();
 		}
 		finally {
-			if(client != null) {
+			if (client != null) {
 				client.getConnectionManager().shutdown();
 			}
 		}
@@ -305,12 +286,13 @@ public class DHISConnectorServiceImpl extends BaseOpenmrsService implements DHIS
 
 		File mappingsDirecory = new File(mappingsDirecoryPath);
 
-		if(!mappingsDirecory.exists()) {
+		if (!mappingsDirecory.exists()) {
 			try {
-				if(!mappingsDirecory.mkdirs()) {
+				if (!mappingsDirecory.mkdirs()) {
 					return null;
 				}
-			} catch(Exception e) {
+			}
+			catch (Exception e) {
 				e.printStackTrace();
 				return e;
 			}
@@ -324,7 +306,8 @@ public class DHISConnectorServiceImpl extends BaseOpenmrsService implements DHIS
 
 		try {
 			mapper.writeValue(newMappingFile, mapping);
-		} catch(Exception e) {
+		}
+		catch (Exception e) {
 			e.printStackTrace();
 			return e;
 		}
@@ -343,8 +326,9 @@ public class DHISConnectorServiceImpl extends BaseOpenmrsService implements DHIS
 
 			String responseString = postDataToDHISEndpoint(DATASETS_PATH, jsonString);
 
-			response =  mapper.readValue(responseString, DHISImportSummary.class);
-		} catch (Exception e) {
+			response = mapper.readValue(responseString, DHISImportSummary.class);
+		}
+		catch (Exception e) {
 			return null;
 		}
 
@@ -357,22 +341,23 @@ public class DHISConnectorServiceImpl extends BaseOpenmrsService implements DHIS
 
 		ObjectMapper mapper = new ObjectMapper();
 
-
 		String mappingsDirecoryPath = OpenmrsUtil.getApplicationDataDirectory() + DHISCONNECTOR_MAPPINGS_FOLDER;
 
 		File mappingsDirecory = new File(mappingsDirecoryPath);
 
 		File[] files = mappingsDirecory.listFiles(new FilenameFilter() {
+
 			@Override
 			public boolean accept(File dir, String name) {
 				return name.endsWith(DHISCONNECTOR_MAPPING_FILE_SUFFIX);
 			}
 		});
 
-		for(File f : files) {
+		for (File f : files) {
 			try {
 				mappings.add(mapper.readValue(f, DHISMapping.class));
-			} catch (Exception e) {
+			}
+			catch (Exception e) {
 				e.printStackTrace();
 			}
 		}
@@ -386,9 +371,9 @@ public class DHISConnectorServiceImpl extends BaseOpenmrsService implements DHIS
 
 		List<PeriodIndicatorReportDefinition> pireports = new ArrayList<PeriodIndicatorReportDefinition>();
 
-		for(ReportDefinition r : all) {
-			if(r instanceof PeriodIndicatorReportDefinition && mappingsHasGUID(mappings, r.getUuid())) {
-				pireports.add((PeriodIndicatorReportDefinition)r);
+		for (ReportDefinition r : all) {
+			if (r instanceof PeriodIndicatorReportDefinition && mappingsHasGUID(mappings, r.getUuid())) {
+				pireports.add((PeriodIndicatorReportDefinition) r);
 			}
 		}
 
@@ -403,13 +388,15 @@ public class DHISConnectorServiceImpl extends BaseOpenmrsService implements DHIS
 		String jsonResponse = new String();
 		JsonNode node;
 
-		jsonResponse = Context.getService(DHISConnectorService.class).getDataFromDHISEndpoint(DHISCONNECTOR_ORGUNIT_RESOURCE);
+		jsonResponse = Context.getService(DHISConnectorService.class)
+				.getDataFromDHISEndpoint(DHISCONNECTOR_ORGUNIT_RESOURCE);
 
 		try {
 			node = mapper.readTree(jsonResponse);
-			orgUnits = Arrays.asList(mapper.readValue(node.get("organisationUnits").toString(), DHISOrganisationUnit[].class));
-		}catch ( Exception ex )
-		{
+			orgUnits = Arrays
+					.asList(mapper.readValue(node.get("organisationUnits").toString(), DHISOrganisationUnit[].class));
+		}
+		catch (Exception ex) {
 			System.out.print(ex.getMessage());
 		}
 
@@ -417,8 +404,8 @@ public class DHISConnectorServiceImpl extends BaseOpenmrsService implements DHIS
 	}
 
 	private boolean mappingsHasGUID(List<DHISMapping> mappings, String GUID) {
-		for(DHISMapping mapping : mappings) {
-			if(mapping.getPeriodIndicatorReportGUID().equals(GUID)) {
+		for (DHISMapping mapping : mappings) {
+			if (mapping.getPeriodIndicatorReportGUID().equals(GUID)) {
 				return true;
 			}
 		}

@@ -1,138 +1,134 @@
-
+/**
+ * The contents of this file are subject to the OpenMRS Public License
+ * Version 1.0 (the "License"); you may not use this file except in
+ * compliance with the License. You may obtain a copy of the License at
+ * http://license.openmrs.org
+ * Software distributed under the License is distributed on an "AS IS"
+ * basis, WITHOUT WARRANTY OF ANY KIND, either express or implied. See the
+ * License for the specific language governing rights and limitations
+ * under the License.
+ * Copyright (C) OpenMRS, LLC.  All Rights Reserved.
+ */
 package org.openmrs.module.dhisconnector.api.model;
 
-import java.util.HashMap;
-import java.util.Map;
-import javax.annotation.Generated;
 import org.codehaus.jackson.annotate.JsonIgnore;
 import org.codehaus.jackson.annotate.JsonIgnoreProperties;
 import org.codehaus.jackson.annotate.JsonProperty;
 import org.codehaus.jackson.annotate.JsonPropertyOrder;
 import org.codehaus.jackson.map.annotate.JsonSerialize;
 
+import javax.annotation.Generated;
+import java.util.HashMap;
+import java.util.Map;
+
 @JsonSerialize(include = JsonSerialize.Inclusion.NON_NULL)
 @Generated("org.jsonschema2pojo")
 @JsonPropertyOrder({
-    "id",
-    "name",
-    "created",
-    "lastUpdated",
-    "href"
+		"id",
+		"name",
+		"created",
+		"lastUpdated",
+		"href"
 })
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class DHISUser {
 
-    @JsonProperty("id")
-    private String id;
-    @JsonProperty("name")
-    private String name;
-    @JsonProperty("created")
-    private String created;
-    @JsonProperty("lastUpdated")
-    private String lastUpdated;
-    @JsonProperty("href")
-    private String href;
-    @JsonIgnore
-    private Map<String, Object> additionalProperties = new HashMap<String, Object>();
+	@JsonProperty("id")
+	private String id;
 
-    /**
-     * 
-     * @return
-     *     The id
-     */
-    @JsonProperty("id")
-    public String getId() {
-        return id;
-    }
+	@JsonProperty("name")
+	private String name;
 
-    /**
-     * 
-     * @param id
-     *     The id
-     */
-    @JsonProperty("id")
-    public void setId(String id) {
-        this.id = id;
-    }
+	@JsonProperty("created")
+	private String created;
 
-    /**
-     * 
-     * @return
-     *     The name
-     */
-    @JsonProperty("name")
-    public String getName() {
-        return name;
-    }
+	@JsonProperty("lastUpdated")
+	private String lastUpdated;
 
-    /**
-     * 
-     * @param name
-     *     The name
-     */
-    @JsonProperty("name")
-    public void setName(String name) {
-        this.name = name;
-    }
+	@JsonProperty("href")
+	private String href;
 
-    /**
-     * 
-     * @return
-     *     The created
-     */
-    @JsonProperty("created")
-    public String getCreated() {
-        return created;
-    }
+	@JsonIgnore
+	private Map<String, Object> additionalProperties = new HashMap<String, Object>();
 
-    /**
-     * 
-     * @param created
-     *     The created
-     */
-    @JsonProperty("created")
-    public void setCreated(String created) {
-        this.created = created;
-    }
+	/**
+	 * @return The id
+	 */
+	@JsonProperty("id")
+	public String getId() {
+		return id;
+	}
 
-    /**
-     * 
-     * @return
-     *     The lastUpdated
-     */
-    @JsonProperty("lastUpdated")
-    public String getLastUpdated() {
-        return lastUpdated;
-    }
+	/**
+	 * @param id The id
+	 */
+	@JsonProperty("id")
+	public void setId(String id) {
+		this.id = id;
+	}
 
-    /**
-     * 
-     * @param lastUpdated
-     *     The lastUpdated
-     */
-    @JsonProperty("lastUpdated")
-    public void setLastUpdated(String lastUpdated) {
-        this.lastUpdated = lastUpdated;
-    }
+	/**
+	 * @return The name
+	 */
+	@JsonProperty("name")
+	public String getName() {
+		return name;
+	}
 
-    /**
-     * 
-     * @return
-     *     The href
-     */
-    @JsonProperty("href")
-    public String getHref() {
-        return href;
-    }
+	/**
+	 * @param name The name
+	 */
+	@JsonProperty("name")
+	public void setName(String name) {
+		this.name = name;
+	}
 
-    /**
-     * 
-     * @param href
-     *     The href
-     */
-    @JsonProperty("href")
-    public void setHref(String href) {
-        this.href = href;
-    }
+	/**
+	 * @return The created
+	 */
+	@JsonProperty("created")
+	public String getCreated() {
+		return created;
+	}
+
+	/**
+	 * @param created The created
+	 */
+	@JsonProperty("created")
+	public void setCreated(String created) {
+		this.created = created;
+	}
+
+	/**
+	 * @return The lastUpdated
+	 */
+	@JsonProperty("lastUpdated")
+	public String getLastUpdated() {
+		return lastUpdated;
+	}
+
+	/**
+	 * @param lastUpdated The lastUpdated
+	 */
+	@JsonProperty("lastUpdated")
+	public void setLastUpdated(String lastUpdated) {
+		this.lastUpdated = lastUpdated;
+	}
+
+	/**
+	 * @return The href
+	 */
+	@JsonProperty("href")
+	public String getHref() {
+		return href;
+	}
+
+	/**
+	 * @param href The href
+	 */
+	@JsonProperty("href")
+	public void setHref(String href) {
+		this.href = href;
+	}
 
 }

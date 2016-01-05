@@ -1,9 +1,18 @@
+/**
+ * The contents of this file are subject to the OpenMRS Public License
+ * Version 1.0 (the "License"); you may not use this file except in
+ * compliance with the License. You may obtain a copy of the License at
+ * http://license.openmrs.org
+ * Software distributed under the License is distributed on an "AS IS"
+ * basis, WITHOUT WARRANTY OF ANY KIND, either express or implied. See the
+ * License for the specific language governing rights and limitations
+ * under the License.
+ * Copyright (C) OpenMRS, LLC.  All Rights Reserved.
+ */
 package org.openmrs.module.dhisconnector.web.resource;
 
-import org.codehaus.jackson.map.ObjectMapper;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.dhisconnector.api.DHISConnectorService;
-import org.openmrs.module.dhisconnector.api.model.DHISCategoryCombo;
 import org.openmrs.module.dhisconnector.api.model.DHISMapping;
 import org.openmrs.module.dhisconnector.api.model.DHISMappingElement;
 import org.openmrs.module.dhisconnector.web.controller.DHISConnectorRestController;
@@ -17,29 +26,16 @@ import org.openmrs.module.webservices.rest.web.resource.impl.DataDelegatingCrudR
 import org.openmrs.module.webservices.rest.web.resource.impl.DelegatingResourceDescription;
 import org.openmrs.module.webservices.rest.web.resource.impl.NeedsPaging;
 import org.openmrs.module.webservices.rest.web.response.ResponseException;
-import org.openmrs.util.OpenmrsUtil;
 
-import java.io.File;
 import java.util.*;
 
-@Resource(name = RestConstants.VERSION_1 + DHISConnectorRestController.DHISCONNECTOR_NAMESPACE + "/mappings", supportedClass = DHISMapping.class, supportedOpenmrsVersions = {"1.8.*", "1.9.*, 1.10.*, 1.11.*", "1.12.*", "2.0.*"})
+@Resource(name = RestConstants.VERSION_1 + DHISConnectorRestController.DHISCONNECTOR_NAMESPACE
+		+ "/mappings", supportedClass = DHISMapping.class, supportedOpenmrsVersions = { "1.8.*", "1.9.*, 1.10.*, 1.11.*",
+		"1.12.*", "2.0.*" })
 public class MappingResource extends DataDelegatingCrudResource implements Retrievable {
 
 	@Override
 	public DHISMapping getByUniqueId(String s) {
-//		ObjectMapper mapper = new ObjectMapper();
-//
-//		String jsonResponse = Context
-//				.getService(DHISConnectorService.class).getDataFromDHISEndpoint(CATEGORYCOMBOS_PATH + "/" + s + DHISDataSetsResource.JSON_SUFFIX );
-//
-//		DHISCategoryCombo ret = null;
-//
-//		try {
-//			ret = mapper.readValue(jsonResponse, DHISCategoryCombo.class);
-//		} catch (Exception e) {
-//			log.error(e.getMessage());
-//		}
-
 		return null;
 	}
 
@@ -55,7 +51,6 @@ public class MappingResource extends DataDelegatingCrudResource implements Retri
 
 	/**
 	 * Annotated setter for elements
-	 *
 	 * TODO: Figure out the correct way to do this
 	 *
 	 * @param dm
@@ -63,10 +58,10 @@ public class MappingResource extends DataDelegatingCrudResource implements Retri
 	 */
 	@PropertySetter("elements")
 	public static void setElements(DHISMapping dm, Object value) {
-		ArrayList<LinkedHashMap<String, String>> mappings = (ArrayList<LinkedHashMap<String, String>>)value;
+		ArrayList<LinkedHashMap<String, String>> mappings = (ArrayList<LinkedHashMap<String, String>>) value;
 		List<DHISMappingElement> elements = new ArrayList<DHISMappingElement>();
 
-		for(LinkedHashMap<String, String> mapping : mappings) {
+		for (LinkedHashMap<String, String> mapping : mappings) {
 			Iterator it = mapping.entrySet().iterator();
 
 			DHISMappingElement dme = new DHISMappingElement();
@@ -74,14 +69,13 @@ public class MappingResource extends DataDelegatingCrudResource implements Retri
 			while (it.hasNext()) {
 				Map.Entry pair = (Map.Entry) it.next();
 
-				if(pair.getKey().equals("indicator")) {
-					dme.setIndicator((String)pair.getValue());
-				} else if(pair.getKey().equals("dataElement")) {
-					dme.setDataElement((String)pair.getValue());
-				} else if(pair.getKey().equals("comboOption")) {
-					dme.setComboOption((String)pair.getValue());
+				if (pair.getKey().equals("indicator")) {
+					dme.setIndicator((String) pair.getValue());
+				} else if (pair.getKey().equals("dataElement")) {
+					dme.setDataElement((String) pair.getValue());
+				} else if (pair.getKey().equals("comboOption")) {
+					dme.setComboOption((String) pair.getValue());
 				}
-
 
 			}
 			dm.addElement(dme);
@@ -102,7 +96,7 @@ public class MappingResource extends DataDelegatingCrudResource implements Retri
 
 	@Override
 	public Object save(Object o) {
-		return Context.getService(DHISConnectorService.class).saveMapping((DHISMapping)o);
+		return Context.getService(DHISConnectorService.class).saveMapping((DHISMapping) o);
 	}
 
 	public DelegatingResourceDescription getCreatableProperties() {
@@ -117,9 +111,6 @@ public class MappingResource extends DataDelegatingCrudResource implements Retri
 
 		return description;
 	}
-
-
-
 
 	@Override
 	public DelegatingResourceDescription getRepresentationDescription(Representation representation) {

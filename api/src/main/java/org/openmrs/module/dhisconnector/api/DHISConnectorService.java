@@ -23,7 +23,6 @@ import java.util.List;
 
 /**
  * This service exposes module's core functionality. It is a Spring managed bean which is configured in moduleApplicationContext.xml.
- * <p>
  * It can be accessed only via Context:<br>
  * <code>
  * Context.getService(DHISConnectorService.class).someMethod();
@@ -35,17 +34,9 @@ import java.util.List;
 public interface DHISConnectorService extends OpenmrsService {
 
 	/**
-	 * Gets the period indicator reports from Reporting
-	 *
-	 * @return
-	 */
-	public List<String> getPeriodIndicatorReports();
-
-	/**
 	 * Queries a DHIS endoint and returns the result as JSON
 	 *
 	 * @param endpoint The endpoint to query
-	 *
 	 * @return Result as JSON string
 	 */
 	public String getDataFromDHISEndpoint(String endpoint);
@@ -55,14 +46,12 @@ public interface DHISConnectorService extends OpenmrsService {
 	/**
 	 * Tests to check if the given DHIS server details are correct
 	 *
-	 * @param url The URL of the server
+	 * @param url  The URL of the server
 	 * @param user The login username
 	 * @param pass The login password
-	 *
 	 * @return True if the details are correct, false otherwise
 	 */
 	public boolean testDHISServerDetails(String url, String user, String pass);
-
 
 	public Object saveMapping(DHISMapping mapping);
 

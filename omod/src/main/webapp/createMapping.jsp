@@ -9,7 +9,7 @@
 
 <%@ include file="template/localHeader.jsp" %>
 
-<h3><spring:message code="dhisconnector.configureServer"/></h3>
+<h3><spring:message code="dhisconnector.createMapping"/></h3>
 
 <p>
 <div class="row">

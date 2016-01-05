@@ -1,3 +1,15 @@
+/**
+ * The contents of this file are subject to the OpenMRS Public License
+ * Version 1.0 (the "License"); you may not use this file except in
+ * compliance with the License. You may obtain a copy of the License at
+ * http://license.openmrs.org
+ * Software distributed under the License is distributed on an "AS IS"
+ * basis, WITHOUT WARRANTY OF ANY KIND, either express or implied. See the
+ * License for the specific language governing rights and limitations
+ * under the License.
+ * Copyright (C) OpenMRS, LLC.  All Rights Reserved.
+ */
+
 var reports;
 var mappings;
 var locations;
@@ -6,18 +18,12 @@ var weekEndDate;
 var reportData;
 var dxfJSON;
 
-function onReportSelect() {
-
-}
-
 function populateReportsDropdown() {
     // fetch reports
     jQuery.get("/openmrs/ws/rest/v1/dhisconnector/periodindicatorreports?limit=2000&q=hasMapping", function (data) {
 
         var reportSelect = jQuery('<select id="reportSelect"></select>');
         reportSelect.append('<option value="">Select</option>');
-
-        reportSelect.on('change', onReportSelect);
 
         for (var i = 0; i < data.results.length; i++) {
             reportSelect.append('<option value="' + data.results[i].uuid + '">' + data.results[i].name + '</option>');
@@ -207,15 +213,15 @@ function getReportData() {
     var locationGUID = jQuery('#locationSelect').val();
 
     // fetch report data
-    return jQuery.get("/openmrs/ws/rest/v1/reportingrest/reportdata/" + reportGUID + "?startDate=" + jQuery.datepicker.formatDate('yy-mm-dd',periodDates.startDate) + "&endDate=" + jQuery.datepicker.formatDate('yy-mm-dd',periodDates.endDate) + "&location=" + locationGUID + "&v=custom:(dataSets)", function (data) {
+    return jQuery.get("/openmrs/ws/rest/v1/reportingrest/reportdata/" + reportGUID + "?startDate=" + jQuery.datepicker.formatDate('yy-mm-dd', periodDates.startDate) + "&endDate=" + jQuery.datepicker.formatDate('yy-mm-dd', periodDates.endDate) + "&location=" + locationGUID + "&v=custom:(dataSets)", function (data) {
         reportData = data;
     });
 }
 
 function testNotEmpty(selector, message) {
     jQuery(selector).siblings().remove();
-    if(jQuery(selector).val() == "" || jQuery(selector).length == 0) {
-        jQuery(selector).parent().append('<span class="error" id="nameEmptyError">'+message+'</span>');
+    if (jQuery(selector).val() == "" || jQuery(selector).length == 0) {
+        jQuery(selector).parent().append('<span class="error" id="nameEmptyError">' + message + '</span>');
         return false;
     }
     return true;
@@ -229,15 +235,15 @@ function checkMappingAppliesToReport() {
         return v.created == jQuery('#mappingSelect').val();
     })[0].periodIndicatorReportGUID;
 
-    if(mappingReport == "" || mappingReport == undefined)
+    if (mappingReport == "" || mappingReport == undefined)
         return false;
 
     var selectedReport = jQuery('#reportSelect').val();
 
-    if(selectedReport == "" || selectedReport == undefined)
+    if (selectedReport == "" || selectedReport == undefined)
         return false;
 
-    if(mappingReport === selectedReport) {
+    if (mappingReport === selectedReport) {
         return true;
     } else {
         jQuery('#mappingSelect').parent().append('<span class="error" id="nameEmptyError">Selected mapping does not apply to selected report</span>');
@@ -270,7 +276,7 @@ function getMappingForIndicator(indicator) {
         return v.indicator == indicator;
     })[0];
 
-    if(element == undefined) // There is no mapping for this indicator
+    if (element == undefined) // There is no mapping for this indicator
         return null;
 
     return {
@@ -282,7 +288,7 @@ function getMappingForIndicator(indicator) {
 function buildDXFJSON() {
     dxfJSON = null;
 
-    return getReportData().then(function() {
+    return getReportData().then(function () {
         dxfJSON = {};
 
         dxfJSON.dataSet = mappings.filter(function (v) {
@@ -302,7 +308,7 @@ function buildDXFJSON() {
 
                 var mapping = getMappingForIndicator(indicator);
 
-                if(mapping !== null) {
+                if (mapping !== null) {
                     dataValue.dataElement = mapping.dataElement;
                     dataValue.categoryOptionCombo = mapping.comboOption;
                     dataValue.value = indicatorValues[indicator];
@@ -317,7 +323,7 @@ function buildDXFJSON() {
 }
 
 function slugify(text) {
-    return text.toLowerCase().replace(/ /g,'-').replace(/[-]+/g, '-').replace(/[^\w-]+/g,'');
+    return text.toLowerCase().replace(/ /g, '-').replace(/[-]+/g, '-').replace(/[^\w-]+/g, '');
 }
 
 function displayPostReponse(json) {
@@ -325,38 +331,38 @@ function displayPostReponse(json) {
     var reponseRow = jQuery('<tr id="responseRow"><th class="runHeader">Reponse</th><td><pre><code class="JSON">' + JSON.stringify(json, null, 2) + '</code></pre></td></tr>');
 
     jQuery('#tableBody').append(reponseRow);
-    jQuery('pre code').each(function(i, block) {
+    jQuery('pre code').each(function (i, block) {
         hljs.highlightBlock(block);
     });
     reponseRow.hide().fadeIn("slow");
 }
 
 function sendDataToDHIS() {
-   if(validateForm()) {
-       buildDXFJSON().then(function() {
-           // post to dhis
-           jQuery.ajax({
-               url: "/openmrs/ws/rest/v1/dhisconnector/dhisdatavaluesets",
-               type: "POST",
-               data: JSON.stringify(dxfJSON),
-               contentType: "application/json;charset=utf-8",
-               dataType: "json",
-               success: function (data) {
-                   displayPostReponse(data);
-               }
-           });
+    if (validateForm()) {
+        buildDXFJSON().then(function () {
+            // post to dhis
+            jQuery.ajax({
+                url: "/openmrs/ws/rest/v1/dhisconnector/dhisdatavaluesets",
+                type: "POST",
+                data: JSON.stringify(dxfJSON),
+                contentType: "application/json;charset=utf-8",
+                dataType: "json",
+                success: function (data) {
+                    displayPostReponse(data);
+                }
+            });
 
-       });
-   }
+        });
+    }
 }
 
 function generateDXFDownload() {
-    if(validateForm()) {
-        buildDXFJSON().then(function() {
+    if (validateForm()) {
+        buildDXFJSON().then(function () {
 
             var dl = document.createElement('a');
             dl.setAttribute('href', 'data:application/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(dxfJSON)));
-            dl.setAttribute('download', slugify(jQuery('#reportSelect option:selected').text()) + '-' + slugify(jQuery('#orgUnitSelect option:selected').text()) + '-' + slugify(jQuery('#periodSelector').val()) +'.dxf.json');
+            dl.setAttribute('download', slugify(jQuery('#reportSelect option:selected').text()) + '-' + slugify(jQuery('#orgUnitSelect option:selected').text()) + '-' + slugify(jQuery('#periodSelector').val()) + '.dxf.json');
 
             dl.style.display = 'none';
             document.body.appendChild(dl);

@@ -1,12 +1,19 @@
+/**
+ * The contents of this file are subject to the OpenMRS Public License
+ * Version 1.0 (the "License"); you may not use this file except in
+ * compliance with the License. You may obtain a copy of the License at
+ * http://license.openmrs.org
+ * Software distributed under the License is distributed on an "AS IS"
+ * basis, WITHOUT WARRANTY OF ANY KIND, either express or implied. See the
+ * License for the specific language governing rights and limitations
+ * under the License.
+ * Copyright (C) OpenMRS, LLC.  All Rights Reserved.
+ */
 package org.openmrs.module.dhisconnector.web.resource;
 
-import org.codehaus.jackson.JsonNode;
-import org.codehaus.jackson.map.ObjectMapper;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.dhisconnector.api.DHISConnectorService;
-import org.openmrs.module.dhisconnector.api.impl.DHISConnectorServiceImpl;
 import org.openmrs.module.dhisconnector.api.model.DHISCategoryCombo;
-import org.openmrs.module.dhisconnector.api.model.DHISDataSet;
 import org.openmrs.module.dhisconnector.api.model.DHISOrganisationUnit;
 import org.openmrs.module.dhisconnector.web.controller.DHISConnectorRestController;
 import org.openmrs.module.webservices.rest.web.RequestContext;
@@ -19,15 +26,14 @@ import org.openmrs.module.webservices.rest.web.resource.impl.DelegatingResourceD
 import org.openmrs.module.webservices.rest.web.resource.impl.NeedsPaging;
 import org.openmrs.module.webservices.rest.web.response.ResponseException;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
-@Resource(name = RestConstants.VERSION_1 + DHISConnectorRestController.DHISCONNECTOR_NAMESPACE + "/orgunits", supportedClass = DHISOrganisationUnit.class, supportedOpenmrsVersions = {"1.8.*", "1.9.*, 1.10.*, 1.11.*", "1.12.*", "2.0.*"})
+@Resource(name = RestConstants.VERSION_1 + DHISConnectorRestController.DHISCONNECTOR_NAMESPACE
+		+ "/orgunits", supportedClass = DHISOrganisationUnit.class, supportedOpenmrsVersions = { "1.8.*",
+		"1.9.*, 1.10.*, 1.11.*", "1.12.*", "2.0.*" })
 public class DHISOrganisationUnitResource extends DataDelegatingCrudResource implements Retrievable {
 
 	public static final String ORGUNITS_PATH = "/api/organisationUnits";
-
 
 	protected NeedsPaging<DHISOrganisationUnit> doGetAll(RequestContext context) {
 		List<DHISOrganisationUnit> orgUnits = Context.getService(DHISConnectorService.class).getDHISOrgUnits();
