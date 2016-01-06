@@ -18,13 +18,13 @@
     <tr>
       <th class="runHeader"><spring:message code="dhisconnector.report"/></th>
       <td>
-        <span id="reportsSelectContainer"><img class="spinner" src="/openmrs/moduleResources/dhisconnector/loading.gif"/></span>
+        <span id="reportsSelectContainer"><img class="spinner" src="../../moduleResources/dhisconnector/loading.gif"/></span>
       </td>
     </tr>
     <tr>
       <th class="runHeader"><spring:message code="dhisconnector.mapping"/></th>
       <td>
-        <span id="mappingSelectContainer"><img class="spinner" src="/openmrs/moduleResources/dhisconnector/loading.gif"/></span>
+        <span id="mappingSelectContainer"><img class="spinner" src="../../moduleResources/dhisconnector/loading.gif"/></span>
       </td>
     </tr>
     <tr>
@@ -39,8 +39,8 @@
           </thead>
           <tbody>
             <tr>
-              <td><span id="locationSelectContainer"><img class="spinner" src="/openmrs/moduleResources/dhisconnector/loading.gif"/></span></td>
-              <td><span id="orgUnitSelectContainer"><img class="spinner" src="/openmrs/moduleResources/dhisconnector/loading.gif"/></span></td>
+              <td><span id="locationSelectContainer"><img class="spinner" src="../../moduleResources/dhisconnector/loading.gif"/></span></td>
+              <td><span id="orgUnitSelectContainer"><img class="spinner" src="../../moduleResources/dhisconnector/loading.gif"/></span></td>
             </tr>
           </tbody>
         </table>

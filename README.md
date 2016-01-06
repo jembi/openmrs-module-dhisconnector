@@ -26,6 +26,8 @@ The first step is to configure the link to your DHIS2 server. This is done by cl
 |Username | admin|
 |Password | district|
 
+> :warning: **NB:** Since DHIS API pagination isn't handled yet, you will have to change the *Rest Max Results Absolute* Webservices Module global property to 2000. Do this by clicking the *Settings* link on the OpenMRS Administration page, then click *Webservices* on the bottom left. Change the value of the *Rest Max Results Absolute* property to 2000 and click save.
+
 ## Mappings
 
 Before you can send Period Indicator Report data to DHIS2, a mapping must exist between the report and a DHIS2 Data Set. Mappings can either be generated via the UI or placed in the correct location. Mappings are stored as JSON on the file system at `OPENMRS_DIR/dhisconnector/mappings/`. On Ubuntu, this usually corresponds to `/usr/share/tomcat7/.OpenMRS/dhisconnector/mappings/`.
@@ -33,7 +35,7 @@ Before you can send Period Indicator Report data to DHIS2, a mapping must exist 
 
 ### Create Mapping
 
-To generate a mapping via the UI, click the *Create Mapping* link under the *DHIS Connector Module* heading on the OpenMRS Administration page. Then select the Period Indicator Report from the left menu and the corresponding DHIS2 Data Set from the right menu. Drag the Data Elements and Category Option Combos from the right to the matchin row on the left as follows:
+To generate a mapping via the UI, click the *Create Mapping* link under the *DHIS Connector Module* heading on the OpenMRS Administration page. Then select the Period Indicator Report from the left menu and the corresponding DHIS2 Data Set from the right menu. Drag the Data Elements and Category Option Combos from the right to the matching row on the left as follows:
 
 ![](https://cloud.githubusercontent.com/assets/668093/12115457/35c47c4c-b3bb-11e5-8004-58f76fbdf0c1.gif)
 
@@ -57,7 +59,7 @@ Once you have selected a value for all the fields, click *Send Data* to post dat
 
 Every time a request is sent to the DHIS2 server, the resulting JSON is stored on the file system at `OPENMRS_DIR/dhisconnector/cache/`. On Ubuntu, this usually corresponds to `/usr/share/tomcat7/.OpenMRS/dhisconnector/cache/`. If the DHIS2 server is no longer reachable, these cached values will be used by the DHIS Connector Module.
 
-For OpenMRS implementations that should operate offline, it is possible to pre-populate this cache by copying the contents of the `OPENMRS_DIR/dhisconnector/cache` directory from an online system to the same location on the offline system. Assuming all the required resources have been cached by the online implementation, the offline implemenation should be able to function correctly without ever being able to reach the DHIS2 server.
+For OpenMRS implementations that should operate offline, it is possible to pre-populate this cache by copying the contents of the `OPENMRS_DIR/dhisconnector/cache` directory from an online system to the same location on the offline system. Assuming all the required resources have been cached by the online implementation, the offline implementation should be able to function correctly without ever being able to reach the DHIS2 server.
 
 ## Module Status
 
@@ -75,6 +77,7 @@ TODO
   - [ ] Interface for prepopulating DHIS2 API cache
   - [ ] Support other types of OpenMRS reports
   - [ ] Post or download ADX
+  - [ ] DHIS2 API pagination
 
 ## License
 

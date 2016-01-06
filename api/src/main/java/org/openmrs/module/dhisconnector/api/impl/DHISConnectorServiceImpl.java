@@ -243,7 +243,7 @@ public class DHISConnectorServiceImpl extends BaseOpenmrsService implements DHIS
 
 		// Check if the URL makes sense
 		try {
-			testURL = new URL(url + "/api"); // Add the root API endpoint to the URL
+			testURL = new URL(url + "/api/resources"); // Add the root API endpoint to the URL
 		}
 		catch (MalformedURLException e) {
 			e.printStackTrace();
@@ -353,6 +353,9 @@ public class DHISConnectorServiceImpl extends BaseOpenmrsService implements DHIS
 			}
 		});
 
+		if(files == null)
+			return null;
+
 		for (File f : files) {
 			try {
 				mappings.add(mapper.readValue(f, DHISMapping.class));
@@ -404,6 +407,9 @@ public class DHISConnectorServiceImpl extends BaseOpenmrsService implements DHIS
 	}
 
 	private boolean mappingsHasGUID(List<DHISMapping> mappings, String GUID) {
+		if(mappings == null)
+			return false;
+
 		for (DHISMapping mapping : mappings) {
 			if (mapping.getPeriodIndicatorReportGUID().equals(GUID)) {
 				return true;

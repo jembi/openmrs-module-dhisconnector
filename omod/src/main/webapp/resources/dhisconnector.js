@@ -16,6 +16,7 @@ var dataSets;
 var drake;
 var dataElements;
 var categoryComboOptions;
+var OMRS_WEBSERVICES_BASE_URL = '../..';
 
 function allowMappingRemoval(el, container, source) {
     console.log(el);
@@ -48,9 +49,9 @@ function getCategoryComboOptions(dataElementId, requests) {
     var requests = [];
 
     // fetch data element details
-    jQuery.get("/openmrs/ws/rest/v1/dhisconnector/dhisdataelements/" + dataElementId + "?v=full&limit=100", function (dataelement) {
+    jQuery.get(OMRS_WEBSERVICES_BASE_URL + "/ws/rest/v1/dhisconnector/dhisdataelements/" + dataElementId + "?v=full&limit=100", function (dataelement) {
         // fetch the category combo options
-        requests.push(jQuery.get("/openmrs/ws/rest/v1/dhisconnector/dhiscategorycombos/" + dataelement.categoryCombo.id + "?v=full&limit=100", function (categorycombo) {
+        requests.push(jQuery.get(OMRS_WEBSERVICES_BASE_URL + "/ws/rest/v1/dhisconnector/dhiscategorycombos/" + dataelement.categoryCombo.id + "?v=full&limit=100", function (categorycombo) {
             for (var i = 0; i < categorycombo.categoryOptionCombos.length; i++) {
                 if (!categoryComboOptions.hasOwnProperty(categorycombo.categoryOptionCombos[i].id)) {
                     categoryComboOptions[categorycombo.categoryOptionCombos[i].id] = categorycombo.categoryOptionCombos[i];
@@ -70,7 +71,7 @@ function getDataElementsAndCategoryComboOptions() {
     var requests = [];
 
     // fetch dataset details
-    jQuery.get("/openmrs/ws/rest/v1/dhisconnector/dhisdatasets/" + jQuery('#dataSetSelect').val() + "?v=full&limit=100", function (data) {
+    jQuery.get(OMRS_WEBSERVICES_BASE_URL + "/ws/rest/v1/dhisconnector/dhisdatasets/" + jQuery('#dataSetSelect').val() + "?v=full&limit=100", function (data) {
 
         jQuery('#periodType').html(data.periodType);
 
@@ -82,7 +83,7 @@ function getDataElementsAndCategoryComboOptions() {
 
 
         dataElementsOptionsCol.append('<div class="reportRow row"><div class="reportIndicatorCol col-xs"><div class="reportIndicator box"><h4>Data Element Options</h4></div></div></div>');
-        jQuery('#categoryComboOptions').append('<div class="reportRow row"><div class="reportIndicatorCol col-xs"><div class="reportIndicator box"><h4>Category Options</h4></div></div></div><img id="categoryComboLoader" class="spinner" src="/openmrs/moduleResources/dhisconnector/loading.gif"/>');
+        jQuery('#categoryComboOptions').append('<div class="reportRow row"><div class="reportIndicatorCol col-xs"><div class="reportIndicator box"><h4>Category Options</h4></div></div></div><img id="categoryComboLoader" class="spinner" src="../../moduleResources/dhisconnector/loading.gif"/>');
 
 
         for (var i = 0; i < dataElements.length; i++) {
@@ -173,7 +174,7 @@ function onReportSelect() {
 
 function populateReportsDropdown() {
     // fetch reports
-    jQuery.get("/openmrs/ws/rest/v1/dhisconnector/periodindicatorreports?limit=100", function (data) {
+    jQuery.get(OMRS_WEBSERVICES_BASE_URL + "/ws/rest/v1/dhisconnector/periodindicatorreports?limit=100", function (data) {
 
         var reportSelect = jQuery('<select id="reportSelect"></select>');
         reportSelect.on('change', onReportSelect);
@@ -194,7 +195,7 @@ function populateReportsDropdown() {
 
 function populateDataSetsDropdown() {
     // fetch datasets
-    jQuery.get("/openmrs/ws/rest/v1/dhisconnector/dhisdatasets?v=full&limit=100", function (data) {
+    jQuery.get(OMRS_WEBSERVICES_BASE_URL + "/ws/rest/v1/dhisconnector/dhisdatasets?v=full&limit=100", function (data) {
 
         var reportSelect = jQuery('<select id="dataSetSelect"></select>');
         reportSelect.on('change', onDataSetSelect);
@@ -289,13 +290,13 @@ function saveMapping(event) {
 
     // post json obect
     jQuery.ajax({
-        url: "/openmrs/ws/rest/v1/dhisconnector/mappings",
+        url: OMRS_WEBSERVICES_BASE_URL + "/ws/rest/v1/dhisconnector/mappings",
         type: "POST",
         data: JSON.stringify(mapping),
         contentType: "application/json; charset=utf-8",
         dataType: "json",
         success: function (data) {
-            window.location = '/openmrs/module/dhisconnector/runReports.form';
+            window.location = '../../module/dhisconnector/runReports.form';
         },
     });
 }

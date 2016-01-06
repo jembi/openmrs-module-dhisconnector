@@ -86,6 +86,9 @@ public class MappingResource extends DataDelegatingCrudResource implements Retri
 
 		List<DHISMapping> mappings = Context.getService(DHISConnectorService.class).getMappings();
 
+		if(mappings == null)
+			mappings = new ArrayList<DHISMapping>();
+
 		return new NeedsPaging<DHISMapping>(mappings, context);
 	}
 

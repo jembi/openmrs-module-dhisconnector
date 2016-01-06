@@ -17,10 +17,11 @@ var weekStartDate;
 var weekEndDate;
 var reportData;
 var dxfJSON;
+var OMRS_WEBSERVICES_BASE_URL = '../..';
 
 function populateReportsDropdown() {
     // fetch reports
-    jQuery.get("/openmrs/ws/rest/v1/dhisconnector/periodindicatorreports?limit=2000&q=hasMapping", function (data) {
+    jQuery.get(OMRS_WEBSERVICES_BASE_URL + "/ws/rest/v1/dhisconnector/periodindicatorreports?limit=2000&q=hasMapping", function (data) {
 
         var reportSelect = jQuery('<select id="reportSelect"></select>');
         reportSelect.append('<option value="">Select</option>');
@@ -133,7 +134,7 @@ function getPeriodDates() {
 
 function populateMappingsDropdown() {
     // fetch mappings
-    jQuery.get("/openmrs/ws/rest/v1/dhisconnector/mappings?limit=2000", function (data) {
+    jQuery.get(OMRS_WEBSERVICES_BASE_URL + "/ws/rest/v1/dhisconnector/mappings?limit=2000", function (data) {
 
         var mappingSelect = jQuery('<select id="mappingSelect"></select>');
         mappingSelect.append('<option value="">Select</option>');
@@ -156,7 +157,7 @@ function populateMappingsDropdown() {
 
 function populateOpenMRSLocationsDropdown() {
     // fetch locations
-    jQuery.get("/openmrs/ws/rest/v1/location?limit=2000", function (data) {
+    jQuery.get(OMRS_WEBSERVICES_BASE_URL + "/ws/rest/v1/location?limit=2000", function (data) {
 
         var locationSelect = jQuery('<select id="locationSelect"></select>');
         locationSelect.append('<option value="">Select</option>');
@@ -179,7 +180,7 @@ function populateOpenMRSLocationsDropdown() {
 
 function populateDHISOrgUnitsDropdown() {
     // fetch orgunits
-    jQuery.get("/openmrs/ws/rest/v1/dhisconnector/orgunits?limit=2000", function (data) {
+    jQuery.get(OMRS_WEBSERVICES_BASE_URL + "/ws/rest/v1/dhisconnector/orgunits?limit=2000", function (data) {
 
         var orgUnitSelect = jQuery('<select id="orgUnitSelect"></select>');
         orgUnitSelect.append('<option value="">Select</option>');
@@ -213,7 +214,7 @@ function getReportData() {
     var locationGUID = jQuery('#locationSelect').val();
 
     // fetch report data
-    return jQuery.get("/openmrs/ws/rest/v1/reportingrest/reportdata/" + reportGUID + "?startDate=" + jQuery.datepicker.formatDate('yy-mm-dd', periodDates.startDate) + "&endDate=" + jQuery.datepicker.formatDate('yy-mm-dd', periodDates.endDate) + "&location=" + locationGUID + "&v=custom:(dataSets)", function (data) {
+    return jQuery.get(OMRS_WEBSERVICES_BASE_URL + "/ws/rest/v1/reportingrest/reportdata/" + reportGUID + "?startDate=" + jQuery.datepicker.formatDate('yy-mm-dd', periodDates.startDate) + "&endDate=" + jQuery.datepicker.formatDate('yy-mm-dd', periodDates.endDate) + "&location=" + locationGUID + "&v=custom:(dataSets)", function (data) {
         reportData = data;
     });
 }
@@ -342,7 +343,7 @@ function sendDataToDHIS() {
         buildDXFJSON().then(function () {
             // post to dhis
             jQuery.ajax({
-                url: "/openmrs/ws/rest/v1/dhisconnector/dhisdatavaluesets",
+                url: OMRS_WEBSERVICES_BASE_URL + "/ws/rest/v1/dhisconnector/dhisdatavaluesets",
                 type: "POST",
                 data: JSON.stringify(dxfJSON),
                 contentType: "application/json;charset=utf-8",

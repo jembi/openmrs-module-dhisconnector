@@ -14,10 +14,10 @@
 <p>
 <div class="row">
   <div class="col-xs-5">
-    <div class="box" id="reports"><img class="spinner" src="/openmrs/moduleResources/dhisconnector/loading.gif"/></div>
+    <div class="box" id="reports"><img class="spinner" src="../../moduleResources/dhisconnector/loading.gif"/></div>
   </div>
   <div class="col-xs">
-    <div class="box" id="datasets"><img class="spinner" src="/openmrs/moduleResources/dhisconnector/loading.gif"/></div>
+    <div class="box" id="datasets"><img class="spinner" src="../../moduleResources/dhisconnector/loading.gif"/></div>
   </div>
 </div>
 </p>
