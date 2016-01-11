@@ -53,9 +53,9 @@ import java.util.List;
  */
 public class DHISConnectorServiceImpl extends BaseOpenmrsService implements DHISConnectorService {
 
-	public static final String DHISCONNECTOR_MAPPINGS_FOLDER = "dhisconnector/mappings";
+	public static final String DHISCONNECTOR_MAPPINGS_FOLDER = "/dhisconnector/mappings";
 
-	public static final String DHISCONNECTOR_CACHE_FOLDER = "dhisconnector/cache";
+	public static final String DHISCONNECTOR_CACHE_FOLDER = "/dhisconnector/cache";
 
 	public static final String DHISCONNECTOR_MAPPING_FILE_SUFFIX = ".mapping.json";
 
