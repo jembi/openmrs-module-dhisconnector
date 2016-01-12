@@ -14,6 +14,13 @@
 	<bean class="org.springframework.web.servlet.mvc.annotation.DefaultAnnotationHandlerMapping"/>
 	
 	<context:component-scan base-package="org.openmrs.module.dhisconnector.web.controller" />
+ 	
+ 	<bean id="multipartResolver"
+        class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
  
+         <!-- setting maximum upload size -->
+        <property name="maxUploadSize" value="100000" />
+ 
+    </bean>
 		
 </beans>

@@ -18,6 +18,7 @@ import org.openmrs.module.dhisconnector.api.model.DHISMapping;
 import org.openmrs.module.dhisconnector.api.model.DHISOrganisationUnit;
 import org.openmrs.module.reporting.report.definition.PeriodIndicatorReportDefinition;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -62,4 +63,6 @@ public interface DHISConnectorService extends OpenmrsService {
 	public List<PeriodIndicatorReportDefinition> getReportWithMappings(List<DHISMapping> mappings);
 
 	public List<DHISOrganisationUnit> getDHISOrgUnits();
+
+	public String uploadMappings(MultipartFile mapping);
 }

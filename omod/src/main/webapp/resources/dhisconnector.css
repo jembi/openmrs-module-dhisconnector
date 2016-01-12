@@ -35,8 +35,16 @@
 }
 
 .close {
-    float:right;
-    display:inline-block;
+    float: right;
+    display: inline-block;
     margin-top: -5px;
     cursor: pointer;
+}
+
+.error-while-uploading {
+	color: red;
+}
+
+.success-while-uploading {
+	color: green;
 }

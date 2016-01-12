@@ -12,6 +12,13 @@
 	</li>
 
 	<li
+			<c:if test='<%= request.getRequestURI().contains("/uploadMapping") %>'>class="active"</c:if>>
+		<a
+				href="${pageContext.request.contextPath}/module/dhisconnector/uploadMapping.form"><spring:message
+				code="dhisconnector.uploadMapping" /></a>
+	</li>
+	
+	<li
 			<c:if test='<%= request.getRequestURI().contains("/createMapping") %>'>class="active"</c:if>>
 		<a
 				href="${pageContext.request.contextPath}/module/dhisconnector/createMapping.form"><spring:message

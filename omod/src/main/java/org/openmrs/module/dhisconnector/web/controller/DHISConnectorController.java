@@ -11,6 +11,10 @@
  */
 package org.openmrs.module.dhisconnector.web.controller;
 
+import java.text.ParseException;
+import java.util.Date;
+import java.util.List;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openmrs.GlobalProperty;
@@ -25,10 +29,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.context.request.WebRequest;
-
-import java.text.ParseException;
-import java.util.Date;
-import java.util.List;
+import org.springframework.web.multipart.MultipartFile;
 
 /**
  * Controller for the DHIS Connector Module admin pages
@@ -122,5 +123,33 @@ public class DHISConnectorController {
 		model.addAttribute("reports", reportsWithMappings);
 
 		//Context.getService(DHISConnectorService.class).getPeriodIndicatorReports();
+	}
+	
+	@RequestMapping(value = "/module/dhisconnector/uploadMapping", method = RequestMethod.GET)
+	public void showuploadMapping(ModelMap model) {
+		model.put("failureWhileUploading", "");
+		model.put("successWhileUploading", "");
+	}
+	
+	@RequestMapping(value = "/module/dhisconnector/uploadMapping", method = RequestMethod.POST)
+	public void uploadMapping(ModelMap model, @RequestParam(value = "mapping", required = true) MultipartFile mapping) {
+		String successMessage = "";
+		String failedMessage = "";
+		
+		if (!mapping.isEmpty()) {
+			String msg = Context.getService(DHISConnectorService.class).uploadMappings(mapping);
+			
+			if(msg.startsWith("Successfully")) {
+				successMessage = msg;
+				failedMessage = "";
+			} else {
+				failedMessage = msg;
+				successMessage = "";
+			}
+		} else {
+			failedMessage = Context.getMessageSourceService().getMessage("dhisconnector.uploadMapping.mustSelectFile");
+		}
+		model.put("failureWhileUploading", failedMessage);
+		model.put("successWhileUploading", successMessage);
 	}
 }

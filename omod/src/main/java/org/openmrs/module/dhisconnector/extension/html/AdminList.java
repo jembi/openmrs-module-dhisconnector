@@ -43,6 +43,7 @@ public class AdminList extends AdministrationSectionExt {
 	public Map<String, String> getLinks() {
 		LinkedHashMap<String, String> map = new LinkedHashMap<String, String>();
 		map.put("/module/dhisconnector/configureServer.form", "dhisconnector.configureServer");
+		map.put("/module/dhisconnector/uploadMapping.form", "dhisconnector.uploadMapping");
 		map.put("/module/dhisconnector/createMapping.form", "dhisconnector.createMapping");
 		map.put("/module/dhisconnector/runReports.form", "dhisconnector.runReports");
 		return map;
