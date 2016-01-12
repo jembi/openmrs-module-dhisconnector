@@ -439,8 +439,8 @@ public class DHISConnectorServiceImpl extends BaseOpenmrsService implements DHIS
 				+ File.separator;
 		String mappingName = mapping.getOriginalFilename();
 
-		// TODO return respective failure messages
 		if (mappingName.endsWith(".zip")) {
+			boolean allFailed = true;
 			File tempMappings = new File(tempFolderName + mappingName);
 
 			(new File(tempFolderName)).mkdirs();
@@ -449,16 +449,17 @@ public class DHISConnectorServiceImpl extends BaseOpenmrsService implements DHIS
 
 				try {
 					ZipFile zipfile = new ZipFile(tempMappings);
+					
 					for (Enumeration e = zipfile.entries(); e.hasMoreElements();) {
 						ZipEntry entry = (ZipEntry) e.nextElement();
 
 						if (entry.isDirectory()) {
-							// TODO report or fail?
+							System.out.println("Incorrect file (Can't be a folder instead): " + entry.getName() + " has been ignored");
 						} else if (entry.getName().endsWith(DHISCONNECTOR_MAPPING_FILE_SUFFIX)) {
 							File outputFile = new File(mappingFolderName, entry.getName());
 
 							if (outputFile.exists()) {
-								// TODO report or fail?
+								System.out.println("File: " + outputFile.getName() + " already exists and has been ignored");
 							} else {
 								BufferedInputStream inputStream = new BufferedInputStream(
 										zipfile.getInputStream(entry));
@@ -468,13 +469,14 @@ public class DHISConnectorServiceImpl extends BaseOpenmrsService implements DHIS
 								try {
 									System.out.println("Extracting: " + entry);
 									IOUtils.copy(inputStream, outputStream);
+									allFailed = false;
 								} finally {
 									outputStream.close();
 									inputStream.close();
 								}
 							}
 						} else {
-							// TODO report or fail?
+							System.out.println("Incorrect file: " + entry.getName() + " has been ignored");
 						}
 					}
 					msg = Context.getMessageSourceService().getMessage("dhisconnector.uploadMapping.groupSuccess");
@@ -487,12 +489,15 @@ public class DHISConnectorServiceImpl extends BaseOpenmrsService implements DHIS
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
-
+			
+			if(allFailed && msg.equals("")) {
+				msg = Context.getMessageSourceService().getMessage("dhisconnector.uploadMapping.allFailed");
+			}
 		} else if (mappingName.endsWith(DHISCONNECTOR_MAPPING_FILE_SUFFIX)) {
 			try {
 				File uploadedMapping = new File(mappingFolderName + mappingName);
 				if (uploadedMapping.exists()) {
-					// TODO overwrite/replace or send failure message
+					msg = Context.getMessageSourceService().getMessage("dhisconnector.uploadMapping.exists");
 				} else {
 					mapping.transferTo(uploadedMapping);
 					msg = Context.getMessageSourceService().getMessage("dhisconnector.uploadMapping.singleSuccess");

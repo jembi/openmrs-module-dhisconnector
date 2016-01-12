@@ -127,8 +127,7 @@ public class DHISConnectorController {
 	
 	@RequestMapping(value = "/module/dhisconnector/uploadMapping", method = RequestMethod.GET)
 	public void showuploadMapping(ModelMap model) {
-		model.put("failureWhileUploading", "");
-		model.put("successWhileUploading", "");
+		passOnUploadingFeedback(model, "", "");
 	}
 	
 	@RequestMapping(value = "/module/dhisconnector/uploadMapping", method = RequestMethod.POST)
@@ -149,6 +148,10 @@ public class DHISConnectorController {
 		} else {
 			failedMessage = Context.getMessageSourceService().getMessage("dhisconnector.uploadMapping.mustSelectFile");
 		}
+		passOnUploadingFeedback(model, successMessage, failedMessage);
+	}
+
+	private void passOnUploadingFeedback(ModelMap model, String successMessage, String failedMessage) {
 		model.put("failureWhileUploading", failedMessage);
 		model.put("successWhileUploading", successMessage);
 	}
