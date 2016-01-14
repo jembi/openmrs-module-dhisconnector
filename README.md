@@ -68,14 +68,14 @@ Implemented
   - [x] Drag and drop mapping generator
   - [x] Post data or download DXF
   - [x] Cache DHIS2 API for offline use
-  - [x] Interface for uploading mappings  
+  - [x] Interface for uploading mappings
+  - [x] Interface for exporting mappings   
 
 TODO
   - [ ] Error handling
   - [ ] Managing/editing mappings
   - [ ] Fix mapping creation UI to support multi-line DataElement names
   - [ ] Interface for prepopulating DHIS2 API cache
-  - [ ] Interface for exporting mappings
   - [ ] Support other types of OpenMRS reports
   - [ ] Post or download ADX
   - [ ] DHIS2 API pagination
