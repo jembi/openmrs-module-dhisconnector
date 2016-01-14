@@ -178,8 +178,6 @@ public class DHISConnectorController {
 	@RequestMapping(value = "/module/dhisconnector/exportMappings", method = RequestMethod.POST)
 	public void exportMapping(ModelMap model, HttpServletRequest request, HttpServletResponse response) {
 		String[] selectedMappings = request.getParameter("selectedMappings") != null ? request.getParameter("selectedMappings").split("<:::>") : null;
-		String failed = Context.getMessageSourceService()
-				.getMessage("dhisconnector.exportMapping.failed.noMappingsSelected");
 		
 		if (selectedMappings != null) {
 			try {

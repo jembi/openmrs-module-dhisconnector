@@ -33,6 +33,7 @@ import java.util.zip.ZipOutputStream;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpHost;
@@ -511,6 +512,7 @@ public class DHISConnectorServiceImpl extends BaseOpenmrsService implements DHIS
 
 	@Override
 	public String[] exportSelectedMappings(String[] selectedMappings) {
+		String[] cleanedSelectedMappings = cleanSelectedMappings(selectedMappings);
 		String msg = "";
 		String[] returnStr = new String[2];
 		String path = null;
@@ -546,10 +548,10 @@ public class DHISConnectorServiceImpl extends BaseOpenmrsService implements DHIS
 
 							mappings += files[i].getName() + "<:::>";
 							System.out.println("Compressing " + files[i].getName());
-							if (selectedMappings.length == 0) {
+							if (cleanedSelectedMappings.length == 0) {
 								copyToZip(buffer, zout, files, i, fin);
 							} else {
-								if (arrayIncludes(selectedMappings, files[i].getName())) {
+								if (arrayIncludes(cleanedSelectedMappings, files[i].getName())) {
 									copyToZip(buffer, zout, files, i, fin);
 								}
 							}
@@ -558,8 +560,9 @@ public class DHISConnectorServiceImpl extends BaseOpenmrsService implements DHIS
 							fin.close();
 						}
 					}
-					if(mappings.split("<:::>").length == 0) {
-						msg = Context.getMessageSourceService().getMessage("dhisconnector.exportMapping.noMappingsFound");
+					if (mappings.split("<:::>").length == 0) {
+						msg = Context.getMessageSourceService()
+								.getMessage("dhisconnector.exportMapping.noMappingsFound");
 					}
 					path = zipFile;
 				}
@@ -572,6 +575,18 @@ public class DHISConnectorServiceImpl extends BaseOpenmrsService implements DHIS
 		returnStr[0] = msg;
 		returnStr[1] = path;
 		return returnStr;
+	}
+
+	private String[] cleanSelectedMappings(String[] selectedMappings) {
+		int r, w;
+		final int n = r = w = selectedMappings.length;
+		while (r > 0) {
+			final String s = selectedMappings[--r];
+			if (!s.equals("null")) {
+				selectedMappings[--w] = s;
+			}
+		}
+		return Arrays.copyOfRange(selectedMappings, w, n);
 	}
 
 	private void copyToZip(byte[] buffer, ZipOutputStream zout, File[] files, int i, FileInputStream fin)
