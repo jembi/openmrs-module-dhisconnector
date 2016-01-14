@@ -14,6 +14,7 @@ package org.openmrs.module.dhisconnector.api.impl;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FilenameFilter;
@@ -23,10 +24,12 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
+import java.util.zip.ZipOutputStream;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
@@ -63,8 +66,9 @@ import org.springframework.web.multipart.MultipartFile;
  */
 public class DHISConnectorServiceImpl extends BaseOpenmrsService implements DHISConnectorService {
 
-	public static final String DHISCONNECTOR_MAPPINGS_FOLDER = File.separator + "dhisconnector" + File.separator + "mappings";
-	
+	public static final String DHISCONNECTOR_MAPPINGS_FOLDER = File.separator + "dhisconnector" + File.separator
+			+ "mappings";
+
 	public static final String DHISCONNECTOR_CACHE_FOLDER = File.separator + "dhisconnector" + File.separator + "cache";
 
 	public static final String DHISCONNECTOR_TEMP_FOLDER = File.separator + "dhisconnector" + File.separator + "temp";
@@ -83,8 +87,7 @@ public class DHISConnectorServiceImpl extends BaseOpenmrsService implements DHIS
 		if (cacheFile.exists()) {
 			try {
 				return FileUtils.readFileToString(cacheFile);
-			}
-			catch (Exception e) {
+			} catch (Exception e) {
 				e.printStackTrace();
 				return null;
 			}
@@ -104,15 +107,14 @@ public class DHISConnectorServiceImpl extends BaseOpenmrsService implements DHIS
 				if (!cacheDirecory.mkdirs()) {
 					return;
 				}
-			}
-			catch (Exception e) {
+			} catch (Exception e) {
 				e.printStackTrace();
 				return;
 			}
 		}
 
-		String directoryStructure = OpenmrsUtil.getApplicationDataDirectory() + DHISCONNECTOR_CACHE_FOLDER + path
-				.substring(0, path.lastIndexOf(File.separator));
+		String directoryStructure = OpenmrsUtil.getApplicationDataDirectory() + DHISCONNECTOR_CACHE_FOLDER
+				+ path.substring(0, path.lastIndexOf(File.separator));
 
 		File directory = new File(directoryStructure);
 
@@ -121,8 +123,7 @@ public class DHISConnectorServiceImpl extends BaseOpenmrsService implements DHIS
 				if (!directory.mkdirs()) {
 					return;
 				}
-			}
-			catch (Exception e) {
+			} catch (Exception e) {
 				e.printStackTrace();
 				return;
 			}
@@ -133,8 +134,7 @@ public class DHISConnectorServiceImpl extends BaseOpenmrsService implements DHIS
 					OpenmrsUtil.getApplicationDataDirectory() + DHISCONNECTOR_CACHE_FOLDER + path, "utf-8");
 			enpointCache.write(jsonResponse);
 			enpointCache.close();
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			return;
 		}
 
@@ -182,13 +182,11 @@ public class DHISConnectorServiceImpl extends BaseOpenmrsService implements DHIS
 				payload = getFromCache(endpoint);
 			}
 			// TODO: fix these catches ...
-		}
-		catch (Exception ex) {
+		} catch (Exception ex) {
 			ex.printStackTrace();
 
 			payload = getFromCache(endpoint);
-		}
-		finally {
+		} finally {
 			if (client != null) {
 				client.getConnectionManager().shutdown();
 			}
@@ -235,11 +233,9 @@ public class DHISConnectorServiceImpl extends BaseOpenmrsService implements DHIS
 			} else {
 				// TODO: figure out what to do here
 			}
-		}
-		catch (Exception ex) {
+		} catch (Exception ex) {
 			ex.printStackTrace();
-		}
-		finally {
+		} finally {
 			if (client != null) {
 				client.getConnectionManager().shutdown();
 			}
@@ -255,9 +251,9 @@ public class DHISConnectorServiceImpl extends BaseOpenmrsService implements DHIS
 
 		// Check if the URL makes sense
 		try {
-			testURL = new URL(url + "/api/resources"); // Add the root API endpoint to the URL
-		}
-		catch (MalformedURLException e) {
+			testURL = new URL(url + "/api/resources"); // Add the root API
+														// endpoint to the URL
+		} catch (MalformedURLException e) {
 			e.printStackTrace();
 			return false;
 		}
@@ -274,18 +270,19 @@ public class DHISConnectorServiceImpl extends BaseOpenmrsService implements DHIS
 			httpGet.addHeader("Content-Type", "application/json");
 			httpGet.addHeader("Accept", "application/json");
 
-			HttpResponse response = httpclient.execute(targetHost, httpGet, localcontext); // Execute the test query
+			HttpResponse response = httpclient.execute(targetHost, httpGet, localcontext); // Execute
+																							// the
+																							// test
+																							// query
 
 			if (response.getStatusLine().getStatusCode() != 200) {
 				success = false;
 
 			}
-		}
-		catch (Exception ex) {
+		} catch (Exception ex) {
 			ex.printStackTrace();
 			success = false;
-		}
-		finally {
+		} finally {
 			httpclient.getConnectionManager().shutdown();
 		}
 
@@ -303,8 +300,7 @@ public class DHISConnectorServiceImpl extends BaseOpenmrsService implements DHIS
 				if (!mappingsDirecory.mkdirs()) {
 					return null;
 				}
-			}
-			catch (Exception e) {
+			} catch (Exception e) {
 				e.printStackTrace();
 				return e;
 			}
@@ -318,8 +314,7 @@ public class DHISConnectorServiceImpl extends BaseOpenmrsService implements DHIS
 
 		try {
 			mapper.writeValue(newMappingFile, mapping);
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 			return e;
 		}
@@ -339,8 +334,7 @@ public class DHISConnectorServiceImpl extends BaseOpenmrsService implements DHIS
 			String responseString = postDataToDHISEndpoint(DATASETS_PATH, jsonString);
 
 			response = mapper.readValue(responseString, DHISImportSummary.class);
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			return null;
 		}
 
@@ -365,14 +359,13 @@ public class DHISConnectorServiceImpl extends BaseOpenmrsService implements DHIS
 			}
 		});
 
-		if(files == null)
+		if (files == null)
 			return null;
 
 		for (File f : files) {
 			try {
 				mappings.add(mapper.readValue(f, DHISMapping.class));
-			}
-			catch (Exception e) {
+			} catch (Exception e) {
 				e.printStackTrace();
 			}
 		}
@@ -410,8 +403,7 @@ public class DHISConnectorServiceImpl extends BaseOpenmrsService implements DHIS
 			node = mapper.readTree(jsonResponse);
 			orgUnits = Arrays
 					.asList(mapper.readValue(node.get("organisationUnits").toString(), DHISOrganisationUnit[].class));
-		}
-		catch (Exception ex) {
+		} catch (Exception ex) {
 			System.out.print(ex.getMessage());
 		}
 
@@ -419,7 +411,7 @@ public class DHISConnectorServiceImpl extends BaseOpenmrsService implements DHIS
 	}
 
 	private boolean mappingsHasGUID(List<DHISMapping> mappings, String GUID) {
-		if(mappings == null)
+		if (mappings == null)
 			return false;
 
 		for (DHISMapping mapping : mappings) {
@@ -449,17 +441,19 @@ public class DHISConnectorServiceImpl extends BaseOpenmrsService implements DHIS
 
 				try {
 					ZipFile zipfile = new ZipFile(tempMappings);
-					
+
 					for (Enumeration e = zipfile.entries(); e.hasMoreElements();) {
 						ZipEntry entry = (ZipEntry) e.nextElement();
 
 						if (entry.isDirectory()) {
-							System.out.println("Incorrect file (Can't be a folder instead): " + entry.getName() + " has been ignored");
+							System.out.println("Incorrect file (Can't be a folder instead): " + entry.getName()
+									+ " has been ignored");
 						} else if (entry.getName().endsWith(DHISCONNECTOR_MAPPING_FILE_SUFFIX)) {
 							File outputFile = new File(mappingFolderName, entry.getName());
 
 							if (outputFile.exists()) {
-								System.out.println("File: " + outputFile.getName() + " already exists and has been ignored");
+								System.out.println(
+										"File: " + outputFile.getName() + " already exists and has been ignored");
 							} else {
 								BufferedInputStream inputStream = new BufferedInputStream(
 										zipfile.getInputStream(entry));
@@ -479,8 +473,12 @@ public class DHISConnectorServiceImpl extends BaseOpenmrsService implements DHIS
 							System.out.println("Incorrect file: " + entry.getName() + " has been ignored");
 						}
 					}
-					msg = Context.getMessageSourceService().getMessage("dhisconnector.uploadMapping.groupSuccess");
-					(new File(tempFolderName)).delete();
+					if (!allFailed) {
+						msg = Context.getMessageSourceService().getMessage("dhisconnector.uploadMapping.groupSuccess");
+					} else {
+						msg = Context.getMessageSourceService().getMessage("dhisconnector.uploadMapping.allFailed");
+					}
+					FileUtils.deleteDirectory(new File(tempFolderName));
 				} catch (Exception e) {
 					System.out.println("Error while extracting file:" + mapping.getName() + " ; " + e);
 				}
@@ -488,10 +486,6 @@ public class DHISConnectorServiceImpl extends BaseOpenmrsService implements DHIS
 				e.printStackTrace();
 			} catch (IOException e) {
 				e.printStackTrace();
-			}
-			
-			if(allFailed && msg.equals("")) {
-				msg = Context.getMessageSourceService().getMessage("dhisconnector.uploadMapping.allFailed");
 			}
 		} else if (mappingName.endsWith(DHISCONNECTOR_MAPPING_FILE_SUFFIX)) {
 			try {
@@ -513,5 +507,90 @@ public class DHISConnectorServiceImpl extends BaseOpenmrsService implements DHIS
 		}
 
 		return msg;
+	}
+
+	@Override
+	public String[] exportSelectedMappings(String[] selectedMappings) {
+		String msg = "";
+		String[] returnStr = new String[2];
+		String path = null;
+
+		// TODO remove last item from selectedMappings
+		try {
+			byte[] buffer = new byte[1024];
+			String sourceDirectory = OpenmrsUtil.getApplicationDataDirectory() + DHISCONNECTOR_MAPPINGS_FOLDER
+					+ File.separator;
+			String tempFolderName = OpenmrsUtil.getApplicationDataDirectory() + DHISCONNECTOR_TEMP_FOLDER
+					+ File.separator;
+			String suffix = ".mapping.json";
+			String zipFile = tempFolderName + "exported-mappings_" + (new Date()).getTime() + ".zip";
+
+			(new File(tempFolderName)).mkdirs();
+
+			FileOutputStream fout = new FileOutputStream(zipFile);
+			ZipOutputStream zout = new ZipOutputStream(fout);
+			File dir = new File(sourceDirectory);
+
+			if (!dir.isDirectory()) {
+				System.out.println(sourceDirectory + " is not a directory");
+			} else {
+				File[] files = dir.listFiles();
+				String mappings = "";
+
+				if (files.length == 0) {
+					msg = Context.getMessageSourceService().getMessage("dhisconnector.exportMapping.noMappingsFound");
+				} else {
+					for (int i = 0; i < files.length; i++) {
+						if (files[i].getName().endsWith(suffix)) {
+							FileInputStream fin = new FileInputStream(files[i]);
+
+							mappings += files[i].getName() + "<:::>";
+							System.out.println("Compressing " + files[i].getName());
+							if (selectedMappings.length == 0) {
+								copyToZip(buffer, zout, files, i, fin);
+							} else {
+								if (arrayIncludes(selectedMappings, files[i].getName())) {
+									copyToZip(buffer, zout, files, i, fin);
+								}
+							}
+							msg = Context.getMessageSourceService().getMessage("dhisconnector.exportMapping.success");
+							zout.closeEntry();
+							fin.close();
+						}
+					}
+					if(mappings.split("<:::>").length == 0) {
+						msg = Context.getMessageSourceService().getMessage("dhisconnector.exportMapping.noMappingsFound");
+					}
+					path = zipFile;
+				}
+			}
+			zout.close();
+			System.out.println("Zip file has been created!");
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		returnStr[0] = msg;
+		returnStr[1] = path;
+		return returnStr;
+	}
+
+	private void copyToZip(byte[] buffer, ZipOutputStream zout, File[] files, int i, FileInputStream fin)
+			throws IOException {
+		zout.putNextEntry(new ZipEntry(files[i].getName()));
+		int length;
+		while ((length = fin.read(buffer)) > 0) {
+			zout.write(buffer, 0, length);
+		}
+	}
+
+	private boolean arrayIncludes(String[] selectedMappings, String name) {
+		boolean contains = false;
+
+		for (int i = 0; i < selectedMappings.length; i++) {
+			if ((selectedMappings[i] + DHISCONNECTOR_MAPPING_FILE_SUFFIX).equals(name)) {
+				contains = true;
+			}
+		}
+		return contains;
 	}
 }

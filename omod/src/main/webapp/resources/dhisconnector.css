@@ -41,10 +41,20 @@
     cursor: pointer;
 }
 
-.error-while-uploading {
+.error-encountered {
 	color: red;
 }
 
-.success-while-uploading {
+.success-encountered {
 	color: green;
+}
+
+.mapping-select .header {
+	font-weight: bold;
+	border-style: none;
+}
+
+.mapping-select option {
+	background-color: #E8E3E3;
+	border-style: outset;
 }

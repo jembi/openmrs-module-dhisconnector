@@ -11,10 +11,20 @@
  */
 package org.openmrs.module.dhisconnector.web.controller;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.text.ParseException;
 import java.util.Date;
 import java.util.List;
 
+import javax.servlet.ServletContext;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openmrs.GlobalProperty;
@@ -52,9 +62,9 @@ public class DHISConnectorController {
 
 	@RequestMapping(value = "/module/dhisconnector/createMapping", method = RequestMethod.GET)
 	public void createMapping(ModelMap model) {
-		//model.addAttribute("user", Context.getAuthenticatedUser());
+		// model.addAttribute("user", Context.getAuthenticatedUser());
 
-		//Context.getService(DHISConnectorService.class).getPeriodIndicatorReports();
+		// Context.getService(DHISConnectorService.class).getPeriodIndicatorReports();
 	}
 
 	@RequestMapping(value = "/module/dhisconnector/configureServer", method = RequestMethod.GET)
@@ -69,11 +79,9 @@ public class DHISConnectorController {
 	}
 
 	@RequestMapping(value = "/module/dhisconnector/configureServer", method = RequestMethod.POST)
-	public void saveConfig(ModelMap model, @RequestParam(value = "url", required = true)
-	String url, @RequestParam(value = "user", required = true)
-	String user, @RequestParam(value = "pass", required = true)
-	String pass, WebRequest req)
-			throws ParseException {
+	public void saveConfig(ModelMap model, @RequestParam(value = "url", required = true) String url,
+			@RequestParam(value = "user", required = true) String user,
+			@RequestParam(value = "pass", required = true) String pass, WebRequest req) throws ParseException {
 
 		AdministrationService as = Context.getAdministrationService();
 		GlobalProperty urlProperty = as.getGlobalPropertyObject(GLOBAL_PROPERTY_URL);
@@ -90,15 +98,17 @@ public class DHISConnectorController {
 			as.saveGlobalProperty(userProperty);
 			as.saveGlobalProperty(passProperty);
 
-			req.setAttribute(WebConstants.OPENMRS_MSG_ATTR, Context.getMessageSourceService().getMessage(
-					"dhisconnector.saveSuccess"), WebRequest.SCOPE_SESSION);
+			req.setAttribute(WebConstants.OPENMRS_MSG_ATTR,
+					Context.getMessageSourceService().getMessage("dhisconnector.saveSuccess"),
+					WebRequest.SCOPE_SESSION);
 
 			model.addAttribute("url", url);
 			model.addAttribute("user", user);
 			model.addAttribute("pass", pass);
 		} else {
-			req.setAttribute(WebConstants.OPENMRS_ERROR_ATTR, Context.getMessageSourceService().getMessage(
-					"dhisconnector.saveFailure"), WebRequest.SCOPE_SESSION);
+			req.setAttribute(WebConstants.OPENMRS_ERROR_ATTR,
+					Context.getMessageSourceService().getMessage("dhisconnector.saveFailure"),
+					WebRequest.SCOPE_SESSION);
 
 			model.addAttribute("url", urlProperty.getPropertyValue());
 			model.addAttribute("user", userProperty.getPropertyValue());
@@ -111,34 +121,33 @@ public class DHISConnectorController {
 	}
 
 	@RequestMapping(value = "/module/dhisconnector/runReports", method = RequestMethod.POST)
-	public void runReport(ModelMap model, @RequestParam(value = "report", required = true)
-	String reportMappingFilename, @RequestParam(value = "location", required = true)
-	Date date, @RequestParam(value = "date", required = true)
-	Integer locationId, WebRequest req)
-			throws ParseException {
+	public void runReport(ModelMap model, @RequestParam(value = "report", required = true) String reportMappingFilename,
+			@RequestParam(value = "location", required = true) Date date,
+			@RequestParam(value = "date", required = true) Integer locationId, WebRequest req) throws ParseException {
 		DHISConnectorService dcs = Context.getService(DHISConnectorService.class);
 
 		List<PeriodIndicatorReportDefinition> reportsWithMappings = dcs.getReportWithMappings(dcs.getMappings());
 
 		model.addAttribute("reports", reportsWithMappings);
 
-		//Context.getService(DHISConnectorService.class).getPeriodIndicatorReports();
+		// Context.getService(DHISConnectorService.class).getPeriodIndicatorReports();
 	}
-	
+
 	@RequestMapping(value = "/module/dhisconnector/uploadMapping", method = RequestMethod.GET)
 	public void showuploadMapping(ModelMap model) {
 		passOnUploadingFeedback(model, "", "");
 	}
-	
+
 	@RequestMapping(value = "/module/dhisconnector/uploadMapping", method = RequestMethod.POST)
-	public void uploadMapping(ModelMap model, @RequestParam(value = "mapping", required = true) MultipartFile mapping) {
+	public void uploadMapping(ModelMap model,
+			@RequestParam(value = "mapping", required = false) MultipartFile mapping) {
 		String successMessage = "";
 		String failedMessage = "";
-		
+
 		if (!mapping.isEmpty()) {
 			String msg = Context.getService(DHISConnectorService.class).uploadMappings(mapping);
-			
-			if(msg.startsWith("Successfully")) {
+
+			if (msg.startsWith("Successfully")) {
 				successMessage = msg;
 				failedMessage = "";
 			} else {
@@ -154,5 +163,64 @@ public class DHISConnectorController {
 	private void passOnUploadingFeedback(ModelMap model, String successMessage, String failedMessage) {
 		model.put("failureWhileUploading", failedMessage);
 		model.put("successWhileUploading", successMessage);
+	}
+
+	@RequestMapping(value = "/module/dhisconnector/exportMappings", method = RequestMethod.GET)
+	public void exportMapping(ModelMap model) {
+		passOnExportedFeedback(model, "", "");
+	}
+
+	private void passOnExportedFeedback(ModelMap model, String failureWhileExporting, String successWhileExporting) {
+		model.put("failureWhileExporting", failureWhileExporting);
+		model.put("successWhileExporting", successWhileExporting);
+	}
+
+	@RequestMapping(value = "/module/dhisconnector/exportMappings", method = RequestMethod.POST)
+	public void exportMapping(ModelMap model, HttpServletRequest request, HttpServletResponse response) {
+		String[] selectedMappings = request.getParameter("selectedMappings") != null ? request.getParameter("selectedMappings").split("<:::>") : null;
+		String failed = Context.getMessageSourceService()
+				.getMessage("dhisconnector.exportMapping.failed.noMappingsSelected");
+		
+		if (selectedMappings != null) {
+			try {
+				String[] exported = Context.getService(DHISConnectorService.class).exportSelectedMappings(selectedMappings);
+				int BUFFER_SIZE = 4096;
+				String fullPath = exported[1];//contains path
+				String msg = exported[0];
+
+				if (fullPath != null) {
+					File downloadFile = new File(fullPath);
+					FileInputStream inputStream;
+					inputStream = new FileInputStream(downloadFile);
+					String mimeType = "application/octet-stream";
+					System.out.println("MIME type: " + mimeType);
+					response.setContentType(mimeType);
+					response.setContentLength((int) downloadFile.length());
+					String headerKey = "Content-Disposition";
+					String headerValue = String.format("attachment; filename=\"%s\"", downloadFile.getName());
+					response.setHeader(headerKey, headerValue);
+					OutputStream outStream = response.getOutputStream();
+					byte[] buffer = new byte[BUFFER_SIZE];
+					int bytesRead = -1;
+					while ((bytesRead = inputStream.read(buffer)) != -1) {
+						outStream.write(buffer, 0, bytesRead);
+					}
+					inputStream.close();
+					outStream.close();
+					(new File(fullPath)).delete();
+				}
+				if(StringUtils.isNotBlank(msg) && msg.startsWith("Successfully")) {
+					passOnExportedFeedback(model, "", msg);
+				} else {
+					passOnExportedFeedback(model, msg, "");
+				}
+			} catch (FileNotFoundException e) {
+				e.printStackTrace();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		} else {
+
+		}
 	}
 }

@@ -26,6 +26,13 @@
 	</li>
 
 	<li
+			<c:if test='<%= request.getRequestURI().contains("/exportMappings") %>'>class="active"</c:if>>
+		<a
+				href="${pageContext.request.contextPath}/module/dhisconnector/exportMappings.form"><spring:message
+				code="dhisconnector.exportMapping" /></a>
+	</li>
+	
+	<li
 			<c:if test='<%= request.getRequestURI().contains("/runReports") %>'>class="active"</c:if>>
 		<a
 				href="${pageContext.request.contextPath}/module/dhisconnector/runReports.form"><spring:message

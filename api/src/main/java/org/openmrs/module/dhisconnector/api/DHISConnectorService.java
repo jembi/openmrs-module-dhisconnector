@@ -65,4 +65,6 @@ public interface DHISConnectorService extends OpenmrsService {
 	public List<DHISOrganisationUnit> getDHISOrgUnits();
 
 	public String uploadMappings(MultipartFile mapping);
+
+	public String[] exportSelectedMappings(String[] selectedMappings);
 }
