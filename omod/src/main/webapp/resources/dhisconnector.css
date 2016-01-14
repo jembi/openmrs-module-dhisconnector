@@ -58,3 +58,7 @@
 	background-color: #E8E3E3;
 	border-style: outset;
 }
+
+#footer #jembi-poweredBy img {
+	height: 1.4em;
+}

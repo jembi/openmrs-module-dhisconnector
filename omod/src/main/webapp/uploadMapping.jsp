@@ -14,4 +14,5 @@
         <input type="submit" value='<spring:message code="dhisconnector.uploadMapping.upload"/>'>
     </form>
 
-<%@ include file="/WEB-INF/template/footer.jsp" %>
+<!-- Overrides /WEB-INF/template/footer.jsp -->
+<%@ include file="jembiOpenMRSFooter.jsp" %>

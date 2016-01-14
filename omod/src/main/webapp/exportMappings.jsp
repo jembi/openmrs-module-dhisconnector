@@ -55,7 +55,7 @@
 	</table>
 	<br />
 	<div class="error-encountered" id="error-encountered-export">${failureWhileExporting}</div><br />
-	<div class="success-encountered" id="success-encountered-export">${successWhileExporting}</div><br />
+	<div class="success-encountered" id="success-encountered-export">${successWhileExporting}</div>
 </div>
 
 <form method="POST">
@@ -63,4 +63,5 @@
     <input type="submit" value='<spring:message code="dhisconnector.exportMapping.export"/>'>
 </form>
 
-<%@ include file="/WEB-INF/template/footer.jsp" %>
+<!-- Overrides /WEB-INF/template/footer.jsp -->
+<%@ include file="jembiOpenMRSFooter.jsp" %>

@@ -58,4 +58,5 @@
   </table>
 </form>
 
-<%@ include file="/WEB-INF/template/footer.jsp" %>
+<!-- Overrides /WEB-INF/template/footer.jsp -->
+<%@ include file="jembiOpenMRSFooter.jsp" %>
