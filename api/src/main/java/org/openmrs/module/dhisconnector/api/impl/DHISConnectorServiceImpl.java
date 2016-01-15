@@ -70,7 +70,7 @@ public class DHISConnectorServiceImpl extends BaseOpenmrsService implements DHIS
 	public static final String DHISCONNECTOR_MAPPINGS_FOLDER = File.separator + "dhisconnector" + File.separator
 			+ "mappings";
 
-	public static final String DHISCONNECTOR_CACHE_FOLDER = File.separator + "dhisconnector" + File.separator + "cache";
+	public static final String DHISCONNECTOR_DHIS2APIBACKUP_FOLDER = File.separator + "dhisconnector" + File.separator + "dhis2APIBackup";
 
 	public static final String DHISCONNECTOR_TEMP_FOLDER = File.separator + "dhisconnector" + File.separator + "temp";
 
@@ -80,14 +80,14 @@ public class DHISConnectorServiceImpl extends BaseOpenmrsService implements DHIS
 
 	public static final String DATASETS_PATH = "/api/dataValueSets";
 
-	private String getFromCache(String path) {
-		String cacheFilePath = OpenmrsUtil.getApplicationDataDirectory() + DHISCONNECTOR_CACHE_FOLDER + path;
+	private String getFromBackUp(String path) {
+		String backupFilePath = OpenmrsUtil.getApplicationDataDirectory() + DHISCONNECTOR_DHIS2APIBACKUP_FOLDER + path;
 
-		File cacheFile = new File(cacheFilePath);
+		File backupFile = new File(backupFilePath);
 
-		if (cacheFile.exists()) {
+		if (backupFile.exists()) {
 			try {
-				return FileUtils.readFileToString(cacheFile);
+				return FileUtils.readFileToString(backupFile);
 			} catch (Exception e) {
 				e.printStackTrace();
 				return null;
@@ -98,14 +98,14 @@ public class DHISConnectorServiceImpl extends BaseOpenmrsService implements DHIS
 	}
 
 	// TODO: error handling
-	private void saveToCache(String path, String jsonResponse) {
-		String cacheDirecoryPath = OpenmrsUtil.getApplicationDataDirectory() + DHISCONNECTOR_CACHE_FOLDER;
+	private void saveToBackUp(String path, String jsonResponse) {
+		String backUpDirecoryPath = OpenmrsUtil.getApplicationDataDirectory() + DHISCONNECTOR_DHIS2APIBACKUP_FOLDER;
 
-		File cacheDirecory = new File(cacheDirecoryPath);
+		File backUpDirecory = new File(backUpDirecoryPath);
 
-		if (!cacheDirecory.exists()) {
+		if (!backUpDirecory.exists()) {
 			try {
-				if (!cacheDirecory.mkdirs()) {
+				if (!backUpDirecory.mkdirs()) {
 					return;
 				}
 			} catch (Exception e) {
@@ -114,7 +114,7 @@ public class DHISConnectorServiceImpl extends BaseOpenmrsService implements DHIS
 			}
 		}
 
-		String directoryStructure = OpenmrsUtil.getApplicationDataDirectory() + DHISCONNECTOR_CACHE_FOLDER
+		String directoryStructure = OpenmrsUtil.getApplicationDataDirectory() + DHISCONNECTOR_DHIS2APIBACKUP_FOLDER
 				+ path.substring(0, path.lastIndexOf(File.separator));
 
 		File directory = new File(directoryStructure);
@@ -131,10 +131,10 @@ public class DHISConnectorServiceImpl extends BaseOpenmrsService implements DHIS
 		}
 
 		try {
-			PrintWriter enpointCache = new PrintWriter(
-					OpenmrsUtil.getApplicationDataDirectory() + DHISCONNECTOR_CACHE_FOLDER + path, "utf-8");
-			enpointCache.write(jsonResponse);
-			enpointCache.close();
+			PrintWriter enpointBackUp = new PrintWriter(
+					OpenmrsUtil.getApplicationDataDirectory() + DHISCONNECTOR_DHIS2APIBACKUP_FOLDER + path, "utf-8");
+			enpointBackUp.write(jsonResponse);
+			enpointBackUp.close();
 		} catch (Exception e) {
 			return;
 		}
@@ -177,16 +177,16 @@ public class DHISConnectorServiceImpl extends BaseOpenmrsService implements DHIS
 			if (entity != null) {
 				payload = EntityUtils.toString(entity);
 
-				saveToCache(endpoint, payload);
+				saveToBackUp(endpoint, payload);
 			} else {
-				// load from cache
-				payload = getFromCache(endpoint);
+				// load from dhis2APIBackup
+				payload = getFromBackUp(endpoint);
 			}
 			// TODO: fix these catches ...
 		} catch (Exception ex) {
 			ex.printStackTrace();
 
-			payload = getFromCache(endpoint);
+			payload = getFromBackUp(endpoint);
 		} finally {
 			if (client != null) {
 				client.getConnectionManager().shutdown();

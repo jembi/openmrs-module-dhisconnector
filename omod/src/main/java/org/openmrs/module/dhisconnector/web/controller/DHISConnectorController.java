@@ -20,7 +20,6 @@ import java.text.ParseException;
 import java.util.Date;
 import java.util.List;
 
-import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -178,36 +177,37 @@ public class DHISConnectorController {
 	@RequestMapping(value = "/module/dhisconnector/exportMappings", method = RequestMethod.POST)
 	public void exportMapping(ModelMap model, HttpServletRequest request, HttpServletResponse response) {
 		String[] selectedMappings = request.getParameter("selectedMappings") != null ? request.getParameter("selectedMappings").split("<:::>") : null;
+		String msg = "";
 		
 		if (selectedMappings != null) {
 			try {
 				String[] exported = Context.getService(DHISConnectorService.class).exportSelectedMappings(selectedMappings);
+				msg = exported[0];
 				int BUFFER_SIZE = 4096;
-				String fullPath = exported[1];//contains path
-				String msg = exported[0];
-
-				if (fullPath != null) {
-					File downloadFile = new File(fullPath);
-					FileInputStream inputStream;
-					inputStream = new FileInputStream(downloadFile);
-					String mimeType = "application/octet-stream";
-					System.out.println("MIME type: " + mimeType);
-					response.setContentType(mimeType);
-					response.setContentLength((int) downloadFile.length());
-					String headerKey = "Content-Disposition";
-					String headerValue = String.format("attachment; filename=\"%s\"", downloadFile.getName());
-					response.setHeader(headerKey, headerValue);
-					OutputStream outStream = response.getOutputStream();
-					byte[] buffer = new byte[BUFFER_SIZE];
-					int bytesRead = -1;
-					while ((bytesRead = inputStream.read(buffer)) != -1) {
-						outStream.write(buffer, 0, bytesRead);
-					}
-					inputStream.close();
-					outStream.close();
-					(new File(fullPath)).delete();
-				}
+				String fullPath = exported[1];//contains path to backedupMappings
+				
 				if(StringUtils.isNotBlank(msg) && msg.startsWith("Successfully")) {
+					if (fullPath != null) {
+						File downloadFile = new File(fullPath);
+						FileInputStream inputStream;
+						inputStream = new FileInputStream(downloadFile);
+						String mimeType = "application/octet-stream";
+						System.out.println("MIME type: " + mimeType);
+						response.setContentType(mimeType);
+						response.setContentLength((int) downloadFile.length());
+						String headerKey = "Content-Disposition";
+						String headerValue = String.format("attachment; filename=\"%s\"", downloadFile.getName());
+						response.setHeader(headerKey, headerValue);
+						OutputStream outStream = response.getOutputStream();
+						byte[] buffer = new byte[BUFFER_SIZE];
+						int bytesRead = -1;
+						while ((bytesRead = inputStream.read(buffer)) != -1) {
+							outStream.write(buffer, 0, bytesRead);
+						}
+						inputStream.close();
+						outStream.close();
+						(new File(fullPath)).delete();
+					}
 					passOnExportedFeedback(model, "", msg);
 				} else {
 					passOnExportedFeedback(model, msg, "");
@@ -218,7 +218,8 @@ public class DHISConnectorController {
 				e.printStackTrace();
 			}
 		} else {
-
+			msg = Context.getMessageSourceService().getMessage("dhisconnector.exportMapping.noMappingsFound");
+			passOnExportedFeedback(model, "", msg);
 		}
 	}
 }

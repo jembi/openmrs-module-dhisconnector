@@ -3,7 +3,7 @@
 # DHIS Connector Module
 
 This module posts OpenMRS Period Indicator Report data to DHIS2 using the Reporting Rest module. Mappings between Period
-Indicator Reports and DHIS2 Data Sets can be generated via the UI. The DHIS2 API is cached for offline operation and
+Indicator Reports and DHIS2 Data Sets can be generated via the UI. The DHIS2 API is backed up for offline operation and
 DXF files can be downloaded instead of posting to DHIS2 directly.
 
 ## Setup
@@ -55,11 +55,11 @@ The date selector will changed based on the period type of the DHIS2 Data Set.
 
 Once you have selected a value for all the fields, click *Send Data* to post data directly to the DHIS2 server, or *Download JSON* to download the data in DXF format.
 
-## DHIS2 API Cache
+## DHIS2 API Backup
 
-Every time a request is sent to the DHIS2 server, the resulting JSON is stored on the file system at `OPENMRS_DIR/dhisconnector/cache/`. On Ubuntu, this usually corresponds to `/usr/share/tomcat7/.OpenMRS/dhisconnector/cache/`. If the DHIS2 server is no longer reachable, these cached values will be used by the DHIS Connector Module.
+Every time a request is sent to the DHIS2 server, the resulting JSON is stored on the file system at `OPENMRS_DIR/dhisconnector/dhis2APIBackup/`. On Ubuntu, this usually corresponds to `/usr/share/tomcat7/.OpenMRS/dhisconnector/dhis2APIBackup/`. If the DHIS2 server is no longer reachable, these backed up values will be used by the DHIS Connector Module.
 
-For OpenMRS implementations that should operate offline, it is possible to pre-populate this cache by copying the contents of the `OPENMRS_DIR/dhisconnector/cache` directory from an online system to the same location on the offline system. Assuming all the required resources have been cached by the online implementation, the offline implementation should be able to function correctly without ever being able to reach the DHIS2 server.
+For OpenMRS implementations that should operate offline, it is possible to pre-populate this dhis2APIBackup by copying the contents of the `OPENMRS_DIR/dhisconnector/dhis2APIBackup` directory from an online system to the same location on the offline system. Assuming all the required resources have been backed up by the online implementation, the offline implementation should be able to function correctly without ever being able to reach the DHIS2 server.
 
 ## Module Status
 
@@ -67,7 +67,7 @@ Implemented
   - [x] Configure DHIS2 Server
   - [x] Drag and drop mapping generator
   - [x] Post data or download DXF
-  - [x] Cache DHIS2 API for offline use
+  - [x] Backup DHIS2 API for offline use
   - [x] Interface for uploading mappings
   - [x] Interface for exporting mappings  
 
@@ -75,7 +75,7 @@ TODO
   - [ ] Error handling
   - [ ] Managing/editing mappings
   - [ ] Fix mapping creation UI to support multi-line DataElement names
-  - [ ] Interface for prepopulating DHIS2 API cache
+  - [ ] Interface for prepopulating DHIS2 API backup
   - [ ] Support other types of OpenMRS reports
   - [ ] Post or download ADX
   - [ ] DHIS2 API pagination
