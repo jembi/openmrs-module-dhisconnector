@@ -63,5 +63,5 @@
     <input type="submit" value='<spring:message code="dhisconnector.exportMapping.export"/>'>
 </form>
 
-<!-- Overrides /WEB-INF/template/footer.jsp -->
+<%@ include file="/WEB-INF/template/footer.jsp" %>
 <%@ include file="jembiOpenMRSFooter.jsp" %>

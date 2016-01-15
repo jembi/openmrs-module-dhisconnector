@@ -82,8 +82,8 @@ function getDataElementsAndCategoryComboOptions() {
         categoryComboOptions = {};
 
 
-        dataElementsOptionsCol.append('<div class="reportRow row"><div class="reportIndicatorCol col-xs"><div class="reportIndicator box"><h4>Data Element Options</h4></div></div></div>');
-        jQuery('#categoryComboOptions').append('<div class="reportRow row"><div class="reportIndicatorCol col-xs"><div class="reportIndicator box"><h4>Category Options</h4></div></div></div><img id="categoryComboLoader" class="spinner" src="../../moduleResources/dhisconnector/loading.gif"/>');
+        dataElementsOptionsCol.append('<div class="reportRow row"><div class="reportIndicatorCol col-xs"><div class="reportIndicator box" style="height:2.8em;"><h4>Data Element Options</h4></div></div></div>');
+        jQuery('#categoryComboOptions').append('<div class="reportRow row"><div class="reportIndicatorCol col-xs"><div class="reportIndicator box" style="height:2.8em;"><h4>Category Options</h4></div></div></div><img id="categoryComboLoader" class="spinner" src="../../moduleResources/dhisconnector/loading.gif"/>');
 
 
         for (var i = 0; i < dataElements.length; i++) {
@@ -121,8 +121,8 @@ function onReportSelect() {
     var dateElementMappings = jQuery('#dataElementsMappings');
     dateElementMappings.html("");
 
-    reportIndicators.append('<div class="reportRow row"><div class="reportIndicatorCol col-xs"><div class="reportIndicator box"><h4>Indicators</h4></div></div><div class="reportDimensionCol col-xs"><div class="reportDimension box"><h4>Dimensions</h4></div></div></div>');
-    dateElementMappings.append('<div class="reportRow row"><div class="reportIndicatorCol col-xs"><div class="reportIndicator box"><h4>Mapped Data Element</h4></div></div><div class="reportDimensionCol col-xs"><div class="reportDimension box"><h4>Mapped Category</h4></div></div></div>');
+    reportIndicators.append('<div class="reportRow row"><div class="reportIndicatorCol col-xs"><div class="reportIndicator box" style="height:2.8em;"><h4>Indicators</h4></div></div><div class="reportDimensionCol col-xs"><div class="reportDimension box" style="height:2.8em;"><h4>Dimensions</h4></div></div></div>');
+    dateElementMappings.append('<div class="reportRow row"><div class="reportIndicatorCol col-xs"><div class="reportIndicator box" style="height:2.8em;"><h4>Mapped Data Element</h4></div></div><div class="reportDimensionCol col-xs"><div class="reportDimension box" style="height:2.8em;"><h4>Mapped Category</h4></div></div></div>');
 
     var selectedSchema = reports.filter(function (val) {
         return val.uuid === jQuery('#reportSelect').val();
@@ -314,6 +314,22 @@ function addCloseButtons() {
 
 function deleteMapping(el) {
     jQuery(el).parent().remove();
+}
+
+function renderIndicatorsDragablePhrase(phrase) {
+	
+}
+
+function renderMappingsDragablePhrase(phrase) {
+	
+}
+
+function renderDHIS2DatasetDragablePhrase(phrase) {
+	
+}
+
+function renderDragablePhrase(phrase, maxChars) {
+	
 }
 
 jQuery(function () {
