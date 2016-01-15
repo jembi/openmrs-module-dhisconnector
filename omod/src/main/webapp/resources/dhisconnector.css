@@ -58,3 +58,8 @@
 	background-color: #E8E3E3;
 	border-style: outset;
 }
+
+.dataElementDragDestination, .comboOptionDragDestination {
+	height: 28px;
+	overflow: auto;
+}

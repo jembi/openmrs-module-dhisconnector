@@ -32,7 +32,7 @@ function renderCategoryComboOptions() {
     for (var comboOption in categoryComboOptions) {
         if (categoryComboOptions.hasOwnProperty(comboOption)) {
             var comboOptionRow = jQuery('<div class="reportRow row"></div>');
-            var comboOptionBox = jQuery('<div class="reportIndicator box" data-uid="' + categoryComboOptions[comboOption].id + '">' + categoryComboOptions[comboOption].name + '</div>');
+            var comboOptionBox = jQuery('<div class="reportIndicator box" data-uid="' + categoryComboOptions[comboOption].id + '" title="' + categoryComboOptions[comboOption].name + '">' + renderDHIS2DatasetDragablePhrase(categoryComboOptions[comboOption].name) + '</div>');
 
             var comboOptionBoxContainer = jQuery('<div class="comboOptionDragSource reportIndicatorCol col-xs"></div>');
             comboOptionRow.append(comboOptionBoxContainer.append(comboOptionBox));
@@ -88,7 +88,7 @@ function getDataElementsAndCategoryComboOptions() {
 
         for (var i = 0; i < dataElements.length; i++) {
             var dataElementOptionRow = jQuery('<div class="reportRow row"></div>');
-            var dataElementOptionBox = jQuery('<div class="reportIndicator box" data-uid="' + dataElements[i].id + '">' + dataElements[i].name + '</div>');
+            var dataElementOptionBox = jQuery('<div class="reportIndicator box" data-uid="' + dataElements[i].id + '" title="' + dataElements[i].name + '">' + renderDHIS2DatasetDragablePhrase(dataElements[i].name) + '</div>');
 
             requests.push(getCategoryComboOptions(dataElements[i].id, requests));
 
@@ -133,7 +133,7 @@ function onReportSelect() {
         if (selectedSchema.columns.hasOwnProperty(property)) {
             var indicatorBox = jQuery('<div class="reportIndicator box"></div>');
 
-            indicatorBox.append(property);
+            indicatorBox.append('<label title="' + property + '">' + renderIndicatorsDragablePhrase(property) + '</label>');
 
             var dimensionsBox = jQuery('<div class="reportDimension box"></div>');
 
@@ -142,7 +142,9 @@ function onReportSelect() {
             if (!jQuery.isEmptyObject(dimObj)) {
                 for (var dimProp in dimObj) {
                     if (dimObj.hasOwnProperty(dimProp)) {
-                        dimensionsBox.append(dimProp + '=' + dimObj[dimProp]);
+                    	var labelName = dimProp + '=' + dimObj[dimProp];
+                    	
+                    	dimensionsBox.append('<label title="' + labelName + '">' + renderIndicatorsDragablePhrase(labelName) + '</label>');
                     }
                 }
             } else {
@@ -317,19 +319,23 @@ function deleteMapping(el) {
 }
 
 function renderIndicatorsDragablePhrase(phrase) {
-	
+	return renderDragablePhrase(phrase, 26);
 }
 
 function renderMappingsDragablePhrase(phrase) {
-	
+	return renderDragablePhrase(phrase, 12);
 }
 
 function renderDHIS2DatasetDragablePhrase(phrase) {
-	
+	return renderDragablePhrase(phrase, 26);
 }
 
 function renderDragablePhrase(phrase, maxChars) {
-	
+	if(phrase.length > maxChars) {
+		return phrase.substring(0, maxChars);
+	} else {
+		return phrase;
+	}
 }
 
 jQuery(function () {
