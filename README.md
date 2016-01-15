@@ -69,7 +69,7 @@ Implemented
   - [x] Post data or download DXF
   - [x] Cache DHIS2 API for offline use
   - [x] Interface for uploading mappings
-  - [x] Interface for exporting mappings   
+  - [x] Interface for exporting mappings  
 
 TODO
   - [ ] Error handling

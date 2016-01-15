@@ -43,9 +43,7 @@
 			<span id="codeVersion"><openmrs:message code="footer.version"/>: ${openmrsVersion}</span>
 			
 			<!-- TODO openmrs logo path should be changed for OpenMRS Platform >= 2.0 -->
-			<span id="jembi-poweredBy"> | <spring:message code="dhisconnector.jembi.ownedBy"/><img border="0" align="top" src="../../moduleResources/dhisconnector/jembi-logo.png"/> <a href="http://jembi.org"/><spring:message code="dhisconnector.jembi.jembiTitle"/></a></span>
-			
-			<span id="poweredBy"><a href="http://openmrs.org"><openmrs:message code="footer.poweredBy"/> <img border="0" align="top" src="<%= request.getContextPath() %>/images/openmrs_logo_tiny.png"/></a></span>
+			<span id="poweredBy"><spring:message code="dhisconnector.jembi.ownedBy"/><img border="0" align="top" src="../../moduleResources/dhisconnector/jembi-logo.png"/> <a href="http://jembi.org"/><spring:message code="dhisconnector.jembi.jembiTitle"/></a> | <a href="http://openmrs.org"><openmrs:message code="footer.poweredBy"/> <img border="0" align="top" src="<%= request.getContextPath() %>/images/openmrs_logo_tiny.png"/></a></span>
 		</div>
 	</div>
 
