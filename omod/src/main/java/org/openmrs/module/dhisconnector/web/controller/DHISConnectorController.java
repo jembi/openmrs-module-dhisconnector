@@ -61,20 +61,19 @@ public class DHISConnectorController {
 
 	@RequestMapping(value = "/module/dhisconnector/createMapping", method = RequestMethod.GET)
 	public void createMapping(ModelMap model) {
-		// model.addAttribute("user", Context.getAuthenticatedUser());
-
-		// Context.getService(DHISConnectorService.class).getPeriodIndicatorReports();
+		model.addAttribute("showLogin", (Context.getAuthenticatedUser() == null) ? true : false);
 	}
 
 	@RequestMapping(value = "/module/dhisconnector/configureServer", method = RequestMethod.GET)
 	public void configureServer(ModelMap model) {
-		String url = Context.getAdministrationService().getGlobalProperty(GLOBAL_PROPERTY_URL);
-		String user = Context.getAdministrationService().getGlobalProperty(GLOBAL_PROPERTY_USER);
-		String pass = Context.getAdministrationService().getGlobalProperty(GLOBAL_PROPERTY_PASS);
-
-		model.addAttribute("url", url);
-		model.addAttribute("user", user);
-		model.addAttribute("pass", pass);
+			String url = Context.getAdministrationService().getGlobalProperty(GLOBAL_PROPERTY_URL);
+			String user = Context.getAdministrationService().getGlobalProperty(GLOBAL_PROPERTY_USER);
+			String pass = Context.getAdministrationService().getGlobalProperty(GLOBAL_PROPERTY_PASS);
+	
+			model.addAttribute("url", url);
+			model.addAttribute("user", user);
+			model.addAttribute("pass", pass);
+			model.addAttribute("showLogin", (Context.getAuthenticatedUser() == null) ? true : false);
 	}
 
 	@RequestMapping(value = "/module/dhisconnector/configureServer", method = RequestMethod.POST)
@@ -117,6 +116,7 @@ public class DHISConnectorController {
 
 	@RequestMapping(value = "/module/dhisconnector/runReports", method = RequestMethod.GET)
 	public void showRunReports(ModelMap model) {
+		model.addAttribute("showLogin", (Context.getAuthenticatedUser() == null) ? true : false);
 	}
 
 	@RequestMapping(value = "/module/dhisconnector/runReports", method = RequestMethod.POST)
@@ -128,13 +128,12 @@ public class DHISConnectorController {
 		List<PeriodIndicatorReportDefinition> reportsWithMappings = dcs.getReportWithMappings(dcs.getMappings());
 
 		model.addAttribute("reports", reportsWithMappings);
-
-		// Context.getService(DHISConnectorService.class).getPeriodIndicatorReports();
 	}
 
 	@RequestMapping(value = "/module/dhisconnector/uploadMapping", method = RequestMethod.GET)
 	public void showuploadMapping(ModelMap model) {
 		passOnUploadingFeedback(model, "", "");
+		model.addAttribute("showLogin", (Context.getAuthenticatedUser() == null) ? true : false);
 	}
 
 	@RequestMapping(value = "/module/dhisconnector/uploadMapping", method = RequestMethod.POST)
@@ -167,6 +166,7 @@ public class DHISConnectorController {
 	@RequestMapping(value = "/module/dhisconnector/exportMappings", method = RequestMethod.GET)
 	public void exportMapping(ModelMap model) {
 		passOnExportedFeedback(model, "", "");
+		model.addAttribute("showLogin", (Context.getAuthenticatedUser() == null) ? true : false);
 	}
 
 	private void passOnExportedFeedback(ModelMap model, String failureWhileExporting, String successWhileExporting) {

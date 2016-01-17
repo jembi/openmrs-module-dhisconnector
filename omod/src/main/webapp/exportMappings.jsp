@@ -8,6 +8,10 @@
 
 <%@ include file="template/localHeader.jsp" %>
 
+<c:if test="${showLogin == 'true'}">
+	<c:redirect url="../../login.htm" />
+</c:if>
+
 <h3><spring:message code="dhisconnector.exportMapping"/></h3>
 <br /><spring:message code="dhisconnector.exportMapping.message"/><br />
 <div  ng-app="exportMappingApp" ng-controller="exportMappingController">

@@ -5,6 +5,10 @@
 
 <%@ include file="template/localHeader.jsp" %>
 
+<c:if test="${showLogin == 'true'}">
+	<c:redirect url="../../login.htm" />
+</c:if>
+
 <h3><spring:message code="dhisconnector.uploadMapping"/></h3>
 	<br /><spring:message code="dhisconnector.uploadMapping.message"/><br /><br />
 	<div class="error-encountered">${failureWhileUploading}</div><br />

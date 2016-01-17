@@ -10,6 +10,10 @@
 
 <%@ include file="template/localHeader.jsp" %>
 
+<c:if test="${showLogin == 'true'}">
+	<c:redirect url="../../login.htm" />
+</c:if>
+
 <h3><spring:message code="dhisconnector.runReports"/></h3>
 
 <form method="POST">
