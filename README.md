@@ -41,9 +41,13 @@ To generate a mapping via the UI, click the *Create Mapping* link under the *DHI
 
 Finally, click save and give your mapping a unique name.
 
+### Exporting Existing Mapping
+
+This module provides a way of exporting existing mappings which basically archives them into one download that can thereafter be imported/uploaded into the current or another OpenMRS instance.
+
 ### Upload Existing Mapping
 
-Although v0.1.0 of the module contains no user interface to do so, it is possible to import existing mappings. This is done by copying the `mapping-name.timestamp.mapping.json` file(s) from the `OPENMRS_DIR/dhisconnector/mappings/` directory of source implementation to the same location on the destination implementation. The DHIS Connector Module will detect the new mapping files when the page is reloaded.
+The module provides an option to import or upload mappings previously exported from the current or other instances, this feature is available and will be released as part of 0.1.2
 
 ## Posting Data
 
@@ -55,9 +59,9 @@ The date selector will changed based on the period type of the DHIS2 Data Set.
 
 Once you have selected a value for all the fields, click *Send Data* to post data directly to the DHIS2 server, or *Download JSON* to download the data in DXF format.
 
-## DHIS2 API Backup
+## DHIS2 Backup
 
-Every time a request is sent to the DHIS2 server, the resulting JSON is stored on the file system at `OPENMRS_DIR/dhisconnector/dhis2Backup/`. On Ubuntu, this usually corresponds to `/usr/share/tomcat7/.OpenMRS/dhisconnector/dhis2Backup/`. If the DHIS2 server is no longer reachable, these backed up values will be used by the DHIS Connector Module.
+Every time a request is sent to the DHIS2 server, the resulting JSON is stored on the file system at `OPENMRS_DIR/dhisconnector/dhis2Backup/`. On Ubuntu, this usually corresponds to `/usr/share/tomcat7/.OpenMRS/dhisconnector/dhis2Backup/`. If the DHIS2 server is no longer reachable, these backed up API values will be used by the DHIS Connector Module.
 
 For OpenMRS implementations that should operate offline, it is possible to pre-populate this dhis2Backup by copying the contents of the `OPENMRS_DIR/dhisconnector/dhis2Backup` directory from an online system to the same location on the offline system. Assuming all the required resources have been backed up by the online implementation, the offline implementation should be able to function correctly without ever being able to reach the DHIS2 server.
 
