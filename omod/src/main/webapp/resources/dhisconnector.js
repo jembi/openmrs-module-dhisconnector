@@ -290,17 +290,25 @@ function saveMapping(event) {
         }
     }
 
-    // post json obect
-    jQuery.ajax({
-        url: OMRS_WEBSERVICES_BASE_URL + "/ws/rest/v1/dhisconnector/mappings",
-        type: "POST",
-        data: JSON.stringify(mapping),
-        contentType: "application/json; charset=utf-8",
-        dataType: "json",
-        success: function (data) {
-            window.location = '../../module/dhisconnector/runReports.form';
-        },
-    });
+    if (mapping.elements.length > 0) {
+    	jQuery("#error-encountered-saving").html("");
+		// post json obect
+		jQuery.ajax({
+			url : OMRS_WEBSERVICES_BASE_URL
+					+ "/ws/rest/v1/dhisconnector/mappings",
+			type : "POST",
+			data : JSON.stringify(mapping),
+			contentType : "application/json; charset=utf-8",
+			dataType : "json",
+			success : function(data) {
+				window.location = '../../module/dhisconnector/runReports.form';
+			},
+		});
+	} else {
+		jQuery('#saveMappingPopup').dialog('close');
+		jQuery("#mappingName").val("");
+		jQuery("#error-encountered-saving").html("Empty Mapping cannot be saved.");
+	}
 }
 
 function addCloseButtons() {
@@ -355,6 +363,7 @@ jQuery(function () {
     });
 
     jQuery('#saveMappingButton').click(function () {
+    	//TODO check if there are any active mappings that happened before pressing, else echo failure
         $j('#saveMappingPopup').dialog('open');
     });
     drake.on('drop', addCloseButtons);

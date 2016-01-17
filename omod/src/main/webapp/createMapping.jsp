@@ -14,7 +14,7 @@
 </c:if>
 
 <h3><spring:message code="dhisconnector.createMapping"/></h3>
-
+<div class="error-encountered" id="error-encountered-saving"></div><br />
 <p>
 <div class="row">
   <div class="col-xs-5">

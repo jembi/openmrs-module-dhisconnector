@@ -45,7 +45,7 @@ Finally, click save and give your mapping a unique name.
 
 This module provides a way of exporting existing mappings which basically archives them into one download that can thereafter be imported/uploaded into the current or another OpenMRS instance.
 
-### Upload Existing Mapping
+### Uploading Existing Mapping
 
 The module provides an option to import or upload mappings previously exported from the current or other instances, this feature is available and will be released as part of 0.1.2
 
