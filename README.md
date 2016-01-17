@@ -63,6 +63,9 @@ For OpenMRS implementations that should operate offline, it is possible to pre-p
 
 ## Module Status
 
+Jira Issues
+  - [DHISConnector Module's issues](https://jembiprojects.jira.com/issues/?filter=13312)
+
 Implemented
   - [x] Configure DHIS2 Server
   - [x] Drag and drop mapping generator
