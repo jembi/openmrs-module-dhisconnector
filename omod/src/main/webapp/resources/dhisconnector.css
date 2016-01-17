@@ -57,6 +57,7 @@
 .mapping-select option {
 	background-color: #E8E3E3;
 	border-style: outset;
+	cursor: pointer;
 }
 
 .dataElementDragDestination, .comboOptionDragDestination {

@@ -33,7 +33,6 @@ import java.util.zip.ZipOutputStream;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpHost;
@@ -70,7 +69,7 @@ public class DHISConnectorServiceImpl extends BaseOpenmrsService implements DHIS
 	public static final String DHISCONNECTOR_MAPPINGS_FOLDER = File.separator + "dhisconnector" + File.separator
 			+ "mappings";
 
-	public static final String DHISCONNECTOR_DHIS2APIBACKUP_FOLDER = File.separator + "dhisconnector" + File.separator + "dhis2APIBackup";
+	public static final String DHISCONNECTOR_DHIS2BACKUP_FOLDER = File.separator + "dhisconnector" + File.separator + "dhis2Backup";
 
 	public static final String DHISCONNECTOR_TEMP_FOLDER = File.separator + "dhisconnector" + File.separator + "temp";
 
@@ -81,7 +80,7 @@ public class DHISConnectorServiceImpl extends BaseOpenmrsService implements DHIS
 	public static final String DATASETS_PATH = "/api/dataValueSets";
 
 	private String getFromBackUp(String path) {
-		String backupFilePath = OpenmrsUtil.getApplicationDataDirectory() + DHISCONNECTOR_DHIS2APIBACKUP_FOLDER + path;
+		String backupFilePath = OpenmrsUtil.getApplicationDataDirectory() + DHISCONNECTOR_DHIS2BACKUP_FOLDER + path;
 
 		File backupFile = new File(backupFilePath);
 
@@ -99,7 +98,7 @@ public class DHISConnectorServiceImpl extends BaseOpenmrsService implements DHIS
 
 	// TODO: error handling
 	private void saveToBackUp(String path, String jsonResponse) {
-		String backUpDirecoryPath = OpenmrsUtil.getApplicationDataDirectory() + DHISCONNECTOR_DHIS2APIBACKUP_FOLDER;
+		String backUpDirecoryPath = OpenmrsUtil.getApplicationDataDirectory() + DHISCONNECTOR_DHIS2BACKUP_FOLDER;
 
 		File backUpDirecory = new File(backUpDirecoryPath);
 
@@ -114,7 +113,7 @@ public class DHISConnectorServiceImpl extends BaseOpenmrsService implements DHIS
 			}
 		}
 
-		String directoryStructure = OpenmrsUtil.getApplicationDataDirectory() + DHISCONNECTOR_DHIS2APIBACKUP_FOLDER
+		String directoryStructure = OpenmrsUtil.getApplicationDataDirectory() + DHISCONNECTOR_DHIS2BACKUP_FOLDER
 				+ path.substring(0, path.lastIndexOf(File.separator));
 
 		File directory = new File(directoryStructure);
@@ -132,7 +131,7 @@ public class DHISConnectorServiceImpl extends BaseOpenmrsService implements DHIS
 
 		try {
 			PrintWriter enpointBackUp = new PrintWriter(
-					OpenmrsUtil.getApplicationDataDirectory() + DHISCONNECTOR_DHIS2APIBACKUP_FOLDER + path, "utf-8");
+					OpenmrsUtil.getApplicationDataDirectory() + DHISCONNECTOR_DHIS2BACKUP_FOLDER + path, "utf-8");
 			enpointBackUp.write(jsonResponse);
 			enpointBackUp.close();
 		} catch (Exception e) {
@@ -179,7 +178,7 @@ public class DHISConnectorServiceImpl extends BaseOpenmrsService implements DHIS
 
 				saveToBackUp(endpoint, payload);
 			} else {
-				// load from dhis2APIBackup
+				// load from dhis2Backup
 				payload = getFromBackUp(endpoint);
 			}
 			// TODO: fix these catches ...
