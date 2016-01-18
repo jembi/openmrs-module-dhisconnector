@@ -306,8 +306,10 @@ function saveMapping(event) {
 		});
 	} else {
 		jQuery('#saveMappingPopup').dialog('close');
-		jQuery("#mappingName").val("");
 		jQuery("#error-encountered-saving").html("Empty Mapping cannot be saved.");
+		jQuery("html, body").animate({
+			 scrollTop:0
+		},"slow");
 	}
 }
 
@@ -340,7 +342,7 @@ function renderDHIS2DatasetDragablePhrase(phrase) {
 
 function renderDragablePhrase(phrase, maxChars) {
 	if(phrase.length > maxChars) {
-		return phrase.substring(0, maxChars);
+		return phrase.substring(0, maxChars - 2) + "...";
 	} else {
 		return phrase;
 	}

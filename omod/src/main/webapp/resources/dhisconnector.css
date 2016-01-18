@@ -61,6 +61,6 @@
 }
 
 .dataElementDragDestination, .comboOptionDragDestination {
-	height: 28px;
+	height: 2.05em;
 	overflow: auto;
 }
