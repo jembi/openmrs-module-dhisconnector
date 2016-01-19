@@ -33,6 +33,20 @@
 	</li>
 	
 	<li
+			<c:if test='<%= request.getRequestURI().contains("/dhis2BackupExport") %>'>class="active"</c:if>>
+		<a
+				href="${pageContext.request.contextPath}/module/dhisconnector/dhis2BackupExport.form"><spring:message
+				code="dhisconnector.dhis2Backup.export" /></a>
+	</li>
+	
+	<li
+			<c:if test='<%= request.getRequestURI().contains("/dhis2BackupImport") %>'>class="active"</c:if>>
+		<a
+				href="${pageContext.request.contextPath}/module/dhisconnector/dhis2BackupImport.form"><spring:message
+				code="dhisconnector.dhis2Backup.import" /></a>
+	</li>
+	
+	<li
 			<c:if test='<%= request.getRequestURI().contains("/runReports") %>'>class="active"</c:if>>
 		<a
 				href="${pageContext.request.contextPath}/module/dhisconnector/runReports.form"><spring:message

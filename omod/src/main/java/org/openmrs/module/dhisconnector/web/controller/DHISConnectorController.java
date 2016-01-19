@@ -66,14 +66,14 @@ public class DHISConnectorController {
 
 	@RequestMapping(value = "/module/dhisconnector/configureServer", method = RequestMethod.GET)
 	public void configureServer(ModelMap model) {
-			String url = Context.getAdministrationService().getGlobalProperty(GLOBAL_PROPERTY_URL);
-			String user = Context.getAdministrationService().getGlobalProperty(GLOBAL_PROPERTY_USER);
-			String pass = Context.getAdministrationService().getGlobalProperty(GLOBAL_PROPERTY_PASS);
-	
-			model.addAttribute("url", url);
-			model.addAttribute("user", user);
-			model.addAttribute("pass", pass);
-			model.addAttribute("showLogin", (Context.getAuthenticatedUser() == null) ? true : false);
+		String url = Context.getAdministrationService().getGlobalProperty(GLOBAL_PROPERTY_URL);
+		String user = Context.getAdministrationService().getGlobalProperty(GLOBAL_PROPERTY_USER);
+		String pass = Context.getAdministrationService().getGlobalProperty(GLOBAL_PROPERTY_PASS);
+
+		model.addAttribute("url", url);
+		model.addAttribute("user", user);
+		model.addAttribute("pass", pass);
+		model.addAttribute("showLogin", (Context.getAuthenticatedUser() == null) ? true : false);
 	}
 
 	@RequestMapping(value = "/module/dhisconnector/configureServer", method = RequestMethod.POST)
@@ -159,8 +159,8 @@ public class DHISConnectorController {
 	}
 
 	private void passOnUploadingFeedback(ModelMap model, String successMessage, String failedMessage) {
-		model.put("failureWhileUploading", failedMessage);
-		model.put("successWhileUploading", successMessage);
+		model.addAttribute("failureWhileUploading", failedMessage);
+		model.addAttribute("successWhileUploading", successMessage);
 	}
 
 	@RequestMapping(value = "/module/dhisconnector/exportMappings", method = RequestMethod.GET)
@@ -170,44 +170,27 @@ public class DHISConnectorController {
 	}
 
 	private void passOnExportedFeedback(ModelMap model, String failureWhileExporting, String successWhileExporting) {
-		model.put("failureWhileExporting", failureWhileExporting);
-		model.put("successWhileExporting", successWhileExporting);
+		model.addAttribute("failureWhileExporting", failureWhileExporting);
+		model.addAttribute("successWhileExporting", successWhileExporting);
 	}
 
 	@RequestMapping(value = "/module/dhisconnector/exportMappings", method = RequestMethod.POST)
 	public void exportMapping(ModelMap model, HttpServletRequest request, HttpServletResponse response) {
-		String[] selectedMappings = request.getParameter("selectedMappings") != null ? request.getParameter("selectedMappings").split("<:::>") : null;
+		String[] selectedMappings = request.getParameter("selectedMappings") != null
+				? request.getParameter("selectedMappings").split("<:::>") : null;
 		String msg = "";
-		
+
 		if (selectedMappings != null) {
 			try {
-				String[] exported = Context.getService(DHISConnectorService.class).exportSelectedMappings(selectedMappings);
+				String[] exported = Context.getService(DHISConnectorService.class)
+						.exportSelectedMappings(selectedMappings);
 				msg = exported[0];
 				int BUFFER_SIZE = 4096;
-				String fullPath = exported[1];//contains path to backedupMappings
-				
-				if(StringUtils.isNotBlank(msg) && msg.startsWith("Successfully")) {
-					if (fullPath != null) {
-						File downloadFile = new File(fullPath);
-						FileInputStream inputStream;
-						inputStream = new FileInputStream(downloadFile);
-						String mimeType = "application/octet-stream";
-						System.out.println("MIME type: " + mimeType);
-						response.setContentType(mimeType);
-						response.setContentLength((int) downloadFile.length());
-						String headerKey = "Content-Disposition";
-						String headerValue = String.format("attachment; filename=\"%s\"", downloadFile.getName());
-						response.setHeader(headerKey, headerValue);
-						OutputStream outStream = response.getOutputStream();
-						byte[] buffer = new byte[BUFFER_SIZE];
-						int bytesRead = -1;
-						while ((bytesRead = inputStream.read(buffer)) != -1) {
-							outStream.write(buffer, 0, bytesRead);
-						}
-						inputStream.close();
-						outStream.close();
-						(new File(fullPath)).delete();
-					}
+				String fullPath = exported[1];// contains path to
+												// backedupMappings
+
+				if (StringUtils.isNotBlank(msg) && msg.startsWith("Successfully")) {
+					exportZipFile(response, BUFFER_SIZE, fullPath);
 					passOnExportedFeedback(model, "", msg);
 				} else {
 					passOnExportedFeedback(model, msg, "");
@@ -221,5 +204,96 @@ public class DHISConnectorController {
 			msg = Context.getMessageSourceService().getMessage("dhisconnector.exportMapping.noMappingsFound");
 			passOnExportedFeedback(model, "", msg);
 		}
+		try {
+			response.sendRedirect("/module/dhisconnector/exportMappings");
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+	/*
+	 * fullPath must be a temporally stored file path since it's deleted after
+	 * being exported
+	 */
+	private void exportZipFile(HttpServletResponse response, int BUFFER_SIZE, String fullPath)
+			throws FileNotFoundException, IOException {
+		if (fullPath != null) {
+			File downloadFile = new File(fullPath);
+			FileInputStream inputStream = new FileInputStream(downloadFile);
+			String mimeType = "application/octet-stream";
+
+			System.out.println("MIME type: " + mimeType);
+			response.setContentType(mimeType);
+			response.setContentLength((int) downloadFile.length());
+
+			String headerKey = "Content-Disposition";
+			String headerValue = String.format("attachment; filename=\"%s\"", downloadFile.getName());
+
+			response.setHeader(headerKey, headerValue);
+
+			OutputStream outStream = response.getOutputStream();
+			byte[] buffer = new byte[BUFFER_SIZE];
+			int bytesRead = -1;
+
+			while ((bytesRead = inputStream.read(buffer)) != -1) {
+				outStream.write(buffer, 0, bytesRead);
+			}
+			inputStream.close();
+			outStream.close();
+			(new File(fullPath)).delete();
+		}
+	}
+
+	@RequestMapping(value = "/module/dhisconnector/dhis2BackupExport", method = RequestMethod.GET)
+	public void backupDHIS2APIExport(ModelMap model) {
+		failureOrSuccessFeedback(model, "", "");
+		model.addAttribute("dhis2BackupExists", Context.getService(DHISConnectorService.class).dhis2BackupExists());
+		model.addAttribute("lastSyncedAt", Context.getService(DHISConnectorService.class).getLastSyncedAt());
+		model.addAttribute("showLogin", (Context.getAuthenticatedUser() == null) ? true : false);
+	}
+	
+	@RequestMapping(value = "/module/dhisconnector/dhis2BackupImport", method = RequestMethod.GET)
+	public void backupDHIS2(ModelMap model) {
+		failureOrSuccessFeedback(model, "", "");
+		model.addAttribute("showLogin", (Context.getAuthenticatedUser() == null) ? true : false);
+	}
+
+	@RequestMapping(value = "/module/dhisconnector/dhis2BackupExport", method = RequestMethod.POST)
+	public void backupDHIS2APIImport(ModelMap model, HttpServletResponse response) {
+		String path = Context.getService(DHISConnectorService.class).getDHIS2APIBackupPath();
+
+		if (Context.getService(DHISConnectorService.class).dhis2BackupExists() && StringUtils.isNotBlank(path)) {
+			try {
+				exportZipFile(response, 4096, path);
+			} catch (FileNotFoundException e) {
+				e.printStackTrace();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+
+	}
+
+	@RequestMapping(value = "/module/dhisconnector/dhis2BackupImport", method = RequestMethod.POST)
+	public void backupDHIS2APIImport(ModelMap model,
+			@RequestParam(value = "dhis2APIbBackup", required = false) MultipartFile dhis2APIbBackup) {
+		if (StringUtils.isNotBlank(dhis2APIbBackup.getOriginalFilename())
+				&& dhis2APIbBackup.getOriginalFilename().endsWith(".zip")) {
+			String msg = Context.getService(DHISConnectorService.class).uploadDHIS2APIBackup(dhis2APIbBackup);
+
+			if (msg.startsWith("Successfully")) {
+				failureOrSuccessFeedback(model, "", msg);
+			} else {
+				failureOrSuccessFeedback(model, msg, "");
+			}
+		} else {
+			failureOrSuccessFeedback(model,
+					Context.getMessageSourceService().getMessage("dhisconnector.dhis2backup.wrongUpload"), "");
+		}
+	}
+
+	private void failureOrSuccessFeedback(ModelMap model, String failureEncountered, String successEncountered) {
+		model.addAttribute("failureEncountered", failureEncountered);
+		model.addAttribute("successEncountered", successEncountered);
 	}
 }

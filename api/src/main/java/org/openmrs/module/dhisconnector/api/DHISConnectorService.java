@@ -67,4 +67,12 @@ public interface DHISConnectorService extends OpenmrsService {
 	public String uploadMappings(MultipartFile mapping);
 
 	public String[] exportSelectedMappings(String[] selectedMappings);
+
+	public boolean dhis2BackupExists();
+
+	public String getLastSyncedAt();
+
+	public String getDHIS2APIBackupPath();
+
+	public String uploadDHIS2APIBackup(MultipartFile dhis2APIBackup);
 }

@@ -302,14 +302,14 @@ function saveMapping(event) {
 			dataType : "json",
 			success : function(data) {
 				window.location = '../../module/dhisconnector/runReports.form';
-			},
+			}
 		});
 	} else {
 		jQuery('#saveMappingPopup').dialog('close');
 		jQuery("#error-encountered-saving").html("Empty Mapping cannot be saved.");
 		jQuery("html, body").animate({
 			 scrollTop:0
-		},"slow");
+		},"fast");
 	}
 }
 

@@ -34,7 +34,7 @@
 		  <tr>&nbsp;</tr>
 		  <tr>
 		    <td valign="top">
-		      <select class="mapping-select" id="left-mapping-select" multiple="multiple" size="20">
+		      <select class="mapping-select" id="left-mapping-select" multiple="multiple" size="25">
 		      	<option class="header" disabled value="header"><spring:message code="dhisconnector.exportMapping.selectMappingsHeader"/></option>
 		      	<option ng-repeat="mapping in existingMappings track by $index" value="{{mapping.name}}.{{mapping.dateTime}}">{{mapping.name}} :::> {{mapping.created}}</option>
 		      </select>
@@ -50,7 +50,7 @@
 		      </table>
 		    </td>
 		    <td valign="top">
-		      <select class="mapping-select" name='selectedMappings' id="right-mapping-select" multiple="multiple" size="20">
+		      <select class="mapping-select" name='selectedMappings' id="right-mapping-select" multiple="multiple" size="25">
 		        <option class="header" disabled value="header"><spring:message code="dhisconnector.exportMapping.selectMappingsHeader"/></option>
 		      </select>
 		    </td>
@@ -64,7 +64,7 @@
 
 <form method="POST">
 	<input type="hidden" value="" name="selectedMappings" id="selected-mappings-to-export">
-    <input type="submit" value='<spring:message code="dhisconnector.exportMapping.export"/>'>
+    <input type="submit" value='<spring:message code="dhisconnector.export"/>'>
 </form>
 
 <%@ include file="/WEB-INF/template/footer.jsp" %>

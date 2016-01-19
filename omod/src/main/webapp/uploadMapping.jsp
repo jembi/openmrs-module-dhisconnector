@@ -15,7 +15,7 @@
 	<div class="success-encountered">${successWhileUploading}</div><br />
 	<form method="POST" enctype="multipart/form-data">
         <spring:message code="dhisconnector.mappingToUpload"/> <input type="file" name="mapping"><br /><br />
-        <input type="submit" value='<spring:message code="dhisconnector.uploadMapping.upload"/>'>
+        <input type="submit" value='<spring:message code="dhisconnector.upload"/>'>
     </form>
 
 <%@ include file="/WEB-INF/template/footer.jsp" %>
