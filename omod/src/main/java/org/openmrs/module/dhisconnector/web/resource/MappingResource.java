@@ -11,6 +11,12 @@
  */
 package org.openmrs.module.dhisconnector.web.resource;
 
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.openmrs.api.context.Context;
 import org.openmrs.module.dhisconnector.api.DHISConnectorService;
 import org.openmrs.module.dhisconnector.api.model.DHISMapping;
@@ -26,8 +32,6 @@ import org.openmrs.module.webservices.rest.web.resource.impl.DataDelegatingCrudR
 import org.openmrs.module.webservices.rest.web.resource.impl.DelegatingResourceDescription;
 import org.openmrs.module.webservices.rest.web.resource.impl.NeedsPaging;
 import org.openmrs.module.webservices.rest.web.response.ResponseException;
-
-import java.util.*;
 
 @Resource(name = RestConstants.VERSION_1 + DHISConnectorRestController.DHISCONNECTOR_NAMESPACE
 		+ "/mappings", supportedClass = DHISMapping.class, supportedOpenmrsVersions = { "1.8.*", "1.9.*, 1.10.*, 1.11.*",
@@ -124,6 +128,7 @@ public class MappingResource extends DataDelegatingCrudResource implements Retri
 		description.addProperty("periodIndicatorReportGUID");
 		description.addProperty("periodType");
 		description.addProperty("elements");
+		
 		return description;
 	}
 }

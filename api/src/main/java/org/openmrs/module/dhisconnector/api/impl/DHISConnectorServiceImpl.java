@@ -100,7 +100,6 @@ public class DHISConnectorServiceImpl extends BaseOpenmrsService implements DHIS
 		return null;
 	}
 	
-	// TODO: error handling
 	private void saveToBackUp(String path, String jsonResponse) {
 		String backUpDirecoryPath = OpenmrsUtil.getApplicationDataDirectory() + DHISCONNECTOR_DHIS2BACKUP_FOLDER;
 		
@@ -176,19 +175,13 @@ public class DHISConnectorServiceImpl extends BaseOpenmrsService implements DHIS
 			HttpResponse response = client.execute(targetHost, httpGet, localcontext);
 			HttpEntity entity = response.getEntity();
 			
-			if (response.getStatusLine().getStatusCode() != 200) {
-				// TODO: Handle this
-			}
-			
-			if (entity != null) {
+			if (entity != null && response.getStatusLine().getStatusCode() == 200) {
 				payload = EntityUtils.toString(entity);
 				
 				saveToBackUp(endpoint, payload);
 			} else {
-				// load from dhis2Backup
 				payload = getFromBackUp(endpoint);
 			}
-			// TODO: fix these catches ...
 		}
 		catch (Exception ex) {
 			ex.printStackTrace();
@@ -214,7 +207,6 @@ public class DHISConnectorServiceImpl extends BaseOpenmrsService implements DHIS
 		String payload = "";
 		
 		try {
-			
 			URL dhisURL = new URL(url);
 			
 			String host = dhisURL.getHost();
@@ -240,7 +232,7 @@ public class DHISConnectorServiceImpl extends BaseOpenmrsService implements DHIS
 			if (entity != null) {
 				payload = EntityUtils.toString(entity);
 			} else {
-				// TODO: figure out what to do here
+				System.out.println("Failed to get entity from dhis2 server, network failure!");
 			}
 		}
 		catch (Exception ex) {
