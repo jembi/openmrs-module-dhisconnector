@@ -64,3 +64,11 @@
 	height: 2.05em;
 	overflow: auto;
 }
+
+.mapping-tr {
+	cursor: pointer;
+}
+
+.mapping-tr:hover {
+	background-color: #F0EAEA;
+}

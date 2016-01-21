@@ -296,4 +296,9 @@ public class DHISConnectorController {
 		model.addAttribute("failureEncountered", failureEncountered);
 		model.addAttribute("successEncountered", successEncountered);
 	}
+	
+	@RequestMapping(value = "/module/dhisconnector/manageMappings", method = RequestMethod.GET)
+	public void manageMappings(ModelMap model) {
+		model.addAttribute("showLogin", (Context.getAuthenticatedUser() == null) ? true : false);
+	}
 }

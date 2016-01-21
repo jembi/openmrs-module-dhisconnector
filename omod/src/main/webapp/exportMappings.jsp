@@ -3,6 +3,7 @@
 
 <openmrs:htmlInclude file="/moduleResources/dhisconnector/jquery-2.2.0.min.js"/>
 <openmrs:htmlInclude file="/moduleResources/dhisconnector/angular.min.js"/>
+<openmrs:htmlInclude file="/moduleResources/dhisconnector/dhisconnector.js"/>
 <openmrs:htmlInclude file="/moduleResources/dhisconnector/export-mappings.js"/>
 <openmrs:htmlInclude file="/moduleResources/dhisconnector/dhisconnector.css"/>
 
@@ -14,7 +15,7 @@
 
 <h3><spring:message code="dhisconnector.exportMapping"/></h3>
 <br /><spring:message code="dhisconnector.exportMapping.message"/><br />
-<div  ng-app="exportMappingApp" ng-controller="exportMappingController">
+<div ng-app="exportMappingApp" ng-controller="exportMappingController">
 	<table border="0" cellspacing="0" cellpadding="0">
 		<tbody>
 		  <tr>

@@ -17,6 +17,7 @@ var drake;
 var dataElements;
 var categoryComboOptions;
 var OMRS_WEBSERVICES_BASE_URL = '../..';
+var jq = jQuery;
 
 function allowMappingRemoval(el, container, source) {
     console.log(el);
@@ -348,26 +349,52 @@ function renderDragablePhrase(phrase, maxChars) {
 	}
 }
 
+function generateDateTimeDisplay(timeStamp) {
+	var date = new Date(timeStamp);
+	var month = date.getMonth() + 1;
+	
+	return date.getDate() + "/" + month + "/" + date.getUTCFullYear() + " " + date.getHours() + ":" + date.getMinutes() + ":" + date.getSeconds();
+}
+
+function initializeMappings() {
+	var initializeMappings = [];
+	
+	jq.ajax({
+		url: OMRS_WEBSERVICES_BASE_URL + "/ws/rest/v1/dhisconnector/mappings?limit=2000",
+		async: false,
+		method: "GET",
+		dataType: "json",
+		success: function (data) {
+			for (var i = 0; i < data.results.length; i++) {
+				if(data.results[i].name !== null && data.results[i].name !== "") {
+					initializeMappings.push({"name": data.results[i].name, "created": generateDateTimeDisplay(data.results[i].created), "dateTime": data.results[i].created});
+				}
+			}
+		}
+	});
+	return initializeMappings;
+}
+
 jQuery(function () {
-    populateReportsDropdown();
-    populateDataSetsDropdown();
-    drake = dragula({
-        copy: dragulaCopyFunction,
-        accepts: dragulaAcceptsFunction,
-        removeOnSpill: true
-    });
-
-    jQuery('#saveMappingPopup').dialog({
-        autoOpen: false,
-        modal: true,
-        title: 'Save DHIS Mapping',
-        width: '90%'
-    });
-
-    jQuery('#saveMappingButton').click(function () {
-    	//TODO check if there are any active mappings that happened before pressing, else echo failure
-        $j('#saveMappingPopup').dialog('open');
-    });
-    drake.on('drop', addCloseButtons);
+    if (window.location.pathname.indexOf("createMapping.form") !== -1) {//loaded only at createMapping page
+		populateReportsDropdown();
+		populateDataSetsDropdown();
+		drake = dragula({
+			copy : dragulaCopyFunction,
+			accepts : dragulaAcceptsFunction,
+			removeOnSpill : true
+		});
+		jQuery('#saveMappingPopup').dialog({
+			autoOpen : false,
+			modal : true,
+			title : 'Save DHIS Mapping',
+			width : '90%'
+		});
+		jQuery('#saveMappingButton').click(function() {
+			//TODO check if there are any active mappings that happened before pressing, else echo failure
+			$j('#saveMappingPopup').dialog('open');
+		});
+		drake.on('drop', addCloseButtons);
+	}
 });
 

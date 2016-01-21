@@ -835,7 +835,7 @@ public class DHISConnectorServiceImpl extends BaseOpenmrsService implements DHIS
 	@Override
 	public DHISMapping getMapping(String s) {
 		File mappingsFolder = new File(OpenmrsUtil.getApplicationDataDirectory() + DHISCONNECTOR_MAPPINGS_FOLDER);
-		final String mapping = s.replace("<@>",
+		final String mapping = s.replace("[@]",
 		    ".");/*meant to be uuid, however we are hacking it to contain what we want (mappingName<@>dateTimeStampWhenCreated)*/
 		DHISMapping mappingObj = null;
 		

@@ -10,26 +10,12 @@
 		href="${pageContext.request.contextPath}/module/dhisconnector/configureServer.form"><spring:message
 				code="dhisconnector.configureServer" /></a>
 	</li>
-
-	<li
-			<c:if test='<%= request.getRequestURI().contains("/uploadMapping") %>'>class="active"</c:if>>
-		<a
-				href="${pageContext.request.contextPath}/module/dhisconnector/uploadMapping.form"><spring:message
-				code="dhisconnector.uploadMapping" /></a>
-	</li>
 	
 	<li
-			<c:if test='<%= request.getRequestURI().contains("/createMapping") %>'>class="active"</c:if>>
+			<c:if test='<%= request.getRequestURI().contains("/dhis2BackupImport") %>'>class="active"</c:if>>
 		<a
-				href="${pageContext.request.contextPath}/module/dhisconnector/createMapping.form"><spring:message
-				code="dhisconnector.createMapping" /></a>
-	</li>
-
-	<li
-			<c:if test='<%= request.getRequestURI().contains("/exportMappings") %>'>class="active"</c:if>>
-		<a
-				href="${pageContext.request.contextPath}/module/dhisconnector/exportMappings.form"><spring:message
-				code="dhisconnector.exportMapping" /></a>
+				href="${pageContext.request.contextPath}/module/dhisconnector/dhis2BackupImport.form"><spring:message
+				code="dhisconnector.dhis2Backup.import" /></a>
 	</li>
 	
 	<li
@@ -40,10 +26,31 @@
 	</li>
 	
 	<li
-			<c:if test='<%= request.getRequestURI().contains("/dhis2BackupImport") %>'>class="active"</c:if>>
+			<c:if test='<%= request.getRequestURI().contains("/uploadMapping") %>'>class="active"</c:if>>
 		<a
-				href="${pageContext.request.contextPath}/module/dhisconnector/dhis2BackupImport.form"><spring:message
-				code="dhisconnector.dhis2Backup.import" /></a>
+				href="${pageContext.request.contextPath}/module/dhisconnector/uploadMapping.form"><spring:message
+				code="dhisconnector.uploadMapping" /></a>
+	</li>
+	
+	<li
+			<c:if test='<%= request.getRequestURI().contains("/exportMappings") %>'>class="active"</c:if>>
+		<a
+				href="${pageContext.request.contextPath}/module/dhisconnector/exportMappings.form"><spring:message
+				code="dhisconnector.exportMapping" /></a>
+	</li>
+	
+	<li
+			<c:if test='<%= request.getRequestURI().contains("/createMapping") %>'>class="active"</c:if>>
+		<a
+				href="${pageContext.request.contextPath}/module/dhisconnector/createMapping.form"><spring:message
+				code="dhisconnector.createMapping" /></a>
+	</li>
+
+	<li
+			<c:if test='<%= request.getRequestURI().contains("/manageMappings") %>'>class="active"</c:if>>
+		<a
+				href="${pageContext.request.contextPath}/module/dhisconnector/manageMappings.form"><spring:message
+				code="dhisconnector.manageMappings" /></a>
 	</li>
 	
 	<li

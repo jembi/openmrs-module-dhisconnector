@@ -1,6 +1,3 @@
-var OMRS_WEBSERVICES_BASE_URL = '../..';
-var jq = jQuery;
-
 angular.module('exportMappingApp', []).controller('exportMappingController', function($scope) {
 	
 	$scope.existingMappings = initializeMappings();
@@ -146,32 +143,6 @@ function objectExistsInArray(arr, obj) {
 		}
 	}
 	return exists;
-}
-
-function initializeMappings() {
-	var initializeMappings = [];
-	
-	jq.ajax({
-		url: OMRS_WEBSERVICES_BASE_URL + "/ws/rest/v1/dhisconnector/mappings?limit=2000",
-		async: false,
-		method: "GET",
-		dataType: "json",
-		success: function (data) {
-			for (var i = 0; i < data.results.length; i++) {
-				if(data.results[i].name !== null && data.results[i].name !== "") {
-					initializeMappings.push({"name": data.results[i].name, "created": generateDateTimeDisplay(data.results[i].created), "dateTime": data.results[i].created});
-				}
-			}
-		}
-	});
-	return initializeMappings;
-}
-
-function generateDateTimeDisplay(timeStamp) {
-	var date = new Date(timeStamp);
-	var month = date.getMonth() + 1;
-	
-	return date.getDate() + "/" + month + "/" + date.getUTCFullYear() + " " + date.getHours() + ":" + date.getMinutes() + ":" + date.getSeconds();
 }
 
 function stringStartsWith(string, prefix) {
