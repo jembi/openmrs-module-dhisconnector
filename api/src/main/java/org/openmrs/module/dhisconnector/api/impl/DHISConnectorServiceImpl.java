@@ -49,6 +49,8 @@ import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.protocol.BasicHttpContext;
 import org.apache.http.util.EntityUtils;
 import org.codehaus.jackson.JsonNode;
+import org.codehaus.jackson.JsonParseException;
+import org.codehaus.jackson.map.JsonMappingException;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.openmrs.api.context.Context;
 import org.openmrs.api.impl.BaseOpenmrsService;
@@ -740,18 +742,21 @@ public class DHISConnectorServiceImpl extends BaseOpenmrsService implements DHIS
 					
 					unZipDHIS2APIBackupToTemp(dest.getCanonicalPath());
 					if ((new File(outputFolder)).list().length > 0 && unzippedAt.exists()) {
-						if(!dhis2APIBackupRootDir.exists()) {
+						if (!dhis2APIBackupRootDir.exists()) {
 							dhis2APIBackupRootDir.mkdirs();
 						}
 						
-						if(FileUtils.sizeOfDirectory(dhis2APIBackupRootDir) > 0 && unzippedAt.exists() && unzippedAt.isDirectory()) {
-							if(checkIfDirContainsFile(dhis2APIBackupRootDir, "api")) {
+						if (FileUtils.sizeOfDirectory(dhis2APIBackupRootDir) > 0 && unzippedAt.exists()
+						        && unzippedAt.isDirectory()) {
+							if (checkIfDirContainsFile(dhis2APIBackupRootDir, "api")) {
 								
 								FileUtils.deleteDirectory(api);
 								api.mkdir();
-								msg = Context.getMessageSourceService().getMessage("dhisconnector.dhis2backup.replaceSuccess");
+								msg = Context.getMessageSourceService()
+								        .getMessage("dhisconnector.dhis2backup.replaceSuccess");
 							} else {
-								msg = Context.getMessageSourceService().getMessage("dhisconnector.dhis2backup.import.success");
+								msg = Context.getMessageSourceService()
+								        .getMessage("dhisconnector.dhis2backup.import.success");
 							}
 							FileUtils.copyDirectory(unzippedAt, api);
 							FileUtils.deleteDirectory(temp);
@@ -777,10 +782,10 @@ public class DHISConnectorServiceImpl extends BaseOpenmrsService implements DHIS
 	private boolean checkIfDirContainsFile(File dir, String fileName) {
 		boolean contains = false;
 		
-		if(dir.exists() && dir.isDirectory()) {
-			for(File d : dir.listFiles()) {
-			    if(d.getName().equals(fileName))//can be directory still
-			        contains = true;
+		if (dir.exists() && dir.isDirectory()) {
+			for (File d : dir.listFiles()) {
+				if (d.getName().equals(fileName))//can be directory still
+					contains = true;
 			}
 		}
 		return contains;
@@ -801,7 +806,7 @@ public class DHISConnectorServiceImpl extends BaseOpenmrsService implements DHIS
 			while (entry != null) {
 				String filePath = outputFolder + File.separator + entry.getName();
 				if (!entry.isDirectory()) {
-					if(!(new File(filePath)).getParentFile().exists()) {
+					if (!(new File(filePath)).getParentFile().exists()) {
 						(new File(filePath)).getParentFile().mkdirs();
 					}
 					(new File(filePath)).createNewFile();
@@ -827,4 +832,38 @@ public class DHISConnectorServiceImpl extends BaseOpenmrsService implements DHIS
 		}
 	}
 	
+	@Override
+	public DHISMapping getMapping(String s) {
+		File mappingsFolder = new File(OpenmrsUtil.getApplicationDataDirectory() + DHISCONNECTOR_MAPPINGS_FOLDER);
+		final String mapping = s.replace("<@>",
+		    ".");/*meant to be uuid, however we are hacking it to contains what we want (mappingname<@>datetimewhencreated)*/
+		DHISMapping mappingObj = null;
+		
+		if (mappingsFolder.exists() && checkIfDirContainsFile(mappingsFolder, mapping + DHISCONNECTOR_MAPPING_FILE_SUFFIX)) {
+			ObjectMapper mapper = new ObjectMapper();
+			File[] files = mappingsFolder.listFiles(new FilenameFilter() {
+				
+				@Override
+				public boolean accept(File dir, String name) {
+					return name.endsWith(DHISCONNECTOR_MAPPING_FILE_SUFFIX) && name.startsWith(mapping);
+				}
+			});
+			if (files.length == 1 && files[0] != null) {
+				try {
+					mappingObj = mapper.readValue(files[0], DHISMapping.class);
+				}
+				catch (JsonParseException e) {
+					e.printStackTrace();
+				}
+				catch (JsonMappingException e) {
+					e.printStackTrace();
+				}
+				catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+		
+		return mappingObj;
+	}
 }

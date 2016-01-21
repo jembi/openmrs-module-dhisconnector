@@ -40,17 +40,17 @@ public class MappingResource extends DataDelegatingCrudResource implements Retri
 
 	@Override
 	public DHISMapping getByUniqueId(String s) {
-		return null;
+		return Context.getService(DHISConnectorService.class).getMapping(s);
 	}
 
 	@Override
 	protected void delete(Object o, String s, RequestContext requestContext) throws ResponseException {
-
+		System.out.println(s + o);
 	}
 
 	@Override
 	public void purge(Object o, RequestContext requestContext) throws ResponseException {
-
+		System.out.println(o);
 	}
 
 	/**
