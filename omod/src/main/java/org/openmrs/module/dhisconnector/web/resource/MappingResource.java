@@ -33,9 +33,10 @@ import org.openmrs.module.webservices.rest.web.resource.impl.DelegatingResourceD
 import org.openmrs.module.webservices.rest.web.resource.impl.NeedsPaging;
 import org.openmrs.module.webservices.rest.web.response.ResponseException;
 
+@SuppressWarnings({ "unchecked", "rawtypes" })
 @Resource(name = RestConstants.VERSION_1 + DHISConnectorRestController.DHISCONNECTOR_NAMESPACE
-		+ "/mappings", supportedClass = DHISMapping.class, supportedOpenmrsVersions = { "1.8.*", "1.9.*, 1.10.*, 1.11.*",
-		"1.12.*", "2.0.*" })
+		+ "/mappings", supportedClass = DHISMapping.class, supportedOpenmrsVersions = { "1.8.*",
+				"1.9.*, 1.10.*, 1.11.*", "1.12.*", "2.0.*" })
 public class MappingResource extends DataDelegatingCrudResource implements Retrievable {
 
 	@Override
@@ -43,19 +44,23 @@ public class MappingResource extends DataDelegatingCrudResource implements Retri
 		return Context.getService(DHISConnectorService.class).getMapping(s);
 	}
 
+	/**
+	 * Overridden to Permanently delete a {@link DHISMapping} instead of
+	 * retiring it, no support for voiding one is included so-far
+	 */
 	@Override
 	protected void delete(Object o, String s, RequestContext requestContext) throws ResponseException {
-		System.out.println(s + o);
+		if(Context.getService(DHISConnectorService.class).permanentlyDeleteMapping((DHISMapping) o)) {
+			//TODO anything to be done here?
+		}
 	}
 
 	@Override
 	public void purge(Object o, RequestContext requestContext) throws ResponseException {
-		System.out.println(o);
 	}
 
 	/**
-	 * Annotated setter for elements
-	 * TODO: Figure out the correct way to do this
+	 * Annotated setter for elements TODO: Figure out the correct way to do this
 	 *
 	 * @param dm
 	 * @param value
@@ -90,7 +95,7 @@ public class MappingResource extends DataDelegatingCrudResource implements Retri
 
 		List<DHISMapping> mappings = Context.getService(DHISConnectorService.class).getMappings();
 
-		if(mappings == null)
+		if (mappings == null)
 			mappings = new ArrayList<DHISMapping>();
 
 		return new NeedsPaging<DHISMapping>(mappings, context);
@@ -128,7 +133,7 @@ public class MappingResource extends DataDelegatingCrudResource implements Retri
 		description.addProperty("periodIndicatorReportGUID");
 		description.addProperty("periodType");
 		description.addProperty("elements");
-		
+
 		return description;
 	}
 }

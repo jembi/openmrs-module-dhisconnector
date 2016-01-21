@@ -836,7 +836,7 @@ public class DHISConnectorServiceImpl extends BaseOpenmrsService implements DHIS
 	public DHISMapping getMapping(String s) {
 		File mappingsFolder = new File(OpenmrsUtil.getApplicationDataDirectory() + DHISCONNECTOR_MAPPINGS_FOLDER);
 		final String mapping = s.replace("<@>",
-		    ".");/*meant to be uuid, however we are hacking it to contains what we want (mappingname<@>datetimewhencreated)*/
+		    ".");/*meant to be uuid, however we are hacking it to contain what we want (mappingName<@>dateTimeStampWhenCreated)*/
 		DHISMapping mappingObj = null;
 		
 		if (mappingsFolder.exists() && checkIfDirContainsFile(mappingsFolder, mapping + DHISCONNECTOR_MAPPING_FILE_SUFFIX)) {
@@ -845,7 +845,7 @@ public class DHISConnectorServiceImpl extends BaseOpenmrsService implements DHIS
 				
 				@Override
 				public boolean accept(File dir, String name) {
-					return name.endsWith(DHISCONNECTOR_MAPPING_FILE_SUFFIX) && name.startsWith(mapping);
+					return name.equals(mapping + DHISCONNECTOR_MAPPING_FILE_SUFFIX);
 				}
 			});
 			if (files.length == 1 && files[0] != null) {
@@ -865,5 +865,29 @@ public class DHISConnectorServiceImpl extends BaseOpenmrsService implements DHIS
 		}
 		
 		return mappingObj;
+	}
+	
+	@Override
+	public boolean permanentlyDeleteMapping(DHISMapping mapping) {
+		File mappingsFolder = new File(OpenmrsUtil.getApplicationDataDirectory() + DHISCONNECTOR_MAPPINGS_FOLDER);
+		boolean deleted = false;
+		
+		if (mapping != null) {
+			String mappingFileName = mapping.getName() + "." + mapping.getCreated()
+			        + DHISCONNECTOR_MAPPING_FILE_SUFFIX;
+					
+			if (checkIfDirContainsFile(mappingsFolder, mappingFileName)) {
+				try {
+					if ((new File(mappingsFolder.getCanonicalPath() + File.separator + mappingFileName)).delete()) {
+						deleted = true;
+					}
+				}
+				catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+		
+		return deleted;
 	}
 }
