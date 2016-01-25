@@ -29,7 +29,7 @@
 				<th><openmrs:message code="general.name"/></th>
 				<th><openmrs:message code="dhisconnector.manageMappings.createdOn" /></th>
 			</tr>
-			<tr ng-repeat="mapping in existingMappings track by $index" ng-click='loadMappingEditor(fetchMappingName(mapping))' class="mapping-tr">
+			<tr ng-repeat="mapping in existingMappings track by $index" title="<openmrs:message code='dhisconnector.manageMappings.clickToEdit'/> {{mapping.name}}" ng-click="loadMappingEditor(fetchMappingDisplay(mapping))" class="mapping-tr">
 				<td><input type="checkbox" ng-checked="selectAllMappings" class="select-this-mapping" value="{{mapping.name}}[@]{{mapping.dateTime}}"></td>
 				<td>{{mapping.name}}</td>
 				<td>{{mapping.created}}</td>

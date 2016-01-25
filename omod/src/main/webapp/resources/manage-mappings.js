@@ -1,9 +1,10 @@
 angular.module('manageMappingsApp', []).controller('manageMappingsController', function($scope) {
 	$scope.existingMappings = initializeMappings();
 	
-	$scope.fetchMappingName = function(mapping) {
+	$scope.fetchMappingDisplay = function(mapping) {
 		if(mapping !== undefined) {
-			return mapping.name + "." + mapping.dateTime;
+			//this hack ([@]) is understood by as the server to trigger a get by uuid
+			return {"name": mapping.name, "created": mapping.dateTime};
 		} else
 			return undefined;
 	}
@@ -15,6 +16,7 @@ angular.module('manageMappingsApp', []).controller('manageMappingsController', f
 	$scope.loadMappingEditor = function(mapping) {
 		if(mapping !== undefined && event.target.localName !== "input") {
 			console.log(mapping);
+			window.location = "../../module/dhisconnector/createMapping.form?edit=" + mapping.name + "&created=" + mapping.created;
 		}
 	}
 	
@@ -27,19 +29,20 @@ angular.module('manageMappingsApp', []).controller('manageMappingsController', f
 	}
 	
 	$scope.deleteSelectedMappings = function() {
-		//mapping format: name[@]dateTime
+		//mapping display format: name[@]dateTime
 		var selectedMappings = jq(".select-this-mapping:checked");
 		
-		for(i = 0; i < selectedMappings.length;i++) {
-			jq.ajax({
-				url: OMRS_WEBSERVICES_BASE_URL + "/ws/rest/v1/dhisconnector/mappings/" + selectedMappings[i].value,
-				method: "DELETE",
-				success: function (data) {
-					//TODO check for and handle status 202/success or 404/mapping not found
-					console.log(data);
-					location.reload();
-				}
-			});
+		if(confirm("Are you sure you want to delete selected Mapping(s)?")) {
+			for(i = 0; i < selectedMappings.length;i++) {
+				jq.ajax({
+					url: OMRS_WEBSERVICES_BASE_URL + "/ws/rest/v1/dhisconnector/mappings/" + selectedMappings[i].value,
+					method: "DELETE",
+					success: function (data) {
+						//TODO check for and handle status 202/success or 404/mapping not found
+						location.reload();
+					}
+				});
+			}
 		}
 	}
 });

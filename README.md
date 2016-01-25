@@ -76,13 +76,14 @@ Implemented
   - [x] Post data or download DXF
   - [x] Backup DHIS2 API for offline use
   - [x] Interface for uploading mappings
-  - [x] Interface for exporting mappings  
+  - [x] Interface for exporting mappings
+  - [x] Fix mapping creation UI to support multi-line DataElement names
+  - [x] Interface for prepopulating DHIS2 API backup  
+  - [x] Error handling
 
 TODO
-  - [ ] Error handling
   - [ ] Managing/editing mappings
-  - [ ] Fix mapping creation UI to support multi-line DataElement names
-  - [ ] Interface for prepopulating DHIS2 API backup
+  - [ ] Scroll page when dragging mapping to top and bottom of page if necessary
   - [ ] Support other types of OpenMRS reports
   - [ ] Post or download ADX
   - [ ] DHIS2 API pagination
