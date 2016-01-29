@@ -20,6 +20,9 @@ var OMRS_WEBSERVICES_BASE_URL = '../..';
 var jq = jQuery;
 var reportsDropDownAjax;
 var dataSetsDropDownAjax;
+var displayIndicatorsAjax;
+var displayDatasetsAjax;
+var headingForCreateMapping = "Add New Mapping";
 
 function allowMappingRemoval(el, container, source) {
     console.log(el);
@@ -52,7 +55,7 @@ function getCategoryComboOptions(dataElementId, requests) {
     var requests = [];
 
     // fetch data element details
-    jQuery.get(OMRS_WEBSERVICES_BASE_URL + "/ws/rest/v1/dhisconnector/dhisdataelements/" + dataElementId + "?v=full&limit=100", function (dataelement) {
+    displayDatasetsAjax = jQuery.get(OMRS_WEBSERVICES_BASE_URL + "/ws/rest/v1/dhisconnector/dhisdataelements/" + dataElementId + "?v=full&limit=100", function (dataelement) {
         // fetch the category combo options
         requests.push(jQuery.get(OMRS_WEBSERVICES_BASE_URL + "/ws/rest/v1/dhisconnector/dhiscategorycombos/" + dataelement.categoryCombo.id + "?v=full&limit=100", function (categorycombo) {
             for (var i = 0; i < categorycombo.categoryOptionCombos.length; i++) {
@@ -74,7 +77,7 @@ function getDataElementsAndCategoryComboOptions() {
     var requests = [];
 
     // fetch dataset details
-    jQuery.get(OMRS_WEBSERVICES_BASE_URL + "/ws/rest/v1/dhisconnector/dhisdatasets/" + jQuery('#dataSetSelect').val() + "?v=full&limit=100", function (data) {
+    displayIndicatorsAjax = jQuery.get(OMRS_WEBSERVICES_BASE_URL + "/ws/rest/v1/dhisconnector/dhisdatasets/" + jQuery('#dataSetSelect').val() + "?v=full&limit=100", function (data) {
 
         jQuery('#periodType').html(data.periodType);
 
@@ -189,11 +192,8 @@ function populateReportsDropdown() {
         }
 
         jQuery('#reports').html("");
-
         jQuery('#reports').append(reportSelect);
-
         jQuery("#reportSelect").hide().fadeIn("slow");
-
         reports = data.results;
     });
 }
@@ -210,11 +210,8 @@ function populateDataSetsDropdown() {
         }
 
         jQuery('#datasets').html("");
-
         jQuery('#datasets').append(reportSelect);
-
         jQuery("#dataSetSelect").hide().fadeIn("slow");
-
         dataSets = data.results;
     });
 }
@@ -271,7 +268,7 @@ function saveMapping(event) {
         var row =
 
             mapping.elements.push({
-                indicator: jQuery('.row-' + i + '.indicatorContainer > .box').html(),
+                indicator: jQuery('.row-' + i + '.indicatorContainer > .box > label')[0].title,
                 dataElement: jQuery('.row-' + i + '.dataElementContainer > .box').attr('data-uid'),
                 comboOption: jQuery('.row-' + i + '.comboOptionContainer > .box').attr('data-uid')
             });
@@ -394,27 +391,94 @@ function getUrlParameter(sParam) {
 
 function loadMappingToBeEditted(mapping) {
 	console.log(mapping);
-	
-	if(reportsDropDownAjax !== undefined) {
-		reportsDropDownAjax.done(function() {
+	if(reportsDropDownAjax !== undefined && dataSetsDropDownAjax !== undefined) {
+		jq.when(reportsDropDownAjax, dataSetsDropDownAjax).done(function() {
 			jq("#reportSelect").val(mapping.periodIndicatorReportGUID);
-			onReportSelect();
-		});
-	}
-	if(dataSetsDropDownAjax !== undefined) {
-		dataSetsDropDownAjax.done(function() {
 			jq("#dataSetSelect").val(mapping.dataSetUID);
+			onReportSelect();
 			onDataSetSelect();
+			
+			jq.when(displayIndicatorsAjax, displayDatasetsAjax).done(function() {
+				for (var i = 0; i < jq('.indicatorContainer').length; i++) {
+					var elementsIndex = elementsMatchIndicator(mapping.elements, i);
+					
+					var dataElement = (elementsIndex !== -1 && mapping.elements[elementsIndex] !== undefined) ? fetchElementFromGlobalDataElements(mapping.elements[elementsIndex].dataElement) : undefined;
+					if(dataElement !== undefined) {
+						jq('.row > .dataElementDragDestination.row-' + i).append('<div class="reportIndicator box" data-uid="' + dataElement.id + '" title="' + dataElement.name + '">' + renderMappingsDragablePhrase(dataElement.name) + '<span onclick="deleteMapping(this);" class="close">x</span></div>');
+					}
+					var comboOption = (elementsIndex !== -1 && mapping.elements[elementsIndex] !== undefined) ? fetchCategoryComboOption(mapping.elements[elementsIndex].comboOption, mapping.elements[elementsIndex].dataElement) : undefined;
+
+					if(comboOption !== undefined) {
+						jq('.row > .comboOptionDragDestination.row-' + i).append('<div class="reportIndicator box" data-uid="' + comboOption.id + '" title="' + comboOption.name + '">' + renderMappingsDragablePhrase(comboOption.name) + '<span onclick="deleteMapping(this);" class="close">x</span></div>');
+					}
+			    }
+			});
 		});
 	}
 	jq('#periodType').html(mapping.periodType);
 	jq('#mappingName').val(mapping.name);
-	//TODO add elements already dragged to ui and probably add title that mentions whether edit or create new mapping is active
+}
+
+function fetchElementFromGlobalDataElements(element) {
+	var dataElement;
+	
+	if(element !== undefined) {
+		for(i = 0; i < dataElements.length; i++) {
+			if(dataElements[i].id === element) {
+				dataElement = dataElements[i];
+			}
+		}
+	}
+	return dataElement;
+}
+
+function fetchCategoryComboOption(combo, dataelement) {
+	var comboOpt;
+	var newCategoryComboOptions = [];
+	
+	if(dataelement !== undefined) {
+		jq.ajax({
+			url: OMRS_WEBSERVICES_BASE_URL + "/ws/rest/v1/dhisconnector/dhisdataelements/" + dataelement + "?v=full&limit=100",
+			method: "GET",
+			async: false,
+			success: function(dataelementObj) {
+				if(dataelementObj.categoryCombo !== null && dataelementObj.categoryCombo !== undefined && dataelementObj.categoryCombo.id !== undefined) {
+					jq.ajax({
+						url: OMRS_WEBSERVICES_BASE_URL + "/ws/rest/v1/dhisconnector/dhiscategorycombos/" + dataelementObj.categoryCombo.id + "?v=full&limit=100",
+						method: "GET",
+						async: false,
+						success: function(categorycombo) {
+					    	for (var i = 0; i < categorycombo.categoryOptionCombos.length; i++) {
+					            if (categorycombo.categoryOptionCombos[i].id === combo) {
+					            	comboOpt = categorycombo.categoryOptionCombos[i];
+					            }
+					        }
+					    }
+				    });
+				}
+			}
+	    });
+	}
+	return comboOpt;
+}
+
+function elementsMatchIndicator(elements, index) {
+	var elementsIndex = -1;
+
+	for(var j = 0; j < elements.length; j++) {
+		if (jq('.indicatorContainer')[index].children[0].children[0].title === jq(
+				'.row-' + index + '.indicatorContainer > .box > label').html() && jq(
+				'.indicatorContainer')[index].children[0].children[0].title === elements[j].indicator) {
+			elementsIndex = j;
+		}	
+	}
+	return elementsIndex;
 }
 
 jQuery(function () {//self invoked only if the whole page has completely loaded
     if (window.location.pathname.indexOf("createMapping.form") !== -1) {//loaded only at createMapping page
-		populateReportsDropdown();
+		//TODO this blocks takes long time while loading, investigate why and speed it up
+    	populateReportsDropdown();
 		populateDataSetsDropdown();
 		drake = dragula({
 			copy : dragulaCopyFunction,
@@ -439,6 +503,7 @@ jQuery(function () {//self invoked only if the whole page has completely loaded
 			var mappingDisplay = selectedMapping.name + "[@]" + selectedMapping.created;
 			
 			console.log("Loading selected mapping to be edited: " + mappingDisplay);
+			headingForCreateMapping = "Editing: " + selectedMapping.name;
 			
 			var editAjaxCall = jq.ajax({
 				url: OMRS_WEBSERVICES_BASE_URL + "/ws/rest/v1/dhisconnector/mappings/" + mappingDisplay,
@@ -450,11 +515,15 @@ jQuery(function () {//self invoked only if the whole page has completely loaded
 					} else {
 						window.location = "../../module/dhisconnector/createMapping.form";
 					}
+				},
+				statusCode: {
+				    404: function() {
+				    	window.location = "../../module/dhisconnector/createMapping.form";
+				    }
 				}
 			});
-		} else {
-			window.location = "../../module/dhisconnector/createMapping.form";
 		}
+		jq("h4").html(headingForCreateMapping);
 	}
 });
 
