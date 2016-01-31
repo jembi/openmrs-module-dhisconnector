@@ -15,6 +15,8 @@
 
 <h3><spring:message code="dhisconnector.createMapping"/></h3>
 <h4></h4>
+<div id="loading-progress-bar"></div>
+<input id="create-mapping-action" type="hidden" value="new">
 <div class="error-encountered" id="error-encountered-saving"></div>
 <p>
 <div class="row">

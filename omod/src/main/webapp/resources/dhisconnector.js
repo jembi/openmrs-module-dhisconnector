@@ -58,11 +58,15 @@ function getCategoryComboOptions(dataElementId, requests) {
     displayDatasetsAjax = jQuery.get(OMRS_WEBSERVICES_BASE_URL + "/ws/rest/v1/dhisconnector/dhisdataelements/" + dataElementId + "?v=full&limit=100", function (dataelement) {
         // fetch the category combo options
         requests.push(jQuery.get(OMRS_WEBSERVICES_BASE_URL + "/ws/rest/v1/dhisconnector/dhiscategorycombos/" + dataelement.categoryCombo.id + "?v=full&limit=100", function (categorycombo) {
-            for (var i = 0; i < categorycombo.categoryOptionCombos.length; i++) {
-                if (!categoryComboOptions.hasOwnProperty(categorycombo.categoryOptionCombos[i].id)) {
-                    categoryComboOptions[categorycombo.categoryOptionCombos[i].id] = categorycombo.categoryOptionCombos[i];
-                }
-            }
+            if (categorycombo !== null && categorycombo !== undefined) {
+				for (var i = 0; i < categorycombo.categoryOptionCombos.length; i++) {
+					if (!categoryComboOptions
+							.hasOwnProperty(categorycombo.categoryOptionCombos[i].id)) {
+						categoryComboOptions[categorycombo.categoryOptionCombos[i].id] = categorycombo.categoryOptionCombos[i];
+					}
+				}
+				jq("#loading-progress-bar").html("");
+			}
         }));
         jQuery.when.apply($, requests).then(function () {
             def.resolve();
@@ -259,7 +263,12 @@ function saveMapping(event) {
     // build mapping json
     mapping.name = jQuery('#mappingName').val();
     mapping.periodType = jQuery('#periodType').html();
-    mapping.created = Date.now();
+    if(jq("#create-mapping-action").val() === "new" || jq("#create-mapping-action").val() === "copy") {
+    	mapping.created = Date.now();
+    } else if(jq("#create-mapping-action").val() === "edit") {
+    	mapping.created = getUrlParameter("created");
+    	mapping.name =getUrlParameter("edit");
+    }
     mapping.dataSetUID = jQuery('#dataSetSelect').val();
     mapping.periodIndicatorReportGUID = jQuery('#reportSelect').val();
 
@@ -389,7 +398,7 @@ function getUrlParameter(sParam) {
     }
 }
 
-function loadMappingToBeEditted(mapping) {
+function loadMappingToBeDisplayed(mapping) {
 	console.log(mapping);
 	if(reportsDropDownAjax !== undefined && dataSetsDropDownAjax !== undefined) {
 		jq.when(reportsDropDownAjax, dataSetsDropDownAjax).done(function() {
@@ -416,7 +425,6 @@ function loadMappingToBeEditted(mapping) {
 		});
 	}
 	jq('#periodType').html(mapping.periodType);
-	jq('#mappingName').val(mapping.name);
 }
 
 function fetchElementFromGlobalDataElements(element) {
@@ -442,17 +450,24 @@ function fetchCategoryComboOption(combo, dataelement) {
 			method: "GET",
 			async: false,
 			success: function(dataelementObj) {
-				if(dataelementObj.categoryCombo !== null && dataelementObj.categoryCombo !== undefined && dataelementObj.categoryCombo.id !== undefined) {
+				if(dataelementObj !== undefined && dataelementObj !== null && dataelementObj.categoryCombo !== null && dataelementObj.categoryCombo !== undefined && dataelementObj.categoryCombo.id !== undefined) {
 					jq.ajax({
 						url: OMRS_WEBSERVICES_BASE_URL + "/ws/rest/v1/dhisconnector/dhiscategorycombos/" + dataelementObj.categoryCombo.id + "?v=full&limit=100",
 						method: "GET",
 						async: false,
 						success: function(categorycombo) {
-					    	for (var i = 0; i < categorycombo.categoryOptionCombos.length; i++) {
-					            if (categorycombo.categoryOptionCombos[i].id === combo) {
-					            	comboOpt = categorycombo.categoryOptionCombos[i];
-					            }
-					        }
+							if (categorycombo !== null && categorycombo !== undefined) {
+						    	for (var i = 0; i < categorycombo.categoryOptionCombos.length; i++) {
+						            if (categorycombo.categoryOptionCombos[i].id === combo) {
+						            	comboOpt = categorycombo.categoryOptionCombos[i];
+						            }
+						        }
+							}
+							if(jq("#create-mapping-action").val() === "edit") {
+								jq('#mappingName').attr("disabled", true);
+							    jq('#dataSetSelect').attr("disabled", true);
+							    jq('#reportSelect').attr("disabled", true);
+							}
 					    }
 				    });
 				}
@@ -475,9 +490,28 @@ function elementsMatchIndicator(elements, index) {
 	return elementsIndex;
 }
 
+function fetchAndLoadMappingToBeDisplayed(mappingDisplay) {
+	jq.ajax({
+		url: OMRS_WEBSERVICES_BASE_URL + "/ws/rest/v1/dhisconnector/mappings/" + mappingDisplay,
+		method: "GET",
+		success: function(mapping) {
+			if(mapping !== undefined && mapping.name !== undefined && mapping.created !== undefined) {
+				loadMappingToBeDisplayed(mapping);
+			} else {
+				window.location = "../../module/dhisconnector/createMapping.form";
+			}
+		},
+		statusCode: {
+		    404: function() {
+		    	window.location = "../../module/dhisconnector/createMapping.form";
+		    }
+		}
+	});
+}
+
 jQuery(function () {//self invoked only if the whole page has completely loaded
     if (window.location.pathname.indexOf("createMapping.form") !== -1) {//loaded only at createMapping page
-		//TODO this blocks takes long time while loading, investigate why and speed it up
+		//TODO this code block takes long time while loading, speed it up
     	populateReportsDropdown();
 		populateDataSetsDropdown();
 		drake = dragula({
@@ -497,33 +531,37 @@ jQuery(function () {//self invoked only if the whole page has completely loaded
 		});
 		drake.on('drop', addCloseButtons);
 		
-		var selectedMapping = {"name" : getUrlParameter("edit"), "created" : getUrlParameter("created")};
+		var selectedMappingToEdit = {"name" : getUrlParameter("edit"), "created" : getUrlParameter("created")};
+		var selectedMappingToCopy = {"name" : getUrlParameter("copy"), "created" : getUrlParameter("created")};
 		
-		if(selectedMapping.name !== undefined && selectedMapping.created !== null) {
-			var mappingDisplay = selectedMapping.name + "[@]" + selectedMapping.created;
+		
+		if(selectedMappingToEdit.name !== undefined && selectedMappingToEdit.created !== undefined) {
+			var mappingDisplay = selectedMappingToEdit.name + "[@]" + selectedMappingToEdit.created;
 			
+			jq("#loading-progress-bar").html("<img class='loading-progress-bar-img' src='../../moduleResources/dhisconnector/hor_loading.gif'/>");	
 			console.log("Loading selected mapping to be edited: " + mappingDisplay);
-			headingForCreateMapping = "Editing: " + selectedMapping.name;
+			headingForCreateMapping = "Editing: " + selectedMappingToEdit.name;
+			jq("h4").html(headingForCreateMapping);
+			jq("#create-mapping-action").val("edit");
+			jq('#mappingName').val(selectedMappingToEdit.name);
+			fetchAndLoadMappingToBeDisplayed(mappingDisplay);
 			
-			var editAjaxCall = jq.ajax({
-				url: OMRS_WEBSERVICES_BASE_URL + "/ws/rest/v1/dhisconnector/mappings/" + mappingDisplay,
-				method: "GET",
-				success: function(mapping) {
-					if(mapping !== undefined && mapping.name !== undefined && mapping.created !== undefined) {
-						
-						loadMappingToBeEditted(mapping);
-					} else {
-						window.location = "../../module/dhisconnector/createMapping.form";
-					}
-				},
-				statusCode: {
-				    404: function() {
-				    	window.location = "../../module/dhisconnector/createMapping.form";
-				    }
-				}
-			});
+		} else if(selectedMappingToCopy.name !== undefined && selectedMappingToCopy.created !== undefined) {
+			var mappingDisplay = selectedMappingToCopy.name + "[@]" + selectedMappingToCopy.created;
+			
+			jq("#loading-progress-bar").html("<img class='loading-progress-bar-img' src='../../moduleResources/dhisconnector/hor_loading.gif'/>");	
+			console.log("Loading selected mapping to be copied: " + mappingDisplay);
+			headingForCreateMapping = "Copying: " + selectedMappingToCopy.name;
+			jq("h4").html(headingForCreateMapping);
+			jq("#create-mapping-action").val("copy");
+			jq('#mappingName').val("");
+			fetchAndLoadMappingToBeDisplayed(mappingDisplay);
+		} else {
+			headingForCreateMapping = "Add New Mapping";
+			jq("h4").html(headingForCreateMapping);
+			jq("#create-mapping-action").val("new");
+			jq('#mappingName').val("");
 		}
-		jq("h4").html(headingForCreateMapping);
 	}
 });
 

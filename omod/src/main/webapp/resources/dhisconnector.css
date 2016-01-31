@@ -72,3 +72,9 @@
 .mapping-tr:hover {
 	background-color: #F0EAEA;
 }
+
+img.loading-progress-bar-img {
+    display: block;
+    margin-left: auto;
+    margin-right: auto
+}

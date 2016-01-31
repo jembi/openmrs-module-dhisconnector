@@ -14,9 +14,14 @@ angular.module('manageMappingsApp', []).controller('manageMappingsController', f
 	 * ESAUDE-36 [DHISConnector - Add support to edit existing mappings]
 	 */
 	$scope.loadMappingEditor = function(mapping) {
-		if(mapping !== undefined && event.target.localName !== "input") {
-			console.log(mapping);
+		if(mapping !== undefined && ((event.target.localName === "input" && event.target.type === "image" && event.target.alt === "Edit") || event.target.localName === "td")) {
 			window.location = "../../module/dhisconnector/createMapping.form?edit=" + mapping.name + "&created=" + mapping.created;
+		}
+	}
+	
+	$scope.loadMappingCopier = function(mapping) {
+		if(mapping !== undefined) {
+			window.location = "../../module/dhisconnector/createMapping.form?copy=" + mapping.name + "&created=" + mapping.created;
 		}
 	}
 	
@@ -29,20 +34,29 @@ angular.module('manageMappingsApp', []).controller('manageMappingsController', f
 	}
 	
 	$scope.deleteSelectedMappings = function() {
-		//mapping display format: name[@]dateTime
 		var selectedMappings = jq(".select-this-mapping:checked");
 		
 		if(confirm("Are you sure you want to delete selected Mapping(s)?")) {
 			for(i = 0; i < selectedMappings.length;i++) {
-				jq.ajax({
-					url: OMRS_WEBSERVICES_BASE_URL + "/ws/rest/v1/dhisconnector/mappings/" + selectedMappings[i].value,
-					method: "DELETE",
-					success: function (data) {
-						//TODO check for and handle status 202/success or 404/mapping not found
-						location.reload();
-					}
-				});
+				deleteThisMapping(selectedMappings[i].value);
 			}
 		}
 	}
+	
+	$scope.deleteThisSelectedMapping = function(mapping) {
+		var selectedMapping = mapping.name + "[@]" + mapping.created;
+		
+		deleteThisMapping(selectedMapping);
+	}
 });
+
+function deleteThisMapping(mappingDisplay) {
+	//mapping display format: name[@]dateTime
+	jq.ajax({
+		url: OMRS_WEBSERVICES_BASE_URL + "/ws/rest/v1/dhisconnector/mappings/" + mappingDisplay,
+		method: "DELETE",
+		success: function (data) {
+			location.reload();
+		}
+	});
+}

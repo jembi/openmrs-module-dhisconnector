@@ -28,11 +28,17 @@
 				<th><label><input type="checkbox" ng-model="selectAllMappings"><openmrs:message code="general.select" /></label></th>
 				<th><openmrs:message code="general.name"/></th>
 				<th><openmrs:message code="dhisconnector.manageMappings.createdOn" /></th>
+				<th><openmrs:message code="general.action" /></th>
 			</tr>
 			<tr ng-repeat="mapping in existingMappings track by $index" title="<openmrs:message code='dhisconnector.manageMappings.clickToEdit'/> {{mapping.name}}" ng-click="loadMappingEditor(fetchMappingDisplay(mapping))" class="mapping-tr">
 				<td><input type="checkbox" ng-checked="selectAllMappings" class="select-this-mapping" value="{{mapping.name}}[@]{{mapping.dateTime}}"></td>
 				<td>{{mapping.name}}</td>
 				<td>{{mapping.created}}</td>
+				<td>
+					<span><input type="image" src="../../images/edit.gif" ng-click="loadMappingEditor(fetchMappingDisplay(mapping))" title="<openmrs:message code='dhisconnector.mapping.editThis'/>" alt="<openmrs:message code='general.edit'/>"></span>
+					<span><input type="image" src="../../images/copy.gif" ng-click="loadMappingCopier(fetchMappingDisplay(mapping))" title="<openmrs:message code='dhisconnector.mapping.copyThis'/>" alt="<openmrs:message code='dhisconnector.general.copy'/>"></span>
+					<span><input type="image" src="../../images/delete.gif" ng-click="deleteThisSelectedMapping(fetchMappingDisplay(mapping))" title="<openmrs:message code='dhisconnector.mapping.deleteThis'/>" alt="<openmrs:message code='general.delete'/>"></span>
+				</td>
 			</tr>
 		</table>
 	</div>

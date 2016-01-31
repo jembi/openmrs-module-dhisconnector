@@ -319,6 +319,9 @@ public class DHISConnectorServiceImpl extends BaseOpenmrsService implements DHIS
 		
 		File newMappingFile = new File(mappingsDirecoryPath + File.separator + filename);
 		
+		if(newMappingFile.exists()) {//user is trying to edit a mapping, delete previous copy first
+			newMappingFile.delete();
+		}
 		ObjectMapper mapper = new ObjectMapper();
 		
 		try {
