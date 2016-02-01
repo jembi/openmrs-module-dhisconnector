@@ -23,6 +23,7 @@ var dataSetsDropDownAjax;
 var displayIndicatorsAjax;
 var displayDatasetsAjax;
 var headingForCreateMapping = "Add New Mapping";
+var selectedFetchedMappingToEdit;
 
 function allowMappingRemoval(el, container, source) {
     console.log(el);
@@ -121,7 +122,7 @@ function getDataElementsAndCategoryComboOptions() {
 
 
 function onDataSetSelect() {
-    getDataElementsAndCategoryComboOptions().then(renderCategoryComboOptions);
+    getDataElementsAndCategoryComboOptions().then(displaySelectedMappingComboOptions).then(renderCategoryComboOptions);
 }
 
 function onReportSelect() {
@@ -288,7 +289,7 @@ function saveMapping(event) {
         return value.dataElement != undefined;
     });
 
-    // associate default combooption with blank category mappings
+    //associate default combooption with blank category mappings
     var def = getDefault();
     var noMapping = [];
     for (var j = 0; j < mapping.elements.length; j++) {
@@ -301,7 +302,7 @@ function saveMapping(event) {
 
     if (mapping.elements.length > 0) {
     	jQuery("#error-encountered-saving").html("");
-		// post json obect
+		// post json object
 		jQuery.ajax({
 			url : OMRS_WEBSERVICES_BASE_URL
 					+ "/ws/rest/v1/dhisconnector/mappings",
@@ -364,6 +365,20 @@ function generateDateTimeDisplay(timeStamp) {
 	return date.getDate() + "/" + month + "/" + date.getUTCFullYear() + " " + date.getHours() + ":" + date.getMinutes() + ":" + date.getSeconds();
 }
 
+function displaySelectedMappingComboOptions() {
+	if(jq("#create-mapping-action").val() === "edit" || jq("#create-mapping-action").val() === "copy") {
+		for (var i = 0; i < jq('.indicatorContainer').length; i++) {
+			var mapping = selectedFetchedMappingToEdit;
+			var elementsIndex = elementsMatchIndicator(mapping.elements, i);
+			var comboOption = (elementsIndex !== -1 && mapping.elements[elementsIndex] !== undefined) ? fetchCategoryComboOption(mapping.elements[elementsIndex].comboOption) : undefined;
+	
+			if(comboOption !== undefined) {
+				jq('.row > .comboOptionDragDestination.row-' + i).append('<div class="reportIndicator box" data-uid="' + comboOption.id + '" title="' + comboOption.name + '">' + renderMappingsDragablePhrase(comboOption.name) + '<span onclick="deleteMapping(this);" class="close">x</span></div>');
+			}
+	    }
+	}
+}
+
 function initializeMappings() {
 	var initializeMappings = [];
 	
@@ -406,19 +421,18 @@ function loadMappingToBeDisplayed(mapping) {
 			jq("#dataSetSelect").val(mapping.dataSetUID);
 			onReportSelect();
 			onDataSetSelect();
-			
+			if(jq("#create-mapping-action").val() === "edit" || jq("#create-mapping-action").val() === "copy") {
+				jq('#mappingName').attr("disabled", true);
+			    jq('#dataSetSelect').attr("disabled", true);
+			    jq('#reportSelect').attr("disabled", true);
+			}
 			jq.when(displayIndicatorsAjax, displayDatasetsAjax).done(function() {
 				for (var i = 0; i < jq('.indicatorContainer').length; i++) {
 					var elementsIndex = elementsMatchIndicator(mapping.elements, i);
-					
 					var dataElement = (elementsIndex !== -1 && mapping.elements[elementsIndex] !== undefined) ? fetchElementFromGlobalDataElements(mapping.elements[elementsIndex].dataElement) : undefined;
+					
 					if(dataElement !== undefined) {
 						jq('.row > .dataElementDragDestination.row-' + i).append('<div class="reportIndicator box" data-uid="' + dataElement.id + '" title="' + dataElement.name + '">' + renderMappingsDragablePhrase(dataElement.name) + '<span onclick="deleteMapping(this);" class="close">x</span></div>');
-					}
-					var comboOption = (elementsIndex !== -1 && mapping.elements[elementsIndex] !== undefined) ? fetchCategoryComboOption(mapping.elements[elementsIndex].comboOption, mapping.elements[elementsIndex].dataElement) : undefined;
-
-					if(comboOption !== undefined) {
-						jq('.row > .comboOptionDragDestination.row-' + i).append('<div class="reportIndicator box" data-uid="' + comboOption.id + '" title="' + comboOption.name + '">' + renderMappingsDragablePhrase(comboOption.name) + '<span onclick="deleteMapping(this);" class="close">x</span></div>');
 					}
 			    }
 			});
@@ -440,41 +454,10 @@ function fetchElementFromGlobalDataElements(element) {
 	return dataElement;
 }
 
-function fetchCategoryComboOption(combo, dataelement) {
-	var comboOpt;
-	var newCategoryComboOptions = [];
-	
-	if(dataelement !== undefined) {
-		jq.ajax({
-			url: OMRS_WEBSERVICES_BASE_URL + "/ws/rest/v1/dhisconnector/dhisdataelements/" + dataelement + "?v=full&limit=100",
-			method: "GET",
-			async: false,
-			success: function(dataelementObj) {
-				if(dataelementObj !== undefined && dataelementObj !== null && dataelementObj.categoryCombo !== null && dataelementObj.categoryCombo !== undefined && dataelementObj.categoryCombo.id !== undefined) {
-					jq.ajax({
-						url: OMRS_WEBSERVICES_BASE_URL + "/ws/rest/v1/dhisconnector/dhiscategorycombos/" + dataelementObj.categoryCombo.id + "?v=full&limit=100",
-						method: "GET",
-						async: false,
-						success: function(categorycombo) {
-							if (categorycombo !== null && categorycombo !== undefined) {
-						    	for (var i = 0; i < categorycombo.categoryOptionCombos.length; i++) {
-						            if (categorycombo.categoryOptionCombos[i].id === combo) {
-						            	comboOpt = categorycombo.categoryOptionCombos[i];
-						            }
-						        }
-							}
-							if(jq("#create-mapping-action").val() === "edit") {
-								jq('#mappingName').attr("disabled", true);
-							    jq('#dataSetSelect').attr("disabled", true);
-							    jq('#reportSelect').attr("disabled", true);
-							}
-					    }
-				    });
-				}
-			}
-	    });
+function fetchCategoryComboOption(combo) {
+	if(combo !== undefined && categoryComboOptions[combo] !== undefined) {
+		return categoryComboOptions[combo];
 	}
-	return comboOpt;
 }
 
 function elementsMatchIndicator(elements, index) {
@@ -496,6 +479,8 @@ function fetchAndLoadMappingToBeDisplayed(mappingDisplay) {
 		method: "GET",
 		success: function(mapping) {
 			if(mapping !== undefined && mapping.name !== undefined && mapping.created !== undefined) {
+				selectedFetchedMappingToEdit = mapping;
+				
 				loadMappingToBeDisplayed(mapping);
 			} else {
 				window.location = "../../module/dhisconnector/createMapping.form";
