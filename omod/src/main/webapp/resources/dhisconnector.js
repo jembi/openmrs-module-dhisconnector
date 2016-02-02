@@ -23,7 +23,8 @@ var dataSetsDropDownAjax;
 var displayIndicatorsAjax;
 var displayDatasetsAjax;
 var headingForCreateMapping = "Add New Mapping";
-var selectedFetchedMappingToEdit;
+var selectedFetchedMappingToLoad;
+var cursorPosTop = 0;//normal top towards the page bottom
 
 function allowMappingRemoval(el, container, source) {
     console.log(el);
@@ -33,9 +34,8 @@ function allowMappingRemoval(el, container, source) {
 
 function renderCategoryComboOptions() {
     var comboOptionsCol = jQuery('#categoryComboOptions');
-
+    
     jQuery('#categoryComboLoader').remove();
-
     for (var comboOption in categoryComboOptions) {
         if (categoryComboOptions.hasOwnProperty(comboOption)) {
             var comboOptionRow = jQuery('<div class="reportRow row"></div>');
@@ -47,7 +47,8 @@ function renderCategoryComboOptions() {
             drake.containers.push(comboOptionBoxContainer.get(0));
         }
     }
-
+    jq('#loading-progress-bar').hide().fadeIn("slow");
+    jq("#loading-progress-bar").html("");
     comboOptionsCol.hide().fadeIn("slow");
 }
 
@@ -66,7 +67,6 @@ function getCategoryComboOptions(dataElementId, requests) {
 						categoryComboOptions[categorycombo.categoryOptionCombos[i].id] = categorycombo.categoryOptionCombos[i];
 					}
 				}
-				jq("#loading-progress-bar").html("");
 			}
         }));
         jQuery.when.apply($, requests).then(function () {
@@ -227,8 +227,8 @@ function dragulaCopyFunction(el, source) {
 }
 
 function dragulaAcceptsFunction(el, target, source, sibling) {
-    var dataElementDrag = (jQuery(target).hasClass('dataElementDragDestination') && jQuery(source).hasClass('dataElementDragSource'));
-    var comboOptionDrag = (jQuery(target).hasClass('comboOptionDragDestination') && jQuery(source).hasClass('comboOptionDragSource'));
+    var dataElementDrag = (jQuery(target).hasClass('dataElementDragDestination') && (jQuery(source).hasClass('dataElementDragSource') || jQuery(source).hasClass('dataElementDragDestination')));
+    var comboOptionDrag = (jQuery(target).hasClass('comboOptionDragDestination') && (jQuery(source).hasClass('comboOptionDragSource') || jQuery(source).hasClass('comboOptionDragDestination')));
 
     // Ensure we can only create one mapping per indicator
     if (jQuery(target).children().length > 1) {
@@ -275,9 +275,7 @@ function saveMapping(event) {
 
     mapping.elements = [];
     for (var i = 0; i < jQuery('.indicatorContainer').length; i++) {
-        var row =
-
-            mapping.elements.push({
+        var row = mapping.elements.push({
                 indicator: jQuery('.row-' + i + '.indicatorContainer > .box > label')[0].title,
                 dataElement: jQuery('.row-' + i + '.dataElementContainer > .box').attr('data-uid'),
                 comboOption: jQuery('.row-' + i + '.comboOptionContainer > .box').attr('data-uid')
@@ -368,7 +366,7 @@ function generateDateTimeDisplay(timeStamp) {
 function displaySelectedMappingComboOptions() {
 	if(jq("#create-mapping-action").val() === "edit" || jq("#create-mapping-action").val() === "copy") {
 		for (var i = 0; i < jq('.indicatorContainer').length; i++) {
-			var mapping = selectedFetchedMappingToEdit;
+			var mapping = selectedFetchedMappingToLoad;
 			var elementsIndex = elementsMatchIndicator(mapping.elements, i);
 			var comboOption = (elementsIndex !== -1 && mapping.elements[elementsIndex] !== undefined) ? fetchCategoryComboOption(mapping.elements[elementsIndex].comboOption) : undefined;
 	
@@ -479,7 +477,7 @@ function fetchAndLoadMappingToBeDisplayed(mappingDisplay) {
 		method: "GET",
 		success: function(mapping) {
 			if(mapping !== undefined && mapping.name !== undefined && mapping.created !== undefined) {
-				selectedFetchedMappingToEdit = mapping;
+				selectedFetchedMappingToLoad = mapping;
 				
 				loadMappingToBeDisplayed(mapping);
 			} else {
@@ -492,6 +490,31 @@ function fetchAndLoadMappingToBeDisplayed(mappingDisplay) {
 		    }
 		}
 	});
+}
+
+function scrollToYSlowly(y) {
+	jq("html, body").animate({
+		 scrollTop: y
+	}, 50);
+}
+
+function autoScrollWhenDraggingToHeaderOrFooter(currentMouseTopPos) {
+	if(drake.dragging && currentMouseTopPos !== undefined && currentMouseTopPos !== null) {
+		var topPostion = (jq(".row:eq(0)").position() !== null) ? jq(".row:eq(0)").position().top : -1;//start from indicator + datasets selectors
+		var downPosition = (jq("#saveMappingButton").position() !== null) ? jq("#saveMappingButton").position().top : -1;//range page to save button
+		var normalRange = 472;//immediately after rendering the page
+		var currentRange = downPosition - topPostion;
+		var cursorRange = currentMouseTopPos - topPostion;
+		var passScroll = topPostion !== -1 && downPosition !== -1 && currentRange > normalRange && cursorRange > normalRange;
+		
+		if(passScroll && currentMouseTopPos > cursorPosTop) {//moving downwards
+			scrollToYSlowly(currentMouseTopPos + 5);//scroll and stop after 0.125 seconds only
+			cursorPosTop = currentMouseTopPos + 5;
+		}/* else if(passScroll && currentMouseTopPos - cursorPosTop < 50) {//moving upwards
+			scrollToYSlowly(currentMouseTopPos - 5);
+			cursorPosTop = currentMouseTopPos - 5;
+		}*/
+	}
 }
 
 jQuery(function () {//self invoked only if the whole page has completely loaded
@@ -530,7 +553,6 @@ jQuery(function () {//self invoked only if the whole page has completely loaded
 			jq("#create-mapping-action").val("edit");
 			jq('#mappingName').val(selectedMappingToEdit.name);
 			fetchAndLoadMappingToBeDisplayed(mappingDisplay);
-			
 		} else if(selectedMappingToCopy.name !== undefined && selectedMappingToCopy.created !== undefined) {
 			var mappingDisplay = selectedMappingToCopy.name + "[@]" + selectedMappingToCopy.created;
 			
@@ -547,6 +569,10 @@ jQuery(function () {//self invoked only if the whole page has completely loaded
 			jq("#create-mapping-action").val("new");
 			jq('#mappingName').val("");
 		}
+		
+		jq(".row:eq(1)").mousemove(function(event) {
+			autoScrollWhenDraggingToHeaderOrFooter(event.pageY);
+		});
 	}
 });
 

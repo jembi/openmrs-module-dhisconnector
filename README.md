@@ -80,9 +80,9 @@ Implemented
   - [x] Fix mapping creation UI to support multi-line DataElement names
   - [x] Interface for prepopulating DHIS2 API backup  
   - [x] Error handling
+  - [x] Managing/editing mappings
 
 TODO
-  - [ ] Managing/editing mappings
   - [ ] Scroll page when dragging mapping to top and bottom of page if necessary
   - [ ] Support other types of OpenMRS reports
   - [ ] Post or download ADX

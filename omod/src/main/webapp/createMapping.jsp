@@ -30,7 +30,7 @@
 </p>
 
 <p>
-<div class="row">
+<div class="row real-mapping-section">
   <div class="col-xs-5" id="reportIndicators"></div>
   <div class="col-xs" id="dataElementsMappings"></div>
   <div class="col-xs" id="dataElementsOptions"></div>
