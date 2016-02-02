@@ -63,7 +63,7 @@ Once you have selected a value for all the fields, click *Send Data* to post dat
 
 Every time a request is sent to the DHIS2 server, the resulting JSON is stored on the file system at `OPENMRS_DIR/dhisconnector/dhis2Backup/`. On Ubuntu, this usually corresponds to `/usr/share/tomcat7/.OpenMRS/dhisconnector/dhis2Backup/`. If the DHIS2 server is no longer reachable, these backed up API values will be used by the DHIS Connector Module.
 
-For OpenMRS implementations that should operate offline, it is possible to pre-populate this dhis2Backup by copying the contents of the `OPENMRS_DIR/dhisconnector/dhis2Backup` directory from an online system to the same location on the offline system. Assuming all the required resources have been backed up by the online implementation, the offline implementation should be able to function correctly without ever being able to reach the DHIS2 server.
+For OpenMRS implementations that should operate offline, it is possible to pre-populate this dhis2Backup by using both the DHIS API Import and export pages. Assuming all the required resources have been backed up by the online implementation, the offline implementation should be able to function correctly without ever being able to reach the DHIS2 server.
 
 ## Module Status
 
@@ -81,9 +81,9 @@ Implemented
   - [x] Interface for prepopulating DHIS2 API backup  
   - [x] Error handling
   - [x] Managing/editing mappings
+  - [X] Scroll page when dragging mapping to top and bottom of page if necessary
 
 TODO
-  - [ ] Scroll page when dragging mapping to top and bottom of page if necessary
   - [ ] Support other types of OpenMRS reports
   - [ ] Post or download ADX
   - [ ] DHIS2 API pagination
