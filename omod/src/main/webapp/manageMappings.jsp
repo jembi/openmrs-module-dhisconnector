@@ -35,9 +35,9 @@
 				<td>{{mapping.name}}</td>
 				<td>{{mapping.created}}</td>
 				<td>
-					<span><input type="image" src="../../images/edit.gif" ng-click="loadMappingEditor(fetchMappingDisplay(mapping))" title="<openmrs:message code='dhisconnector.mapping.editThis'/>" alt="<openmrs:message code='general.edit'/>"></span>
-					<span><input type="image" src="../../images/copy.gif" ng-click="loadMappingCopier(fetchMappingDisplay(mapping))" title="<openmrs:message code='dhisconnector.mapping.copyThis'/>" alt="<openmrs:message code='dhisconnector.general.copy'/>"></span>
-					<span><input type="image" src="../../images/delete.gif" ng-click="deleteThisSelectedMapping(fetchMappingDisplay(mapping))" title="<openmrs:message code='dhisconnector.mapping.deleteThis'/>" alt="<openmrs:message code='general.delete'/>"></span>
+					<span><input type="image" src="../../images/edit.gif" ng-click="loadMappingEditor(fetchMappingDisplay(mapping))" title="<openmrs:message code='dhisconnector.mapping.editThis'/>" alt="Edit"></span>
+					<span><input type="image" src="../../images/copy.gif" ng-click="loadMappingCopier(fetchMappingDisplay(mapping))" title="<openmrs:message code='dhisconnector.mapping.copyThis'/>" alt="Copy"></span>
+					<span><input type="image" src="../../images/delete.gif" ng-click="deleteThisSelectedMapping(fetchMappingDisplay(mapping))" title="<openmrs:message code='dhisconnector.mapping.deleteThis'/>" alt="Delete"></span>
 				</td>
 			</tr>
 		</table>
