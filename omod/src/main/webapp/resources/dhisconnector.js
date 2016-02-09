@@ -349,6 +349,9 @@ function renderDHIS2DatasetDragablePhrase(phrase) {
 }
 
 function renderDragablePhrase(phrase, maxChars) {
+	if(jq(window).width() > 1280) {
+		maxChars += 5;//wide screen resolution probably
+	}
 	if(phrase.length > maxChars) {
 		return phrase.substring(0, maxChars - 2) + "...";
 	} else {
@@ -520,6 +523,11 @@ function autoScrollWhenDraggingToHeaderOrFooter(currentMouseTopPos) {
 jQuery(function () {//self invoked only if the whole page has completely loaded
     if (window.location.pathname.indexOf("createMapping.form") !== -1) {//loaded only at createMapping page
 		//TODO this code block takes long time while loading, speed it up
+    	
+    	if(jq(window).width() < 1280) {
+    		alert("Please maximize your screen to have a better screen display!!!");
+    	}
+    	
     	populateReportsDropdown();
 		populateDataSetsDropdown();
 		drake = dragula({

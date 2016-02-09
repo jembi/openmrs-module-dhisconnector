@@ -60,8 +60,8 @@
 	cursor: pointer;
 }
 
-.dataElementDragDestination, .comboOptionDragDestination {
-	height: 1.94553em;
+.dataElementDragDestination, .comboOptionDragDestination, .indicatorContainer, .dataElementDragSource, .comboOptionDragSource {
+	height: 2em;
 	overflow: auto;
 }
 
