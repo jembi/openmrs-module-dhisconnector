@@ -32,12 +32,14 @@ public class DHISCategoryCombosResource extends DataDelegatingCrudResource imple
 
 	public static final String CATEGORYCOMBOS_PATH = "/api/categoryCombos";
 
+	private static final String COC_FIELDS_PARAM = "?fields=id,name,categoryOptionCombos[id,name],categories[id,name]";
+
 	@Override
 	public DHISCategoryCombo getByUniqueId(String s) {
 		ObjectMapper mapper = new ObjectMapper();
 
 		String jsonResponse = Context.getService(DHISConnectorService.class)
-				.getDataFromDHISEndpoint(CATEGORYCOMBOS_PATH + "/" + s + DHISDataSetsResource.JSON_SUFFIX);
+				.getDataFromDHISEndpoint(CATEGORYCOMBOS_PATH + "/" + s + DHISDataSetsResource.JSON_SUFFIX + COC_FIELDS_PARAM);
 
 		DHISCategoryCombo ret = null;
 

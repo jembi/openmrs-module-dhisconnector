@@ -80,7 +80,7 @@ public class DHISConnectorServiceImpl extends BaseOpenmrsService implements DHIS
 	
 	public static final String DHISCONNECTOR_MAPPING_FILE_SUFFIX = ".mapping.json";
 	
-	public static final String DHISCONNECTOR_ORGUNIT_RESOURCE = "/api/organisationUnits.json?paging=false";
+	public static final String DHISCONNECTOR_ORGUNIT_RESOURCE = "/api/organisationUnits.json?paging=false&fields=id,name";
 	
 	public static final String DATASETS_PATH = "/api/dataValueSets";
 	
@@ -718,8 +718,8 @@ public class DHISConnectorServiceImpl extends BaseOpenmrsService implements DHIS
 	private boolean matchingDHIS2APIBackUpStructure(File file) {
 		return StringUtils.equals(file.getName(), "api") || StringUtils.equals(file.getName(), "categoryCombos")
 		        || StringUtils.equals(file.getName(), "dataElements") || StringUtils.equals(file.getName(), "dataSets")
-		        || StringUtils.equals(file.getName(), "organisationUnits.json?paging=false")
-		        || StringUtils.equals(file.getName(), "dataSets.jsonpaging=false") || file.getName().endsWith(".json");
+		        || StringUtils.equals(file.getName(), "organisationUnits.json?paging=false&fields=id,name")
+		        || StringUtils.equals(file.getName(), "dataSets.json?paging=false&fields=id,name") || file.getName().endsWith(".json");
 	}
 	
 	@Override

@@ -32,12 +32,14 @@ public class DHISDataElementsResource extends DataDelegatingCrudResource impleme
 
 	public static final String DATAELEMENTS_PATH = "/api/dataElements";
 
+	private static final String CO_FIELDS_PARAM = "?fields=id,name,categoryCombo[id,name]";
+
 	@Override
 	public DHISDataElement getByUniqueId(String s) {
 		ObjectMapper mapper = new ObjectMapper();
 
 		String jsonResponse = Context.getService(DHISConnectorService.class)
-				.getDataFromDHISEndpoint(DATAELEMENTS_PATH + "/" + s + DHISDataSetsResource.JSON_SUFFIX);
+				.getDataFromDHISEndpoint(DATAELEMENTS_PATH + "/" + s + DHISDataSetsResource.JSON_SUFFIX + CO_FIELDS_PARAM);
 
 		DHISDataElement ret = null;
 
