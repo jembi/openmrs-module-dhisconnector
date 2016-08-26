@@ -41,7 +41,11 @@ public class DHISDataSetsResource extends DataDelegatingCrudResource implements 
 
 	public static final String JSON_SUFFIX = ".json";
 
-	public static final String NO_PAGING_PARAM = "paging=false";
+	public static final String NO_PAGING_PARAM = "?paging=false";
+
+	private static final String NO_PAGING_IDENTIFIABLE_PARAM = "&fields=id,name";
+
+    private static final String DE_IDENTIFIABLE_PARAM = "?fields=*,dataElements[id,name]";
 
 	@Override
 	public DHISDataSet getByUniqueId(String s) {
@@ -49,7 +53,7 @@ public class DHISDataSetsResource extends DataDelegatingCrudResource implements 
 		ObjectMapper mapper = new ObjectMapper();
 
 		String jsonResponse = Context.getService(DHISConnectorService.class)
-				.getDataFromDHISEndpoint(DATASETS_PATH + "/" + s + JSON_SUFFIX);
+				.getDataFromDHISEndpoint(DATASETS_PATH + "/" + s + JSON_SUFFIX + DE_IDENTIFIABLE_PARAM);
 
 		DHISDataSet ret = null;
 
@@ -93,7 +97,7 @@ public class DHISDataSetsResource extends DataDelegatingCrudResource implements 
 		JsonNode node;
 
 		jsonResponse = Context.getService(DHISConnectorService.class)
-				.getDataFromDHISEndpoint(DATASETS_PATH + JSON_SUFFIX + NO_PAGING_PARAM);
+				.getDataFromDHISEndpoint(DATASETS_PATH + JSON_SUFFIX + NO_PAGING_PARAM + NO_PAGING_IDENTIFIABLE_PARAM);
 
 		try {
 			node = mapper.readTree(jsonResponse);
