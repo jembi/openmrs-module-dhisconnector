@@ -122,6 +122,7 @@ public class DHISDataSetsResource extends DataDelegatingCrudResource implements 
 			description.addProperty("code");
 			description.addProperty("categoryCombo");
 			description.addProperty("dataElements");
+			description.addProperty("dataSetElements");
 		} else {
 			description.addProperty("id");
 			description.addProperty("name");

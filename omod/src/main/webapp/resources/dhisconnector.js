@@ -82,11 +82,12 @@ function getDataElementsAndCategoryComboOptions() {
     var requests = [];
 
     // fetch dataset details
+    jq("#loading-progress-bar").html("<img class='loading-progress-bar-img' src='../../moduleResources/dhisconnector/hor_loading.gif'/>");
     displayIndicatorsAjax = jQuery.get(OMRS_WEBSERVICES_BASE_URL + "/ws/rest/v1/dhisconnector/dhisdatasets/" + jQuery('#dataSetSelect').val() + "?v=full&limit=100", function (data) {
 
         jQuery('#periodType').html(data.periodType);
 
-        dataElements = data.dataElements;
+        dataElements = (data.dataElements.length == 0 && data.dataSetElements.length > 0) ? data.dataSetElements : data.dataElements;
         var dataElementsOptionsCol = jQuery('#dataElementsOptions');
         dataElementsOptionsCol.html("");
         jQuery('#categoryComboOptions').html("");
@@ -99,9 +100,11 @@ function getDataElementsAndCategoryComboOptions() {
 
         for (var i = 0; i < dataElements.length; i++) {
             var dataElementOptionRow = jQuery('<div class="reportRow row"></div>');
-            var dataElementOptionBox = jQuery('<div class="reportIndicator box" data-uid="' + dataElements[i].id + '" title="' + dataElements[i].name + '">' + renderDHIS2DatasetDragablePhrase(dataElements[i].name) + '</div>');
-
-            requests.push(getCategoryComboOptions(dataElements[i].id, requests));
+            var name = (data.dataElements.length == 0 && data.dataSetElements.length > 0) ? dataElements[i].dataElement.name : dataElements[i].name;
+            var id = (data.dataElements.length == 0 && data.dataSetElements.length > 0) ? dataElements[i].dataElement.id : dataElements[i].id;
+            var dataElementOptionBox = jQuery('<div class="reportIndicator box" data-uid="' + id + '" title="' + name + '">' + renderDHIS2DatasetDragablePhrase(name) + '</div>');
+            
+            requests.push(getCategoryComboOptions(id, requests));
 
             var dataElementOptionContainer = jQuery('<div class="dataElementDragSource reportIndicatorCol col-xs"></div>');
 
@@ -111,6 +114,8 @@ function getDataElementsAndCategoryComboOptions() {
             dataElementsOptionsCol.append(dataElementOptionRow);
         }
 
+        jq('#loading-progress-bar').hide().fadeIn("slow");
+        jq("#loading-progress-bar").html("");
         dataElementsOptionsCol.hide().fadeIn("slow");
         jQuery.when.apply($, requests).then(function () {
             def.resolve();

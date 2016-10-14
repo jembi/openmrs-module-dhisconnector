@@ -411,8 +411,7 @@ public class DHISConnectorServiceImpl extends BaseOpenmrsService implements DHIS
 		String jsonResponse = new String();
 		JsonNode node;
 		
-		jsonResponse = Context.getService(DHISConnectorService.class)
-		        .getDataFromDHISEndpoint(DHISCONNECTOR_ORGUNIT_RESOURCE);
+		jsonResponse = getDataFromDHISEndpoint(DHISCONNECTOR_ORGUNIT_RESOURCE);
 				
 		try {
 			node = mapper.readTree(jsonResponse);

@@ -1,21 +1,9 @@
-/**
- * The contents of this file are subject to the OpenMRS Public License
- * Version 1.0 (the "License"); you may not use this file except in
- * compliance with the License. You may obtain a copy of the License at
- * http://license.openmrs.org
- * Software distributed under the License is distributed on an "AS IS"
- * basis, WITHOUT WARRANTY OF ANY KIND, either express or implied. See the
- * License for the specific language governing rights and limitations
- * under the License.
- * Copyright (C) OpenMRS, LLC.  All Rights Reserved.
- */
 package org.openmrs.module.dhisconnector.web.resource;
 
-import org.apache.commons.lang3.StringUtils;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.dhisconnector.api.DHISConnectorService;
-import org.openmrs.module.dhisconnector.api.model.DHISDataElement;
+import org.openmrs.module.dhisconnector.api.model.DHISDataSetElement;
 import org.openmrs.module.dhisconnector.web.controller.DHISConnectorRestController;
 import org.openmrs.module.webservices.rest.web.RequestContext;
 import org.openmrs.module.webservices.rest.web.RestConstants;
@@ -27,26 +15,24 @@ import org.openmrs.module.webservices.rest.web.resource.impl.DelegatingResourceD
 import org.openmrs.module.webservices.rest.web.response.ResponseException;
 
 @Resource(name = RestConstants.VERSION_1 + DHISConnectorRestController.DHISCONNECTOR_NAMESPACE
-		+ "/dhisdataelements", supportedClass = DHISDataElement.class, supportedOpenmrsVersions = { "1.8.*",
+		+ "/dhisdatasetelements", supportedClass = DHISDataSetElement.class, supportedOpenmrsVersions = { "1.8.*",
 				"1.9.*, 1.10.*, 1.11.*", "1.12.*", "2.0.*" })
-public class DHISDataElementsResource extends DataDelegatingCrudResource implements Retrievable {
+public class DHISDataSetElementResource extends DataDelegatingCrudResource implements Retrievable {
+	public static final String DATASETELEMENTS_PATH = "/api/dataSetElements";
 
-	public static final String DATAELEMENTS_PATH = "/api/dataElements";
-
-	private static final String CO_FIELDS_PARAM = "?fields=id,name,categoryCombo[id,name]";
+	private static final String CO_FIELDS_PARAM = ".json?fields=id,dataElement[id],categoryCombo[id],dataSet[id]";
 
 	@Override
-	public DHISDataElement getByUniqueId(String s) {
+	public DHISDataSetElement getByUniqueId(String s) {
 		ObjectMapper mapper = new ObjectMapper();
 
 		String jsonResponse = Context.getService(DHISConnectorService.class).getDataFromDHISEndpoint(
-				DATAELEMENTS_PATH + "/" + s + DHISDataSetsResource.JSON_SUFFIX + CO_FIELDS_PARAM);
+				DATASETELEMENTS_PATH + "/" + s + ".json");
 
-		DHISDataElement ret = null;
+		DHISDataSetElement ret = null;
 
 		try {
-			if (StringUtils.isNotBlank(jsonResponse))
-				ret = mapper.readValue(jsonResponse, DHISDataElement.class);
+			ret = mapper.readValue(jsonResponse, DHISDataSetElement.class);
 		} catch (Exception e) {
 			log.error(e.getMessage());
 		}
@@ -78,8 +64,8 @@ public class DHISDataElementsResource extends DataDelegatingCrudResource impleme
 	public DelegatingResourceDescription getRepresentationDescription(Representation representation) {
 		DelegatingResourceDescription description = new DelegatingResourceDescription();
 		description.addProperty("id");
-		description.addProperty("name");
-		description.addProperty("categoryCombo");
+		description.addProperty("dataElement", Representation.REF);
+		description.addProperty("dataSet", Representation.REF);
 		return description;
 	}
 }

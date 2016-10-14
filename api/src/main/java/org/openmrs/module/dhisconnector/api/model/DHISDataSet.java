@@ -14,7 +14,10 @@ package org.openmrs.module.dhisconnector.api.model;
 import org.codehaus.jackson.annotate.JsonIgnoreProperties;
 import org.codehaus.jackson.annotate.JsonProperty;
 import org.codehaus.jackson.annotate.JsonPropertyOrder;
+import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.map.annotate.JsonSerialize;
+import org.openmrs.api.context.Context;
+import org.openmrs.module.dhisconnector.api.DHISConnectorService;
 
 import javax.annotation.Generated;
 import java.util.ArrayList;
@@ -22,171 +25,140 @@ import java.util.List;
 
 @JsonSerialize(include = JsonSerialize.Inclusion.NON_NULL)
 @Generated("org.jsonschema2pojo")
-@JsonPropertyOrder({
-		"id",
-		"created",
-		"name",
-		"href",
-		"lastUpdated",
-		"shortName",
-		"code",
-		"displayDescription",
-		"expiryDays",
-		"version",
-		"approveData",
-		"description",
-		"renderHorizontally",
-		"externalAccess",
-		"openFuturePeriods",
-		"fieldCombinationRequired",
-		"skipOffline",
-		"dataSetType",
-		"publicAccess",
-		"validCompleteOnly",
-		"skipAggregation",
-		"noValueRequiresComment",
-		"notifyCompletingUser",
-		"timelyDays",
-		"renderAsTabs",
-		"dataElementDecoration",
-		"periodType",
-		"displayName",
-		"displayShortName",
-		"mobile",
-		"dataEntryForm",
-		"access",
-		"categoryCombo",
-		"sections",
-		"dataElements",
-		"organisationUnits",
-		"indicators",
-		"attributeValues",
-		"compulsoryDataElementOperands",
-		"userGroupAccesses"
-})
+@JsonPropertyOrder({ "id", "created", "name", "href", "lastUpdated", "shortName", "code", "displayDescription", "expiryDays",
+        "version", "approveData", "description", "renderHorizontally", "externalAccess", "openFuturePeriods",
+        "fieldCombinationRequired", "skipOffline", "dataSetType", "publicAccess", "validCompleteOnly", "skipAggregation",
+        "noValueRequiresComment", "notifyCompletingUser", "timelyDays", "renderAsTabs", "dataElementDecoration",
+        "periodType", "displayName", "displayShortName", "mobile", "dataEntryForm", "access", "categoryCombo", "sections",
+        "dataElements", "dataSetElements", "organisationUnits", "indicators", "attributeValues",
+        "compulsoryDataElementOperands", "userGroupAccesses" })
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class DHISDataSet {
-
+	
+	
 	@JsonProperty("id")
 	private String id;
-
+	
 	@JsonProperty("created")
 	private String created;
-
+	
 	@JsonProperty("name")
 	private String name;
-
+	
 	@JsonProperty("href")
 	private String href;
-
+	
 	@JsonProperty("lastUpdated")
 	private String lastUpdated;
-
+	
 	@JsonProperty("shortName")
 	private String shortName;
-
+	
 	@JsonProperty("code")
 	private String code;
-
+	
 	@JsonProperty("displayDescription")
 	private String displayDescription;
-
+	
 	@JsonProperty("expiryDays")
 	private Integer expiryDays;
-
+	
 	@JsonProperty("version")
 	private Integer version;
-
+	
 	@JsonProperty("approveData")
 	private Boolean approveData;
-
+	
 	@JsonProperty("description")
 	private String description;
-
+	
 	@JsonProperty("renderHorizontally")
 	private Boolean renderHorizontally;
-
+	
 	@JsonProperty("externalAccess")
 	private Boolean externalAccess;
-
+	
 	@JsonProperty("openFuturePeriods")
 	private Integer openFuturePeriods;
-
+	
 	@JsonProperty("fieldCombinationRequired")
 	private Boolean fieldCombinationRequired;
-
+	
 	@JsonProperty("skipOffline")
 	private Boolean skipOffline;
-
+	
 	@JsonProperty("dataSetType")
 	private String dataSetType;
-
+	
 	@JsonProperty("publicAccess")
 	private String publicAccess;
-
+	
 	@JsonProperty("validCompleteOnly")
 	private Boolean validCompleteOnly;
-
+	
 	@JsonProperty("skipAggregation")
 	private Boolean skipAggregation;
-
+	
 	@JsonProperty("noValueRequiresComment")
 	private Boolean noValueRequiresComment;
-
+	
 	@JsonProperty("notifyCompletingUser")
 	private Boolean notifyCompletingUser;
-
+	
 	@JsonProperty("timelyDays")
 	private Integer timelyDays;
-
+	
 	@JsonProperty("renderAsTabs")
 	private Boolean renderAsTabs;
-
+	
 	@JsonProperty("dataElementDecoration")
 	private Boolean dataElementDecoration;
-
+	
 	@JsonProperty("periodType")
 	private String periodType;
-
+	
 	@JsonProperty("displayName")
 	private String displayName;
-
+	
 	@JsonProperty("displayShortName")
 	private String displayShortName;
-
+	
 	@JsonProperty("mobile")
 	private Boolean mobile;
-
+	
 	@JsonProperty("dataEntryForm")
 	private DHISDataEntryForm dataEntryForm;
-
+	
 	@JsonProperty("access")
 	private DHISAccess access;
-
+	
 	@JsonProperty("categoryCombo")
 	private DHISCategoryCombo categoryCombo;
-
+	
 	@JsonProperty("sections")
 	private List<Object> sections = new ArrayList<Object>();
-
+	
 	@JsonProperty("dataElements")
 	private List<DHISDataElement> dataElements = new ArrayList<DHISDataElement>();
-
+	
+	@JsonProperty("dataSetElements")
+	private List<DHISDataSetElement> dataSetElements = new ArrayList<DHISDataSetElement>();
+	
 	@JsonProperty("organisationUnits")
 	private List<DHISOrganisationUnit> organisationUnits = new ArrayList<DHISOrganisationUnit>();
-
+	
 	@JsonProperty("indicators")
 	private List<Object> indicators = new ArrayList<Object>();
-
+	
 	@JsonProperty("attributeValues")
 	private List<Object> attributeValues = new ArrayList<Object>();
-
+	
 	@JsonProperty("compulsoryDataElementOperands")
 	private List<Object> compulsoryDataElementOperands = new ArrayList<Object>();
-
+	
 	@JsonProperty("userGroupAccesses")
 	private List<Object> userGroupAccesses = new ArrayList<Object>();
-
+	
 	/**
 	 * @return The id
 	 */
@@ -194,7 +166,7 @@ public class DHISDataSet {
 	public String getId() {
 		return id;
 	}
-
+	
 	/**
 	 * @param id The id
 	 */
@@ -202,7 +174,7 @@ public class DHISDataSet {
 	public void setId(String id) {
 		this.id = id;
 	}
-
+	
 	/**
 	 * @return The created
 	 */
@@ -210,7 +182,7 @@ public class DHISDataSet {
 	public String getCreated() {
 		return created;
 	}
-
+	
 	/**
 	 * @param created The created
 	 */
@@ -218,7 +190,7 @@ public class DHISDataSet {
 	public void setCreated(String created) {
 		this.created = created;
 	}
-
+	
 	/**
 	 * @return The name
 	 */
@@ -226,7 +198,7 @@ public class DHISDataSet {
 	public String getName() {
 		return name;
 	}
-
+	
 	/**
 	 * @param name The name
 	 */
@@ -234,7 +206,7 @@ public class DHISDataSet {
 	public void setName(String name) {
 		this.name = name;
 	}
-
+	
 	/**
 	 * @return The href
 	 */
@@ -242,7 +214,7 @@ public class DHISDataSet {
 	public String getHref() {
 		return href;
 	}
-
+	
 	/**
 	 * @param href The href
 	 */
@@ -250,7 +222,7 @@ public class DHISDataSet {
 	public void setHref(String href) {
 		this.href = href;
 	}
-
+	
 	/**
 	 * @return The lastUpdated
 	 */
@@ -258,7 +230,7 @@ public class DHISDataSet {
 	public String getLastUpdated() {
 		return lastUpdated;
 	}
-
+	
 	/**
 	 * @param lastUpdated The lastUpdated
 	 */
@@ -266,7 +238,7 @@ public class DHISDataSet {
 	public void setLastUpdated(String lastUpdated) {
 		this.lastUpdated = lastUpdated;
 	}
-
+	
 	/**
 	 * @return The shortName
 	 */
@@ -274,7 +246,7 @@ public class DHISDataSet {
 	public String getShortName() {
 		return shortName;
 	}
-
+	
 	/**
 	 * @param shortName The shortName
 	 */
@@ -282,7 +254,7 @@ public class DHISDataSet {
 	public void setShortName(String shortName) {
 		this.shortName = shortName;
 	}
-
+	
 	/**
 	 * @return The code
 	 */
@@ -290,7 +262,7 @@ public class DHISDataSet {
 	public String getCode() {
 		return code;
 	}
-
+	
 	/**
 	 * @param code The code
 	 */
@@ -298,7 +270,7 @@ public class DHISDataSet {
 	public void setCode(String code) {
 		this.code = code;
 	}
-
+	
 	/**
 	 * @return The displayDescription
 	 */
@@ -306,7 +278,7 @@ public class DHISDataSet {
 	public String getDisplayDescription() {
 		return displayDescription;
 	}
-
+	
 	/**
 	 * @param displayDescription The displayDescription
 	 */
@@ -314,7 +286,7 @@ public class DHISDataSet {
 	public void setDisplayDescription(String displayDescription) {
 		this.displayDescription = displayDescription;
 	}
-
+	
 	/**
 	 * @return The expiryDays
 	 */
@@ -322,7 +294,7 @@ public class DHISDataSet {
 	public Integer getExpiryDays() {
 		return expiryDays;
 	}
-
+	
 	/**
 	 * @param expiryDays The expiryDays
 	 */
@@ -330,7 +302,7 @@ public class DHISDataSet {
 	public void setExpiryDays(Integer expiryDays) {
 		this.expiryDays = expiryDays;
 	}
-
+	
 	/**
 	 * @return The version
 	 */
@@ -338,7 +310,7 @@ public class DHISDataSet {
 	public Integer getVersion() {
 		return version;
 	}
-
+	
 	/**
 	 * @param version The version
 	 */
@@ -346,7 +318,7 @@ public class DHISDataSet {
 	public void setVersion(Integer version) {
 		this.version = version;
 	}
-
+	
 	/**
 	 * @return The approveData
 	 */
@@ -354,7 +326,7 @@ public class DHISDataSet {
 	public Boolean getApproveData() {
 		return approveData;
 	}
-
+	
 	/**
 	 * @param approveData The approveData
 	 */
@@ -362,7 +334,7 @@ public class DHISDataSet {
 	public void setApproveData(Boolean approveData) {
 		this.approveData = approveData;
 	}
-
+	
 	/**
 	 * @return The description
 	 */
@@ -370,7 +342,7 @@ public class DHISDataSet {
 	public String getDescription() {
 		return description;
 	}
-
+	
 	/**
 	 * @param description The description
 	 */
@@ -378,7 +350,7 @@ public class DHISDataSet {
 	public void setDescription(String description) {
 		this.description = description;
 	}
-
+	
 	/**
 	 * @return The renderHorizontally
 	 */
@@ -386,7 +358,7 @@ public class DHISDataSet {
 	public Boolean getRenderHorizontally() {
 		return renderHorizontally;
 	}
-
+	
 	/**
 	 * @param renderHorizontally The renderHorizontally
 	 */
@@ -394,7 +366,7 @@ public class DHISDataSet {
 	public void setRenderHorizontally(Boolean renderHorizontally) {
 		this.renderHorizontally = renderHorizontally;
 	}
-
+	
 	/**
 	 * @return The externalAccess
 	 */
@@ -402,7 +374,7 @@ public class DHISDataSet {
 	public Boolean getExternalAccess() {
 		return externalAccess;
 	}
-
+	
 	/**
 	 * @param externalAccess The externalAccess
 	 */
@@ -410,7 +382,7 @@ public class DHISDataSet {
 	public void setExternalAccess(Boolean externalAccess) {
 		this.externalAccess = externalAccess;
 	}
-
+	
 	/**
 	 * @return The openFuturePeriods
 	 */
@@ -418,7 +390,7 @@ public class DHISDataSet {
 	public Integer getOpenFuturePeriods() {
 		return openFuturePeriods;
 	}
-
+	
 	/**
 	 * @param openFuturePeriods The openFuturePeriods
 	 */
@@ -426,7 +398,7 @@ public class DHISDataSet {
 	public void setOpenFuturePeriods(Integer openFuturePeriods) {
 		this.openFuturePeriods = openFuturePeriods;
 	}
-
+	
 	/**
 	 * @return The fieldCombinationRequired
 	 */
@@ -434,7 +406,7 @@ public class DHISDataSet {
 	public Boolean getFieldCombinationRequired() {
 		return fieldCombinationRequired;
 	}
-
+	
 	/**
 	 * @param fieldCombinationRequired The fieldCombinationRequired
 	 */
@@ -442,7 +414,7 @@ public class DHISDataSet {
 	public void setFieldCombinationRequired(Boolean fieldCombinationRequired) {
 		this.fieldCombinationRequired = fieldCombinationRequired;
 	}
-
+	
 	/**
 	 * @return The skipOffline
 	 */
@@ -450,7 +422,7 @@ public class DHISDataSet {
 	public Boolean getSkipOffline() {
 		return skipOffline;
 	}
-
+	
 	/**
 	 * @param skipOffline The skipOffline
 	 */
@@ -458,7 +430,7 @@ public class DHISDataSet {
 	public void setSkipOffline(Boolean skipOffline) {
 		this.skipOffline = skipOffline;
 	}
-
+	
 	/**
 	 * @return The dataSetType
 	 */
@@ -466,7 +438,7 @@ public class DHISDataSet {
 	public String getDataSetType() {
 		return dataSetType;
 	}
-
+	
 	/**
 	 * @param dataSetType The dataSetType
 	 */
@@ -474,7 +446,7 @@ public class DHISDataSet {
 	public void setDataSetType(String dataSetType) {
 		this.dataSetType = dataSetType;
 	}
-
+	
 	/**
 	 * @return The publicAccess
 	 */
@@ -482,7 +454,7 @@ public class DHISDataSet {
 	public String getPublicAccess() {
 		return publicAccess;
 	}
-
+	
 	/**
 	 * @param publicAccess The publicAccess
 	 */
@@ -490,7 +462,7 @@ public class DHISDataSet {
 	public void setPublicAccess(String publicAccess) {
 		this.publicAccess = publicAccess;
 	}
-
+	
 	/**
 	 * @return The validCompleteOnly
 	 */
@@ -498,7 +470,7 @@ public class DHISDataSet {
 	public Boolean getValidCompleteOnly() {
 		return validCompleteOnly;
 	}
-
+	
 	/**
 	 * @param validCompleteOnly The validCompleteOnly
 	 */
@@ -506,7 +478,7 @@ public class DHISDataSet {
 	public void setValidCompleteOnly(Boolean validCompleteOnly) {
 		this.validCompleteOnly = validCompleteOnly;
 	}
-
+	
 	/**
 	 * @return The skipAggregation
 	 */
@@ -514,7 +486,7 @@ public class DHISDataSet {
 	public Boolean getSkipAggregation() {
 		return skipAggregation;
 	}
-
+	
 	/**
 	 * @param skipAggregation The skipAggregation
 	 */
@@ -522,7 +494,7 @@ public class DHISDataSet {
 	public void setSkipAggregation(Boolean skipAggregation) {
 		this.skipAggregation = skipAggregation;
 	}
-
+	
 	/**
 	 * @return The noValueRequiresComment
 	 */
@@ -530,7 +502,7 @@ public class DHISDataSet {
 	public Boolean getNoValueRequiresComment() {
 		return noValueRequiresComment;
 	}
-
+	
 	/**
 	 * @param noValueRequiresComment The noValueRequiresComment
 	 */
@@ -538,7 +510,7 @@ public class DHISDataSet {
 	public void setNoValueRequiresComment(Boolean noValueRequiresComment) {
 		this.noValueRequiresComment = noValueRequiresComment;
 	}
-
+	
 	/**
 	 * @return The notifyCompletingUser
 	 */
@@ -546,7 +518,7 @@ public class DHISDataSet {
 	public Boolean getNotifyCompletingUser() {
 		return notifyCompletingUser;
 	}
-
+	
 	/**
 	 * @param notifyCompletingUser The notifyCompletingUser
 	 */
@@ -554,7 +526,7 @@ public class DHISDataSet {
 	public void setNotifyCompletingUser(Boolean notifyCompletingUser) {
 		this.notifyCompletingUser = notifyCompletingUser;
 	}
-
+	
 	/**
 	 * @return The timelyDays
 	 */
@@ -562,7 +534,7 @@ public class DHISDataSet {
 	public Integer getTimelyDays() {
 		return timelyDays;
 	}
-
+	
 	/**
 	 * @param timelyDays The timelyDays
 	 */
@@ -570,7 +542,7 @@ public class DHISDataSet {
 	public void setTimelyDays(Integer timelyDays) {
 		this.timelyDays = timelyDays;
 	}
-
+	
 	/**
 	 * @return The renderAsTabs
 	 */
@@ -578,7 +550,7 @@ public class DHISDataSet {
 	public Boolean getRenderAsTabs() {
 		return renderAsTabs;
 	}
-
+	
 	/**
 	 * @param renderAsTabs The renderAsTabs
 	 */
@@ -586,7 +558,7 @@ public class DHISDataSet {
 	public void setRenderAsTabs(Boolean renderAsTabs) {
 		this.renderAsTabs = renderAsTabs;
 	}
-
+	
 	/**
 	 * @return The dataElementDecoration
 	 */
@@ -594,7 +566,7 @@ public class DHISDataSet {
 	public Boolean getDataElementDecoration() {
 		return dataElementDecoration;
 	}
-
+	
 	/**
 	 * @param dataElementDecoration The dataElementDecoration
 	 */
@@ -602,7 +574,7 @@ public class DHISDataSet {
 	public void setDataElementDecoration(Boolean dataElementDecoration) {
 		this.dataElementDecoration = dataElementDecoration;
 	}
-
+	
 	/**
 	 * @return The periodType
 	 */
@@ -610,7 +582,7 @@ public class DHISDataSet {
 	public String getPeriodType() {
 		return periodType;
 	}
-
+	
 	/**
 	 * @param periodType The periodType
 	 */
@@ -618,7 +590,7 @@ public class DHISDataSet {
 	public void setPeriodType(String periodType) {
 		this.periodType = periodType;
 	}
-
+	
 	/**
 	 * @return The displayName
 	 */
@@ -626,7 +598,7 @@ public class DHISDataSet {
 	public String getDisplayName() {
 		return displayName;
 	}
-
+	
 	/**
 	 * @param displayName The displayName
 	 */
@@ -634,7 +606,7 @@ public class DHISDataSet {
 	public void setDisplayName(String displayName) {
 		this.displayName = displayName;
 	}
-
+	
 	/**
 	 * @return The displayShortName
 	 */
@@ -642,7 +614,7 @@ public class DHISDataSet {
 	public String getDisplayShortName() {
 		return displayShortName;
 	}
-
+	
 	/**
 	 * @param displayShortName The displayShortName
 	 */
@@ -650,7 +622,7 @@ public class DHISDataSet {
 	public void setDisplayShortName(String displayShortName) {
 		this.displayShortName = displayShortName;
 	}
-
+	
 	/**
 	 * @return The mobile
 	 */
@@ -658,7 +630,7 @@ public class DHISDataSet {
 	public Boolean getMobile() {
 		return mobile;
 	}
-
+	
 	/**
 	 * @param mobile The mobile
 	 */
@@ -666,7 +638,7 @@ public class DHISDataSet {
 	public void setMobile(Boolean mobile) {
 		this.mobile = mobile;
 	}
-
+	
 	/**
 	 * @return The dataEntryForm
 	 */
@@ -674,7 +646,7 @@ public class DHISDataSet {
 	public DHISDataEntryForm getDataEntryForm() {
 		return dataEntryForm;
 	}
-
+	
 	/**
 	 * @param dataEntryForm The dataEntryForm
 	 */
@@ -682,7 +654,7 @@ public class DHISDataSet {
 	public void setDataEntryForm(DHISDataEntryForm dataEntryForm) {
 		this.dataEntryForm = dataEntryForm;
 	}
-
+	
 	/**
 	 * @return The access
 	 */
@@ -690,7 +662,7 @@ public class DHISDataSet {
 	public DHISAccess getAccess() {
 		return access;
 	}
-
+	
 	/**
 	 * @param access The access
 	 */
@@ -698,7 +670,7 @@ public class DHISDataSet {
 	public void setAccess(DHISAccess access) {
 		this.access = access;
 	}
-
+	
 	/**
 	 * @return The categoryCombo
 	 */
@@ -706,7 +678,7 @@ public class DHISDataSet {
 	public DHISCategoryCombo getCategoryCombo() {
 		return categoryCombo;
 	}
-
+	
 	/**
 	 * @param categoryCombo The categoryCombo
 	 */
@@ -714,7 +686,7 @@ public class DHISDataSet {
 	public void setCategoryCombo(DHISCategoryCombo categoryCombo) {
 		this.categoryCombo = categoryCombo;
 	}
-
+	
 	/**
 	 * @return The sections
 	 */
@@ -722,7 +694,7 @@ public class DHISDataSet {
 	public List<Object> getSections() {
 		return sections;
 	}
-
+	
 	/**
 	 * @param sections The sections
 	 */
@@ -730,7 +702,7 @@ public class DHISDataSet {
 	public void setSections(List<Object> sections) {
 		this.sections = sections;
 	}
-
+	
 	/**
 	 * @return The dataElements
 	 */
@@ -738,7 +710,7 @@ public class DHISDataSet {
 	public List<DHISDataElement> getDataElements() {
 		return dataElements;
 	}
-
+	
 	/**
 	 * @param dataElements The dataElements
 	 */
@@ -746,7 +718,49 @@ public class DHISDataSet {
 	public void setDataElements(List<DHISDataElement> dataElements) {
 		this.dataElements = dataElements;
 	}
+	
+	/**
+	 * @return The dataSetElements
+	 */
+	@JsonProperty("dataSetElements")
+	public List<DHISDataSetElement> getDataSetElements() {
+		return dataSetElements;
+	}
+	
+	/**
+	 * @param dataSetElements The dataSetElements
+	 */
+	@JsonProperty("dataSetElements")
+	public void setDataSetElements(List<DHISDataSetElement> dataSetElements) {
+		List<DHISDataSetElement> regeneratedDataSetElements = new ArrayList<DHISDataSetElement>();
+		
+		if (dataSetElements != null && dataSetElements.size() > 0
+		        && (getDataElements() == null || getDataElements().size() <= 0)) {
+			for (DHISDataSetElement d : dataSetElements) {
+				regeneratedDataSetElements.add(getDataSetElementFromDataSetElementId(d.getId()));
+			}
+			this.dataSetElements = regeneratedDataSetElements;
+		} else
+			this.dataSetElements = dataSetElements;
+	}
+	
 
+	private DHISDataSetElement getDataSetElementFromDataSetElementId(String dataSetElementId) {
+		ObjectMapper mapper = new ObjectMapper();
+		String jsonResponse = Context.getService(DHISConnectorService.class)
+		        .getDataFromDHISEndpoint("/api/dataSetElements/" + dataSetElementId + ".json");
+		DHISDataSetElement ret = null;
+		
+		try {
+			ret = mapper.readValue(jsonResponse, DHISDataSetElement.class);
+		}
+		catch (Exception e) {
+			System.out.println(e.getMessage());
+		}
+		
+		return ret;
+	}
+	
 	/**
 	 * @return The organisationUnits
 	 */
@@ -754,7 +768,7 @@ public class DHISDataSet {
 	public List<DHISOrganisationUnit> getOrganisationUnits() {
 		return organisationUnits;
 	}
-
+	
 	/**
 	 * @param organisationUnits The organisationUnits
 	 */
@@ -762,7 +776,7 @@ public class DHISDataSet {
 	public void setOrganisationUnits(List<DHISOrganisationUnit> organisationUnits) {
 		this.organisationUnits = organisationUnits;
 	}
-
+	
 	/**
 	 * @return The indicators
 	 */
@@ -770,7 +784,7 @@ public class DHISDataSet {
 	public List<Object> getIndicators() {
 		return indicators;
 	}
-
+	
 	/**
 	 * @param indicators The indicators
 	 */
@@ -778,7 +792,7 @@ public class DHISDataSet {
 	public void setIndicators(List<Object> indicators) {
 		this.indicators = indicators;
 	}
-
+	
 	/**
 	 * @return The attributeValues
 	 */
@@ -786,7 +800,7 @@ public class DHISDataSet {
 	public List<Object> getAttributeValues() {
 		return attributeValues;
 	}
-
+	
 	/**
 	 * @param attributeValues The attributeValues
 	 */
@@ -794,7 +808,7 @@ public class DHISDataSet {
 	public void setAttributeValues(List<Object> attributeValues) {
 		this.attributeValues = attributeValues;
 	}
-
+	
 	/**
 	 * @return The compulsoryDataElementOperands
 	 */
@@ -802,7 +816,7 @@ public class DHISDataSet {
 	public List<Object> getCompulsoryDataElementOperands() {
 		return compulsoryDataElementOperands;
 	}
-
+	
 	/**
 	 * @param compulsoryDataElementOperands The compulsoryDataElementOperands
 	 */
@@ -810,7 +824,7 @@ public class DHISDataSet {
 	public void setCompulsoryDataElementOperands(List<Object> compulsoryDataElementOperands) {
 		this.compulsoryDataElementOperands = compulsoryDataElementOperands;
 	}
-
+	
 	/**
 	 * @return The userGroupAccesses
 	 */
@@ -818,7 +832,7 @@ public class DHISDataSet {
 	public List<Object> getUserGroupAccesses() {
 		return userGroupAccesses;
 	}
-
+	
 	/**
 	 * @param userGroupAccesses The userGroupAccesses
 	 */
@@ -826,5 +840,5 @@ public class DHISDataSet {
 	public void setUserGroupAccesses(List<Object> userGroupAccesses) {
 		this.userGroupAccesses = userGroupAccesses;
 	}
-
+	
 }
