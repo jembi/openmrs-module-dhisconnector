@@ -43,9 +43,9 @@ public class DHISDataSetsResource extends DataDelegatingCrudResource implements 
 
 	public static final String NO_PAGING_PARAM = "?paging=false";
 
-	private static final String NO_PAGING_IDENTIFIABLE_PARAM = "&fields=id,name";
+	private static final String NO_PAGING_IDENTIFIABLE_PARAM = "&fields=id,name,code";
 
-    private static final String DE_IDENTIFIABLE_PARAM = "?fields=*,dataElements[id,name]";
+    private static final String DE_IDENTIFIABLE_PARAM = "?fields=*,dataElements[id,name,code]";
 
 	@Override
 	public DHISDataSet getByUniqueId(String s) {

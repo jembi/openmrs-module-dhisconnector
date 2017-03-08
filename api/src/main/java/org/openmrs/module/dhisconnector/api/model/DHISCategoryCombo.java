@@ -30,6 +30,7 @@ import java.util.Map;
     "id",
     "created",
     "name",
+    "code",
     "href",
     "skipTotal",
     "dataDimensionType",

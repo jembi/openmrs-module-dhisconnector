@@ -11,21 +11,23 @@
  */
 package org.openmrs.module.dhisconnector.api.model;
 
+import java.util.HashMap;
+import java.util.Map;
+
+import javax.annotation.Generated;
+
 import org.codehaus.jackson.annotate.JsonIgnore;
 import org.codehaus.jackson.annotate.JsonIgnoreProperties;
 import org.codehaus.jackson.annotate.JsonProperty;
 import org.codehaus.jackson.annotate.JsonPropertyOrder;
 import org.codehaus.jackson.map.annotate.JsonSerialize;
 
-import javax.annotation.Generated;
-import java.util.HashMap;
-import java.util.Map;
-
 @JsonSerialize(include = JsonSerialize.Inclusion.NON_NULL)
 @Generated("org.jsonschema2pojo")
 @JsonPropertyOrder({
     "id",
     "name",
+    "code",
     "created",
     "lastUpdated",
     "href"
@@ -37,6 +39,9 @@ public class DHISCategory {
     private String id;
     @JsonProperty("name")
     private String name;
+	
+	@JsonProperty("code")
+	private String code;
     @JsonProperty("created")
     private String created;
     @JsonProperty("lastUpdated")
@@ -145,4 +150,14 @@ public class DHISCategory {
     public void setHref(String href) {
         this.href = href;
     }
+
+	
+	public String getCode() {
+		return code;
+	}
+
+	
+	public void setCode(String code) {
+		this.code = code;
+	}
 }

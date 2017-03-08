@@ -32,7 +32,7 @@ public class DHISCategoryCombosResource extends DataDelegatingCrudResource imple
 
 	public static final String CATEGORYCOMBOS_PATH = "/api/categoryCombos";
 
-	private static final String COC_FIELDS_PARAM = "?fields=id,name,categoryOptionCombos[id,name],categories[id,name]";
+	private static final String COC_FIELDS_PARAM = "?fields=id,name,code,categoryOptionCombos[id,name,code],categories[id,name,code]";
 
 	@Override
 	public DHISCategoryCombo getByUniqueId(String s) {

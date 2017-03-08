@@ -20,17 +20,23 @@ import java.io.FileOutputStream;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.math.BigDecimal;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.Enumeration;
+import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
+
+import javax.xml.datatype.DatatypeConfigurationException;
+import javax.xml.datatype.DatatypeFactory;
+import javax.xml.datatype.XMLGregorianCalendar;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
@@ -54,7 +60,15 @@ import org.codehaus.jackson.map.JsonMappingException;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.openmrs.api.context.Context;
 import org.openmrs.api.impl.BaseOpenmrsService;
+import org.openmrs.module.dhisconnector.Configurations;
+import org.openmrs.module.dhisconnector.adx.AdxDataValue;
+import org.openmrs.module.dhisconnector.adx.AdxDataValueGroup;
+import org.openmrs.module.dhisconnector.adx.AdxDataValueSet;
+import org.openmrs.module.dhisconnector.adx.AdxObjectFactory;
 import org.openmrs.module.dhisconnector.api.DHISConnectorService;
+import org.openmrs.module.dhisconnector.api.model.DHISDataElement;
+import org.openmrs.module.dhisconnector.api.model.DHISDataSet;
+import org.openmrs.module.dhisconnector.api.model.DHISDataValue;
 import org.openmrs.module.dhisconnector.api.model.DHISDataValueSet;
 import org.openmrs.module.dhisconnector.api.model.DHISImportSummary;
 import org.openmrs.module.dhisconnector.api.model.DHISMapping;
@@ -70,19 +84,32 @@ import org.springframework.web.multipart.MultipartFile;
  */
 public class DHISConnectorServiceImpl extends BaseOpenmrsService implements DHISConnectorService {
 	
+	
 	public static final String DHISCONNECTOR_MAPPINGS_FOLDER = File.separator + "dhisconnector" + File.separator
 	        + "mappings";
-			
+	
 	public static final String DHISCONNECTOR_DHIS2BACKUP_FOLDER = File.separator + "dhisconnector" + File.separator
 	        + "dhis2Backup";
-			
+	
 	public static final String DHISCONNECTOR_TEMP_FOLDER = File.separator + "dhisconnector" + File.separator + "temp";
 	
 	public static final String DHISCONNECTOR_MAPPING_FILE_SUFFIX = ".mapping.json";
 	
 	public static final String DHISCONNECTOR_ORGUNIT_RESOURCE = "/api/organisationUnits.json?paging=false&fields=id,name";
 	
-	public static final String DATASETS_PATH = "/api/dataValueSets";
+	public static final String DATAVALUESETS_PATH = "/api/dataValueSets";
+	
+	public static final String DATASETS_PATH = "/api/dataSets/";
+	
+	public static final String ORGUNITS_PATH = "/api/organisationUnits/";
+	
+	public static String JSON_POST_FIX = ".json";
+	
+	private String DATA_ELEMETS_PATH = "/api/dataElements/";
+	
+	private Configurations configs = new Configurations();
+	
+	private AdxObjectFactory factory = new AdxObjectFactory();
 	
 	private String getFromBackUp(String path) {
 		String backupFilePath = OpenmrsUtil.getApplicationDataDirectory() + DHISCONNECTOR_DHIS2BACKUP_FOLDER + path;
@@ -121,7 +148,7 @@ public class DHISConnectorServiceImpl extends BaseOpenmrsService implements DHIS
 		
 		String directoryStructure = OpenmrsUtil.getApplicationDataDirectory() + DHISCONNECTOR_DHIS2BACKUP_FOLDER
 		        + path.substring(0, path.lastIndexOf(File.separator));
-				
+		
 		File directory = new File(directoryStructure);
 		
 		if (!directory.exists()) {
@@ -199,8 +226,66 @@ public class DHISConnectorServiceImpl extends BaseOpenmrsService implements DHIS
 		return payload;
 	}
 	
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	private String getCodeFromClazz(Class clazz, String endPoint) {
+		ObjectMapper mapper = new ObjectMapper();
+		String jsonResponse = getDataFromDHISEndpoint(endPoint);
+		
+		try {
+			Object obj = mapper.readValue(jsonResponse, clazz);
+			
+			if (obj instanceof DHISDataSet)
+				return ((DHISDataSet) obj).getCode();
+			else if (obj instanceof DHISOrganisationUnit)
+				return ((DHISOrganisationUnit) obj).getCode();
+			else if (obj instanceof DHISDataElement)
+				return ((DHISDataElement) obj).getCode();
+		}
+		catch (Exception e) {
+			e.printStackTrace();
+		}
+		return "";
+	}
+	
+	private AdxDataValueSet convertDHISDataValueSetToAdxDataValueSet(DHISDataValueSet valueSet) {
+		AdxDataValueSet adx = null;
+		
+		if (valueSet != null) {
+			try {
+				String dataSet = getCodeFromClazz(DHISDataSet.class, DATASETS_PATH + valueSet.getDataSet() + JSON_POST_FIX);
+				String orgUnit = getCodeFromClazz(DHISOrganisationUnit.class,
+				    ORGUNITS_PATH + valueSet.getOrgUnit() + JSON_POST_FIX);
+				String period = valueSet.getPeriod();//TODO read period type and transform accordingly
+				AdxDataValueGroup group = new AdxDataValueGroup();
+				XMLGregorianCalendar exported = DatatypeFactory.newInstance()
+				        .newXMLGregorianCalendar(new GregorianCalendar());
+				
+				adx = new AdxDataValueSet();
+				adx.setExported(exported);
+				group.setOrgUnit(orgUnit);
+				group.setDataSet(dataSet);
+				//group.setPeriod(period);//TODO read period type and transform accordingly
+				for (DHISDataValue dv : valueSet.getDataValues()) {
+					AdxDataValue adxDv = new AdxDataValue();
+					String dataElement = getCodeFromClazz(DHISDataElement.class,
+					    DATA_ELEMETS_PATH + dv.getDataElement() + JSON_POST_FIX);
+					//dv.getCategoryOptionCombo();//TODO add disaggregations here or category option combos
+					adxDv.setDataElement(dataElement);
+					adxDv.setValue(new BigDecimal(Integer.parseInt(dv.getValue())));
+					group.getDataValues().add(adxDv);
+				}
+				adx.getGroups().add(group);
+			}
+			catch (DatatypeConfigurationException e) {
+				e.printStackTrace();
+			}
+			
+		}
+		return adx;
+	}
+	
 	@Override
-	public String postDataToDHISEndpoint(String endpoint, String jsonPayload) {
+	public String postDataToDHISEndpoint(String endpoint, String data, boolean useAdxNotDxf) {
 		String url = Context.getAdministrationService().getGlobalProperty("dhisconnector.url");
 		String user = Context.getAdministrationService().getGlobalProperty("dhisconnector.user");
 		String pass = Context.getAdministrationService().getGlobalProperty("dhisconnector.pass");
@@ -223,10 +308,15 @@ public class DHISConnectorServiceImpl extends BaseOpenmrsService implements DHIS
 			Credentials creds = new UsernamePasswordCredentials(user, pass);
 			Header bs = new BasicScheme().authenticate(creds, httpPost, localcontext);
 			httpPost.addHeader("Authorization", bs.getValue());
-			httpPost.addHeader("Content-Type", "application/json");
-			httpPost.addHeader("Accept", "application/json");
+			if (useAdxNotDxf) {
+				httpPost.addHeader("Content-Type", "application/xml+adx");
+				httpPost.addHeader("Accept", "application/xml+adx");
+			} else {
+				httpPost.addHeader("Content-Type", "application/json");
+				httpPost.addHeader("Accept", "application/json");
+			}
 			
-			httpPost.setEntity(new StringEntity(jsonPayload));
+			httpPost.setEntity(new StringEntity(data));
 			
 			HttpResponse response = client.execute(targetHost, httpPost, localcontext);
 			HttpEntity entity = response.getEntity();
@@ -257,7 +347,7 @@ public class DHISConnectorServiceImpl extends BaseOpenmrsService implements DHIS
 		// Check if the URL makes sense
 		try {
 			testURL = new URL(url + "/api/resources"); // Add the root API
-														// endpoint to the URL
+			                                           // endpoint to the URL
 		}
 		catch (MalformedURLException e) {
 			e.printStackTrace();
@@ -277,10 +367,10 @@ public class DHISConnectorServiceImpl extends BaseOpenmrsService implements DHIS
 			httpGet.addHeader("Accept", "application/json");
 			
 			HttpResponse response = httpclient.execute(targetHost, httpGet, localcontext); // Execute
-																							// the
-																							// test
-																							// query
-																							
+			                                                                               // the
+			                                                                               // test
+			                                                                               // query
+			
 			if (response.getStatusLine().getStatusCode() != 200) {
 				success = false;
 				
@@ -319,7 +409,7 @@ public class DHISConnectorServiceImpl extends BaseOpenmrsService implements DHIS
 		
 		File newMappingFile = new File(mappingsDirecoryPath + File.separator + filename);
 		
-		if(newMappingFile.exists()) {//user is trying to edit a mapping, delete previous copy first
+		if (newMappingFile.exists()) {//user is trying to edit a mapping, delete previous copy first
 			newMappingFile.delete();
 		}
 		ObjectMapper mapper = new ObjectMapper();
@@ -338,13 +428,18 @@ public class DHISConnectorServiceImpl extends BaseOpenmrsService implements DHIS
 	@Override
 	public DHISImportSummary postDataValueSet(DHISDataValueSet dataValueSet) {
 		ObjectMapper mapper = new ObjectMapper();
-		String jsonString;
+		String jsonOrXmlString;
 		DHISImportSummary response;
 		
 		try {
-			jsonString = mapper.writeValueAsString(dataValueSet);
+			if (configs.useAdxInsteadOfDxf())
+				jsonOrXmlString = factory
+				        .translateAdxDataValueSetIntoString(convertDHISDataValueSetToAdxDataValueSet(dataValueSet));
+			else
+				jsonOrXmlString = mapper.writeValueAsString(dataValueSet);
 			
-			String responseString = postDataToDHISEndpoint(DATASETS_PATH, jsonString);
+			String responseString = postDataToDHISEndpoint(DATAVALUESETS_PATH, jsonOrXmlString,
+			    configs.useAdxInsteadOfDxf());
 			
 			response = mapper.readValue(responseString, DHISImportSummary.class);
 		}
@@ -367,6 +462,7 @@ public class DHISConnectorServiceImpl extends BaseOpenmrsService implements DHIS
 		
 		File[] files = mappingsDirecory.listFiles(new FilenameFilter() {
 			
+			
 			@Override
 			public boolean accept(File dir, String name) {
 				return name.endsWith(DHISCONNECTOR_MAPPING_FILE_SUFFIX);
@@ -375,7 +471,7 @@ public class DHISConnectorServiceImpl extends BaseOpenmrsService implements DHIS
 		
 		if (files == null)
 			return null;
-			
+		
 		for (File f : files) {
 			try {
 				mappings.add(mapper.readValue(f, DHISMapping.class));
@@ -412,7 +508,7 @@ public class DHISConnectorServiceImpl extends BaseOpenmrsService implements DHIS
 		JsonNode node;
 		
 		jsonResponse = getDataFromDHISEndpoint(DHISCONNECTOR_ORGUNIT_RESOURCE);
-				
+		
 		try {
 			node = mapper.readTree(jsonResponse);
 			orgUnits = Arrays
@@ -428,7 +524,7 @@ public class DHISConnectorServiceImpl extends BaseOpenmrsService implements DHIS
 	private boolean mappingsHasGUID(List<DHISMapping> mappings, String GUID) {
 		if (mappings == null)
 			return false;
-			
+		
 		for (DHISMapping mapping : mappings) {
 			if (mapping.getPeriodIndicatorReportGUID().equals(GUID)) {
 				return true;
@@ -472,7 +568,7 @@ public class DHISConnectorServiceImpl extends BaseOpenmrsService implements DHIS
 								BufferedInputStream inputStream = new BufferedInputStream(zipfile.getInputStream(entry));
 								BufferedOutputStream outputStream = new BufferedOutputStream(
 								        new FileOutputStream(outputFile));
-										
+								
 								try {
 									System.out.println("Extracting: " + entry);
 									IOUtils.copy(inputStream, outputStream);
@@ -629,7 +725,7 @@ public class DHISConnectorServiceImpl extends BaseOpenmrsService implements DHIS
 	public boolean dhis2BackupExists() {
 		File backup = new File(
 		        OpenmrsUtil.getApplicationDataDirectory() + DHISCONNECTOR_DHIS2BACKUP_FOLDER + File.separator + "api");
-				
+		
 		if (backup.exists() && backup.isDirectory() && backup.list().length > 0) {
 			return true;
 		} else {
@@ -641,7 +737,7 @@ public class DHISConnectorServiceImpl extends BaseOpenmrsService implements DHIS
 	public String getLastSyncedAt() {
 		File backup = new File(
 		        OpenmrsUtil.getApplicationDataDirectory() + DHISCONNECTOR_DHIS2BACKUP_FOLDER + File.separator + "api");
-				
+		
 		if (dhis2BackupExists()) {
 			Date lastModified = new Date(backup.lastModified());
 			
@@ -718,7 +814,8 @@ public class DHISConnectorServiceImpl extends BaseOpenmrsService implements DHIS
 		return StringUtils.equals(file.getName(), "api") || StringUtils.equals(file.getName(), "categoryCombos")
 		        || StringUtils.equals(file.getName(), "dataElements") || StringUtils.equals(file.getName(), "dataSets")
 		        || StringUtils.equals(file.getName(), "organisationUnits.json?paging=false&fields=id,name")
-		        || StringUtils.equals(file.getName(), "dataSets.json?paging=false&fields=id,name") || file.getName().endsWith(".json");
+		        || StringUtils.equals(file.getName(), "dataSets.json?paging=false&fields=id,name")
+		        || file.getName().endsWith(".json");
 	}
 	
 	@Override
@@ -845,6 +942,7 @@ public class DHISConnectorServiceImpl extends BaseOpenmrsService implements DHIS
 			ObjectMapper mapper = new ObjectMapper();
 			File[] files = mappingsFolder.listFiles(new FilenameFilter() {
 				
+				
 				@Override
 				public boolean accept(File dir, String name) {
 					return name.equals(mapping + DHISCONNECTOR_MAPPING_FILE_SUFFIX);
@@ -875,9 +973,8 @@ public class DHISConnectorServiceImpl extends BaseOpenmrsService implements DHIS
 		boolean deleted = false;
 		
 		if (mapping != null) {
-			String mappingFileName = mapping.getName() + "." + mapping.getCreated()
-			        + DHISCONNECTOR_MAPPING_FILE_SUFFIX;
-					
+			String mappingFileName = mapping.getName() + "." + mapping.getCreated() + DHISCONNECTOR_MAPPING_FILE_SUFFIX;
+			
 			if (checkIfDirContainsFile(mappingsFolder, mappingFileName)) {
 				try {
 					if ((new File(mappingsFolder.getCanonicalPath() + File.separator + mappingFileName)).delete()) {
@@ -892,4 +989,5 @@ public class DHISConnectorServiceImpl extends BaseOpenmrsService implements DHIS
 		
 		return deleted;
 	}
+	
 }
