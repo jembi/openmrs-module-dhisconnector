@@ -56,7 +56,9 @@
     </tr>
     <tr>
       <th class="runHeader"><spring:message code="dhisconnector.action"/></th>
-      <td><input name="submit" type="button" onClick="sendDataToDHIS()" value="<spring:message code="dhisconnector.post" />"/> <input name="submit" type="button" onClick="generateDXFDownload()" value="<spring:message code="dhisconnector.download" />"/></td>
+      <td><input name="submit" type="button" onClick="sendDataToDHIS()" value="<spring:message code="dhisconnector.post" />"/> <input
+					name="submit" type="button" onClick="generateDXFDownload()"
+					value="<spring:message code="dhisconnector.dxf.download" />" /></td>
     </tr>
     </tbody>
   </table>

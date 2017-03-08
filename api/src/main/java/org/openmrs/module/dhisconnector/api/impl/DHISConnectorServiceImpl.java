@@ -23,6 +23,7 @@ import java.io.PrintWriter;
 import java.math.BigDecimal;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -63,6 +64,8 @@ import org.openmrs.api.impl.BaseOpenmrsService;
 import org.openmrs.module.dhisconnector.Configurations;
 import org.openmrs.module.dhisconnector.adx.AdxDataValue;
 import org.openmrs.module.dhisconnector.adx.AdxDataValueGroup;
+import org.openmrs.module.dhisconnector.adx.AdxDataValueGroupPeriod;
+import org.openmrs.module.dhisconnector.adx.AdxDataValueGroupPeriod.Duration;
 import org.openmrs.module.dhisconnector.adx.AdxDataValueSet;
 import org.openmrs.module.dhisconnector.adx.AdxObjectFactory;
 import org.openmrs.module.dhisconnector.api.DHISConnectorService;
@@ -230,21 +233,35 @@ public class DHISConnectorServiceImpl extends BaseOpenmrsService implements DHIS
 	private String getCodeFromClazz(Class clazz, String endPoint) {
 		ObjectMapper mapper = new ObjectMapper();
 		String jsonResponse = getDataFromDHISEndpoint(endPoint);
+		String code = null;
 		
 		try {
 			Object obj = mapper.readValue(jsonResponse, clazz);
 			
 			if (obj instanceof DHISDataSet)
-				return ((DHISDataSet) obj).getCode();
+				code = ((DHISDataSet) obj).getCode();
 			else if (obj instanceof DHISOrganisationUnit)
-				return ((DHISOrganisationUnit) obj).getCode();
+				code = ((DHISOrganisationUnit) obj).getCode();
 			else if (obj instanceof DHISDataElement)
-				return ((DHISDataElement) obj).getCode();
+				code = ((DHISDataElement) obj).getCode();
 		}
 		catch (Exception e) {
 			e.printStackTrace();
 		}
-		return "";
+		return code != null ? code : "";
+	}
+	
+	private Duration getPeriodDuration(String period) {
+		if (StringUtils.isNotBlank(period)) {
+			//TODO support all Durations and fix any issues in this logic
+			if (period.indexOf("W") > -1)//weekly
+				return Duration.P7D;
+			if (period.length() == 6)//monthly
+				return Duration.P1M;
+			if (period.length() == 8)//dailly
+				return Duration.P1D;
+		}
+		return null;
 	}
 	
 	private AdxDataValueSet convertDHISDataValueSetToAdxDataValueSet(DHISDataValueSet valueSet) {
@@ -259,12 +276,19 @@ public class DHISConnectorServiceImpl extends BaseOpenmrsService implements DHIS
 				AdxDataValueGroup group = new AdxDataValueGroup();
 				XMLGregorianCalendar exported = DatatypeFactory.newInstance()
 				        .newXMLGregorianCalendar(new GregorianCalendar());
+				AdxDataValueGroupPeriod adxPeriod = new AdxDataValueGroupPeriod();
 				
 				adx = new AdxDataValueSet();
 				adx.setExported(exported);
+				
+				adxPeriod.setDate(new Date());//TODO fix with period
+				adxPeriod.setDuration(getPeriodDuration(period));
+				adxPeriod.setDateFormat(new SimpleDateFormat("yyyy-MM-dd"));//TODO fix with period
+				
 				group.setOrgUnit(orgUnit);
 				group.setDataSet(dataSet);
-				//group.setPeriod(period);//TODO read period type and transform accordingly
+				group.setPeriod(adxPeriod);//TODO read period type and transform accordingly
+				
 				for (DHISDataValue dv : valueSet.getDataValues()) {
 					AdxDataValue adxDv = new AdxDataValue();
 					String dataElement = getCodeFromClazz(DHISDataElement.class,
@@ -272,6 +296,7 @@ public class DHISConnectorServiceImpl extends BaseOpenmrsService implements DHIS
 					//dv.getCategoryOptionCombo();//TODO add disaggregations here or category option combos
 					adxDv.setDataElement(dataElement);
 					adxDv.setValue(new BigDecimal(Integer.parseInt(dv.getValue())));
+					
 					group.getDataValues().add(adxDv);
 				}
 				adx.getGroups().add(group);
@@ -303,14 +328,15 @@ public class DHISConnectorServiceImpl extends BaseOpenmrsService implements DHIS
 			client = new DefaultHttpClient();
 			BasicHttpContext localcontext = new BasicHttpContext();
 			
-			HttpPost httpPost = new HttpPost(dhisURL.getPath() + endpoint);
+			HttpPost httpPost = new HttpPost(
+			        dhisURL.getPath() + endpoint + (useAdxNotDxf() ? "?dataElementIdScheme=code&orgUnitIdScheme=code" : ""));
 			
 			Credentials creds = new UsernamePasswordCredentials(user, pass);
 			Header bs = new BasicScheme().authenticate(creds, httpPost, localcontext);
 			httpPost.addHeader("Authorization", bs.getValue());
 			if (useAdxNotDxf) {
 				httpPost.addHeader("Content-Type", "application/xml+adx");
-				httpPost.addHeader("Accept", "application/xml+adx");
+				httpPost.addHeader("Accept", "application/json");
 			} else {
 				httpPost.addHeader("Content-Type", "application/json");
 				httpPost.addHeader("Accept", "application/json");
@@ -337,6 +363,11 @@ public class DHISConnectorServiceImpl extends BaseOpenmrsService implements DHIS
 		}
 		
 		return payload;
+	}
+	
+	private boolean useAdxNotDxf() {
+		// TODO Auto-generated method stub
+		return false;
 	}
 	
 	@Override

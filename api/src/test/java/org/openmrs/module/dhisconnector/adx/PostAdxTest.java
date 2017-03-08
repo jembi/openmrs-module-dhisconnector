@@ -36,20 +36,16 @@ public class PostAdxTest {
 		AdxDataValueSet adx = new AdxDataValueSet(g, exported);
 		
 		str = factory.translateAdxDataValueSetIntoString(adx);
-		
-		System.out.println("\nXML:::::::\n\n" + str + "\nXML:::::::\n");
 		g2.getDataValues().add(dv1);
 		adx.getGroups().add(g2);
 		
 		str = factory.translateAdxDataValueSetIntoString(adx);
-		System.out.println("\nXML:::::::\n\n" + str + "\nXML:::::::\n");
+		System.out.println("\nnSample ADX:::::::\n\n" + str + "\nXML:::::::\n");
 		
 		try {
 			String text = IOUtils.toString(getClass().getClassLoader().getResourceAsStream("adx-data-sample.xml"), "UTF-8");
 			AdxDataValueSet tAdx = factory.translateStringToAdxDataValueSet(text);
-			Object annotation = tAdx.getGroups().get(1).getDataValues().get(2).getAnnotation();
 			
-			System.out.println("\nXML:::::::\n\n" + annotation + "\nXML:::::::\n");
 			Assert.assertEquals(2, tAdx.getGroups().size());
 			Assert.assertEquals(2, tAdx.getGroups().get(0).getOtherAttributes().size());
 			Assert.assertNotNull(tAdx.getGroups().get(1).getDataValues().get(2).getAnnotation());
