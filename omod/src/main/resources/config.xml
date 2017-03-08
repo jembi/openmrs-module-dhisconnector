@@ -65,6 +65,13 @@
 			DHIS Password.
 		</description>
 	</globalProperty>
+	<globalProperty>
+		<property>dhisreporting.config.dxfToAdxSwitch</property>
+		<defaultValue>true</defaultValue>
+		<description>
+			true/false whether or not to use the DXF to ADX conversion before sending data to DHIS2
+		</description>
+	</globalProperty>
 
 	<!-- Internationalization -->
 	<!-- All message codes should start with ${project.parent.artifactId}. -->
