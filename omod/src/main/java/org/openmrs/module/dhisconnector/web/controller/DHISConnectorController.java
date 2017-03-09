@@ -26,10 +26,14 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.codehaus.jackson.JsonParseException;
+import org.codehaus.jackson.map.JsonMappingException;
+import org.codehaus.jackson.map.ObjectMapper;
 import org.openmrs.GlobalProperty;
 import org.openmrs.api.AdministrationService;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.dhisconnector.api.DHISConnectorService;
+import org.openmrs.module.dhisconnector.api.model.DHISDataValueSet;
 import org.openmrs.module.reporting.report.definition.PeriodIndicatorReportDefinition;
 import org.openmrs.web.WebConstants;
 import org.springframework.stereotype.Controller;
@@ -37,6 +41,7 @@ import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -251,7 +256,7 @@ public class DHISConnectorController {
 		model.addAttribute("lastSyncedAt", Context.getService(DHISConnectorService.class).getLastSyncedAt());
 		model.addAttribute("showLogin", (Context.getAuthenticatedUser() == null) ? true : false);
 	}
-	
+
 	@RequestMapping(value = "/module/dhisconnector/dhis2BackupImport", method = RequestMethod.GET)
 	public void backupDHIS2(ModelMap model) {
 		failureOrSuccessFeedback(model, "", "");
@@ -296,9 +301,28 @@ public class DHISConnectorController {
 		model.addAttribute("failureEncountered", failureEncountered);
 		model.addAttribute("successEncountered", successEncountered);
 	}
-	
+
 	@RequestMapping(value = "/module/dhisconnector/manageMappings", method = RequestMethod.GET)
 	public void manageMappings(ModelMap model) {
 		model.addAttribute("showLogin", (Context.getAuthenticatedUser() == null) ? true : false);
+	}
+
+	@RequestMapping(value = "/module/dhisconnector/adxGenerator", method = RequestMethod.GET)
+	public @ResponseBody String adxGenerator(@RequestParam(value = "dxfDataValueSet") String dxfDataValueSet) {
+		String adx = null;
+		ObjectMapper mapper = new ObjectMapper();
+		DHISDataValueSet dvs = null;
+		try {
+			dvs = mapper.readValue(dxfDataValueSet, DHISDataValueSet.class);
+
+			return Context.getService(DHISConnectorService.class).getAdxFromDxf(dvs);
+		} catch (JsonParseException e) {
+			e.printStackTrace();
+		} catch (JsonMappingException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return adx;
 	}
 }

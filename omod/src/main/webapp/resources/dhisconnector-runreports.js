@@ -338,6 +338,23 @@ function displayPostReponse(json) {
     reponseRow.hide().fadeIn("slow");
 }
 
+function downloadAdx() {
+	if (validateForm()) {
+        buildDXFJSON().then(function () {
+        	jQuery.ajax({
+        		type : "GET",
+        		url : "adxGenerator.form",
+        		data: { "dxfDataValueSet": JSON.stringify(dxfJSON) },
+        		datatype: "json",
+        		success : function(activityMonitorData) {
+        			if(activityMonitorData)
+        			 createDownload(activityMonitorData, 'application/xml', '.adx.xml');
+      			}
+        	});
+        });
+	}
+}
+
 function sendDataToDHIS() {
 	//TODO create buildADX equivalent and add its button, support ADX posting here
     if (validateForm()) {
@@ -358,20 +375,24 @@ function sendDataToDHIS() {
     }
 }
 
+function createDownload(content, contentType, extension) {
+	var dl = document.createElement('a');
+    
+    dl.setAttribute('href', 'data:' + contentType + ';charset=utf-8,' + encodeURIComponent(content));
+    dl.setAttribute('download', slugify(jQuery('#reportSelect option:selected').text()) + '-' + slugify(jQuery('#orgUnitSelect option:selected').text()) + '-' + slugify(jQuery('#periodSelector').val()) + extension);
+
+    dl.style.display = 'none';
+    document.body.appendChild(dl);
+
+    dl.click();
+
+    document.body.removeChild(dl);
+}
+
 function generateDXFDownload() {
     if (validateForm()) {
         buildDXFJSON().then(function () {
-
-            var dl = document.createElement('a');
-            dl.setAttribute('href', 'data:application/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(dxfJSON)));
-            dl.setAttribute('download', slugify(jQuery('#reportSelect option:selected').text()) + '-' + slugify(jQuery('#orgUnitSelect option:selected').text()) + '-' + slugify(jQuery('#periodSelector').val()) + '.dxf.json');
-
-            dl.style.display = 'none';
-            document.body.appendChild(dl);
-
-            dl.click();
-
-            document.body.removeChild(dl);
+        	createDownload(JSON.stringify(dxfJSON), 'application/json', '.dxf.json');
         });
     }
 }

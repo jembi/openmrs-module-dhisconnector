@@ -58,7 +58,8 @@
       <th class="runHeader"><spring:message code="dhisconnector.action"/></th>
       <td><input name="submit" type="button" onClick="sendDataToDHIS()" value="<spring:message code="dhisconnector.post" />"/> <input
 					name="submit" type="button" onClick="generateDXFDownload()"
-					value="<spring:message code="dhisconnector.dxf.download" />" /></td>
+					value="<spring:message code="dhisconnector.dxf.download" />" />
+					<input name="submit" type="button" onClick="downloadAdx()" value="<spring:message code="dhisconnector.adx.download" />" /></td>
     </tr>
     </tbody>
   </table>

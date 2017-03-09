@@ -13,6 +13,7 @@ package org.openmrs.module.dhisconnector.api.impl;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -21,6 +22,9 @@ import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringReader;
+import java.io.StringWriter;
+import java.io.UnsupportedEncodingException;
+import java.io.Writer;
 import java.math.BigDecimal;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -40,6 +44,14 @@ import javax.xml.bind.Unmarshaller;
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
@@ -84,6 +96,9 @@ import org.openmrs.module.reporting.report.definition.ReportDefinition;
 import org.openmrs.module.reporting.report.definition.service.ReportDefinitionService;
 import org.openmrs.util.OpenmrsUtil;
 import org.springframework.web.multipart.MultipartFile;
+import org.w3c.dom.Document;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
 
 /**
  * It is a default implementation of {@link DHISConnectorService}.
@@ -257,12 +272,6 @@ public class DHISConnectorServiceImpl extends BaseOpenmrsService implements DHIS
 			e.printStackTrace();
 		}
 		return code != null ? code : "";
-	}
-	
-	private Date getPeriodStartingDate(String period) {
-		Date date = null;
-		
-		return date;
 	}
 	
 	private AdxDataValueSet convertDHISDataValueSetToAdxDataValueSet(DHISDataValueSet valueSet) {
@@ -451,6 +460,12 @@ public class DHISConnectorServiceImpl extends BaseOpenmrsService implements DHIS
 		}
 		
 		return mapping;
+	}
+	
+	@Override
+	public String getAdxFromDxf(DHISDataValueSet dataValueSet) {
+		return beautifyXML(
+		    factory.translateAdxDataValueSetIntoString(convertDHISDataValueSetToAdxDataValueSet(dataValueSet)));
 	}
 	
 	@Override
@@ -1018,6 +1033,41 @@ public class DHISConnectorServiceImpl extends BaseOpenmrsService implements DHIS
 		}
 		
 		return deleted;
+	}
+	
+	private String beautifyXML(String xml) {
+		if (StringUtils.isNotBlank(xml)) {
+			try {
+				Document document = DocumentBuilderFactory.newInstance().newDocumentBuilder()
+				        .parse(new InputSource(new ByteArrayInputStream(xml.getBytes("utf-8"))));
+				Transformer tf = TransformerFactory.newInstance().newTransformer();
+				
+				tf.setOutputProperty(OutputKeys.ENCODING, "UTF-8");
+				tf.setOutputProperty(OutputKeys.INDENT, "yes");
+				
+				Writer out = new StringWriter();
+				
+				tf.transform(new DOMSource(document), new StreamResult(out));
+				
+				return out.toString();
+			}
+			catch (UnsupportedEncodingException e) {
+				e.printStackTrace();
+			}
+			catch (SAXException e) {
+				e.printStackTrace();
+			}
+			catch (IOException e) {
+				e.printStackTrace();
+			}
+			catch (ParserConfigurationException e) {
+				e.printStackTrace();
+			}
+			catch (TransformerException e) {
+				e.printStackTrace();
+			}
+		}
+		return xml;
 	}
 	
 }

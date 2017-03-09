@@ -80,5 +80,7 @@ public interface DHISConnectorService extends OpenmrsService {
 	public DHISMapping getMapping(String s);
 	
 	public boolean permanentlyDeleteMapping(DHISMapping mapping);
+
+	String getAdxFromDxf(DHISDataValueSet dataValueSet);
 	
 }
