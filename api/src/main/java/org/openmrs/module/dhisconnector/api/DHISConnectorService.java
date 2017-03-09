@@ -57,7 +57,7 @@ public interface DHISConnectorService extends OpenmrsService {
 	
 	public Object saveMapping(DHISMapping mapping);
 	
-	public DHISImportSummary postDataValueSet(DHISDataValueSet dataValueSet);
+	public Object postDataValueSet(DHISDataValueSet dataValueSet);
 	
 	public List<DHISMapping> getMappings();
 	

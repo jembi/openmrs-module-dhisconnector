@@ -11,12 +11,16 @@
  */
 package org.openmrs.module.dhisconnector.web.resource;
 
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.Map;
+
 import org.codehaus.jackson.map.ObjectMapper;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.dhisconnector.api.DHISConnectorService;
 import org.openmrs.module.dhisconnector.api.model.DHISDataValue;
 import org.openmrs.module.dhisconnector.api.model.DHISDataValueSet;
-import org.openmrs.module.dhisconnector.api.model.DHISImportSummary;
 import org.openmrs.module.dhisconnector.web.controller.DHISConnectorRestController;
 import org.openmrs.module.webservices.rest.SimpleObject;
 import org.openmrs.module.webservices.rest.web.RequestContext;
@@ -29,14 +33,9 @@ import org.openmrs.module.webservices.rest.web.resource.impl.DataDelegatingCrudR
 import org.openmrs.module.webservices.rest.web.resource.impl.DelegatingResourceDescription;
 import org.openmrs.module.webservices.rest.web.response.ResponseException;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.Map;
-
 @Resource(name = RestConstants.VERSION_1 + DHISConnectorRestController.DHISCONNECTOR_NAMESPACE
 		+ "/dhisdatavaluesets", supportedClass = DHISDataValueSet.class, supportedOpenmrsVersions = { "1.8.*",
-		"1.9.*, 1.10.*, 1.11.*", "1.12.*", "2.0.*" })
+				"1.9.*, 1.10.*, 1.11.*", "1.12.*", "2.0.*" })
 public class DHISDataValueSetsResource extends DataDelegatingCrudResource implements Retrievable {
 
 	@Override
@@ -56,15 +55,14 @@ public class DHISDataValueSetsResource extends DataDelegatingCrudResource implem
 
 	@Override
 	public Object save(Object o) {
-		DHISImportSummary summary = Context.getService(DHISConnectorService.class).postDataValueSet((DHISDataValueSet) o);
+		Object summary = Context.getService(DHISConnectorService.class).postDataValueSet((DHISDataValueSet) o);
 
 		ObjectMapper mapper = new ObjectMapper();
-		SimpleObject ret;
+		SimpleObject ret = null;
 
 		try {
 			ret = SimpleObject.parseJson(mapper.writeValueAsString(summary));
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			return null;
 		}
 

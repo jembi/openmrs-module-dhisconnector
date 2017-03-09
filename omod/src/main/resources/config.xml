@@ -62,7 +62,7 @@
 	</globalProperty>
 	<globalProperty>
 		<property>dhisreporting.config.dxfToAdxSwitch</property>
-		<defaultValue>true</defaultValue>
+		<defaultValue>false</defaultValue>
 		<description>
 			true/false whether or not to use the DXF to ADX conversion before sending data to DHIS2
 		</description>

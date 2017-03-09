@@ -29,6 +29,7 @@ import java.util.List;
     "conflicts",
     "dataSetComplete"
 })
+//TODO dhis upgrade
 public class DHISImportSummary {
 
     @JsonProperty("responseType")

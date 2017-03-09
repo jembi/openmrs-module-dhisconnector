@@ -82,11 +82,13 @@ Implemented
   - [x] Error handling
   - [x] Managing/editing mappings
   - [X] Scroll page when dragging mapping to top and bottom of page if necessary
+  - [X] Generation & Posting of ADX
 
 TODO
   - [ ] Support other types of OpenMRS reports
-  - [ ] Post or download ADX
+  - [ ] Download ADX
   - [ ] DHIS2 API pagination
+  - [ ] Upgrade all dhis endpoints or api
 
 ## License
 
