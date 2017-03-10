@@ -45,6 +45,8 @@ public class DHISImportSummary {
     @JsonProperty("dataSetComplete")
     private String dataSetComplete;
 
+    @JsonProperty("importOptions")
+    private DHISImportSummaryImportOptions importOptions;
     /**
      * 
      * @return
@@ -164,6 +166,16 @@ public class DHISImportSummary {
     public void setDataSetComplete(String dataSetComplete) {
         this.dataSetComplete = dataSetComplete;
     }
+
+	
+	public DHISImportSummaryImportOptions getImportOptions() {
+		return importOptions;
+	}
+
+	
+	public void setImportOptions(DHISImportSummaryImportOptions importOptions) {
+		this.importOptions = importOptions;
+	}
 
 }
 

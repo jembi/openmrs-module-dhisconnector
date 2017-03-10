@@ -356,8 +356,7 @@ function downloadAdx() {
 }
 
 function sendDataToDHIS() {
-	//TODO create buildADX equivalent and add its button, support ADX posting here
-    if (validateForm()) {
+	if (validateForm()) {
         buildDXFJSON().then(function () {
             // post to dhis
             jQuery.ajax({
