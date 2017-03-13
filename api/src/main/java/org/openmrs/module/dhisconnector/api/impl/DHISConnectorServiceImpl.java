@@ -34,6 +34,7 @@ import java.util.Date;
 import java.util.Enumeration;
 import java.util.GregorianCalendar;
 import java.util.List;
+import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipInputStream;
@@ -73,6 +74,7 @@ import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.JsonParseException;
 import org.codehaus.jackson.map.JsonMappingException;
 import org.codehaus.jackson.map.ObjectMapper;
+import org.openmrs.Location;
 import org.openmrs.api.context.Context;
 import org.openmrs.api.impl.BaseOpenmrsService;
 import org.openmrs.module.dhisconnector.Configurations;
@@ -91,9 +93,20 @@ import org.openmrs.module.dhisconnector.api.model.DHISDataValueSet;
 import org.openmrs.module.dhisconnector.api.model.DHISImportSummary;
 import org.openmrs.module.dhisconnector.api.model.DHISMapping;
 import org.openmrs.module.dhisconnector.api.model.DHISOrganisationUnit;
+import org.openmrs.module.reporting.dataset.DataSet;
+import org.openmrs.module.reporting.dataset.DataSetColumn;
+import org.openmrs.module.reporting.dataset.DataSetRow;
+import org.openmrs.module.reporting.evaluation.parameter.Mapped;
+import org.openmrs.module.reporting.report.Report;
+import org.openmrs.module.reporting.report.ReportRequest;
+import org.openmrs.module.reporting.report.ReportRequest.Priority;
+import org.openmrs.module.reporting.report.ReportRequest.Status;
 import org.openmrs.module.reporting.report.definition.PeriodIndicatorReportDefinition;
 import org.openmrs.module.reporting.report.definition.ReportDefinition;
 import org.openmrs.module.reporting.report.definition.service.ReportDefinitionService;
+import org.openmrs.module.reporting.report.renderer.RenderingMode;
+import org.openmrs.module.reporting.report.service.ReportService;
+import org.openmrs.module.reporting.web.renderers.DefaultWebRenderer;
 import org.openmrs.util.OpenmrsUtil;
 import org.springframework.web.multipart.MultipartFile;
 import org.w3c.dom.Document;
@@ -320,7 +333,7 @@ public class DHISConnectorServiceImpl extends BaseOpenmrsService implements DHIS
 	}
 	
 	@Override
-	public String postDataToDHISEndpoint(String endpoint, String data, boolean useAdxNotDxf) {
+	public String postDataToDHISEndpoint(String endpoint, String data) {
 		String url = Context.getAdministrationService().getGlobalProperty("dhisconnector.url");
 		String user = Context.getAdministrationService().getGlobalProperty("dhisconnector.user");
 		String pass = Context.getAdministrationService().getGlobalProperty("dhisconnector.pass");
@@ -345,7 +358,7 @@ public class DHISConnectorServiceImpl extends BaseOpenmrsService implements DHIS
 			Credentials creds = new UsernamePasswordCredentials(user, pass);
 			Header bs = new BasicScheme().authenticate(creds, httpPost, localcontext);
 			httpPost.addHeader("Authorization", bs.getValue());
-			if (useAdxNotDxf) {
+			if (configs.useAdxInsteadOfDxf()) {
 				httpPost.addHeader("Content-Type", "application/xml+adx");
 				httpPost.addHeader("Accept", "application/xml");
 			} else {
@@ -478,7 +491,7 @@ public class DHISConnectorServiceImpl extends BaseOpenmrsService implements DHIS
 			jsonOrXmlString = configs.useAdxInsteadOfDxf()
 			        ? factory.translateAdxDataValueSetIntoString(convertDHISDataValueSetToAdxDataValueSet(dataValueSet))
 			        : mapper.writeValueAsString(dataValueSet);
-			responseString = postDataToDHISEndpoint(DATAVALUESETS_PATH, jsonOrXmlString, configs.useAdxInsteadOfDxf());
+			responseString = postDataToDHISEndpoint(DATAVALUESETS_PATH, jsonOrXmlString);
 			
 			if (configs.useAdxInsteadOfDxf()) {
 				JAXBContext jaxbImportSummaryContext = JAXBContext.newInstance(ImportSummaries.class);
@@ -1070,4 +1083,49 @@ public class DHISConnectorServiceImpl extends BaseOpenmrsService implements DHIS
 		return xml;
 	}
 	
+	private Report runPeriodIndicatorReport(PeriodIndicatorReportDefinition reportDef, Date startDate, Date endDate,
+	        Location location) {
+		ReportRequest request = new ReportRequest(new Mapped<ReportDefinition>(reportDef, null), null,
+		        new RenderingMode(new DefaultWebRenderer(), "Web", null, 100), Priority.HIGHEST, null);
+		
+		request.getReportDefinition().addParameterMapping("startDate", startDate);
+		request.getReportDefinition().addParameterMapping("endDate", endDate);
+		request.getReportDefinition().addParameterMapping("location", location);
+		request.setStatus(Status.PROCESSING);
+		request = Context.getService(ReportService.class).saveReportRequest(request);
+		
+		return Context.getService(ReportService.class).runReport(request);
+	}
+	
+	//TODO investigate to support scheduling in the future: https://jembiprojects.jira.com/browse/RODI-33
+	public Object sendReportDataToDHIS(PeriodIndicatorReportDefinition reportDef, String period, String orgUnitId,
+	        DHISMapping mapping, Date startDate, Date endDate, Location location) {
+		Report report = runPeriodIndicatorReport(reportDef, startDate, endDate, location);
+		Map<String, DataSet> dataSets = report.getReportData().getDataSets();
+		List<DHISDataValue> dataValues = new ArrayList<DHISDataValue>();
+		
+		if (dataSets != null && dataSets.size() > 0 && StringUtils.isNotBlank(period) && StringUtils.isNotBlank(orgUnitId)) {
+			DHISDataValueSet dataValueSet = new DHISDataValueSet();
+			DataSet ds = dataSets.get("defaultDataSet");
+			List<DataSetColumn> columns = ds.getMetaData().getColumns();
+			
+			DataSetRow row = ds.iterator().next();
+			
+			for (int i = 0; i < columns.size(); i++) {
+				DHISDataValue dv = new DHISDataValue();
+				String column = columns.get(i).getName();
+				
+				dv.setValue(row.getColumnValue(column).toString());
+				dv.setDataElement(mapping.getElements().get(i).getDataElement());//TODO debug
+				dataValues.add(dv);
+			}
+			dataValueSet.setDataValues(dataValues);
+			dataValueSet.setOrgUnit(orgUnitId);
+			dataValueSet.setPeriod(period);
+			dataValueSet.setDataSet(mapping.getDataSetUID());
+			
+			return Context.getService(DHISConnectorService.class).postDataValueSet(dataValueSet);
+		}
+		return null;
+	}
 }

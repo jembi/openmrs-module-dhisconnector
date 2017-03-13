@@ -10,7 +10,6 @@ import org.json.simple.JSONObject;
 @Generated("org.jsonschema2pojo")
 public class DHISImportSummaryImportOptions {
 	
-	
 	@JsonProperty("dryRun")
 	private boolean dryRun;
 	
@@ -55,152 +54,122 @@ public class DHISImportSummaryImportOptions {
 	
 	@JsonProperty("idSchemes")
 	private JSONObject idSchemes;
-
 	
 	public boolean isDryRun() {
 		return dryRun;
 	}
-
 	
 	public void setDryRun(boolean dryRun) {
 		this.dryRun = dryRun;
 	}
-
 	
 	public boolean isAsync() {
 		return async;
 	}
-
 	
 	public void setAsync(boolean async) {
 		this.async = async;
 	}
-
 	
 	public String getImportStrategy() {
 		return importStrategy;
 	}
-
 	
 	public void setImportStrategy(String importStrategy) {
 		this.importStrategy = importStrategy;
 	}
-
 	
 	public String getMergeMode() {
 		return mergeMode;
 	}
-
 	
 	public void setMergeMode(String mergeMode) {
 		this.mergeMode = mergeMode;
 	}
-
 	
 	public boolean isSkipExistingCheck() {
 		return skipExistingCheck;
 	}
-
 	
 	public void setSkipExistingCheck(boolean skipExistingCheck) {
 		this.skipExistingCheck = skipExistingCheck;
 	}
-
 	
 	public boolean isSharing() {
 		return sharing;
 	}
-
 	
 	public void setSharing(boolean sharing) {
 		this.sharing = sharing;
 	}
-
 	
 	public boolean isSkipNotifications() {
 		return skipNotifications;
 	}
-
 	
 	public void setSkipNotifications(boolean skipNotifications) {
 		this.skipNotifications = skipNotifications;
 	}
-
 	
 	public boolean isDatasetAllowsPeriods() {
 		return datasetAllowsPeriods;
 	}
-
 	
 	public void setDatasetAllowsPeriods(boolean datasetAllowsPeriods) {
 		this.datasetAllowsPeriods = datasetAllowsPeriods;
 	}
-
 	
 	public boolean isStrictPeriods() {
 		return strictPeriods;
 	}
-
 	
 	public void setStrictPeriods(boolean strictPeriods) {
 		this.strictPeriods = strictPeriods;
 	}
-
 	
 	public boolean isStrictCategoryOptionCombos() {
 		return strictCategoryOptionCombos;
 	}
-
 	
 	public void setStrictCategoryOptionCombos(boolean strictCategoryOptionCombos) {
 		this.strictCategoryOptionCombos = strictCategoryOptionCombos;
 	}
-
 	
 	public boolean isStrictAttributeOptionCombos() {
 		return strictAttributeOptionCombos;
 	}
-
 	
 	public void setStrictAttributeOptionCombos(boolean strictAttributeOptionCombos) {
 		this.strictAttributeOptionCombos = strictAttributeOptionCombos;
 	}
-
 	
 	public boolean isStrictOrganisationUnits() {
 		return strictOrganisationUnits;
 	}
-
 	
 	public void setStrictOrganisationUnits(boolean strictOrganisationUnits) {
 		this.strictOrganisationUnits = strictOrganisationUnits;
 	}
-
 	
 	public boolean isRequireCategoryOptionCombo() {
 		return requireCategoryOptionCombo;
 	}
-
 	
 	public void setRequireCategoryOptionCombo(boolean requireCategoryOptionCombo) {
 		this.requireCategoryOptionCombo = requireCategoryOptionCombo;
 	}
-
 	
 	public boolean isRequireAttributeOptionCombo() {
 		return requireAttributeOptionCombo;
 	}
-
 	
 	public void setRequireAttributeOptionCombo(boolean requireAttributeOptionCombo) {
 		this.requireAttributeOptionCombo = requireAttributeOptionCombo;
 	}
-
 	
 	public JSONObject getIdSchemes() {
 		return idSchemes;
 	}
-
 	
 	public void setIdSchemes(JSONObject idSchemes) {
 		this.idSchemes = idSchemes;

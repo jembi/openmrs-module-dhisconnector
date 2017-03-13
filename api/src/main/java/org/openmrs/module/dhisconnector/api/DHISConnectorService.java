@@ -43,7 +43,7 @@ public interface DHISConnectorService extends OpenmrsService {
 	 */
 	public String getDataFromDHISEndpoint(String endpoint);
 	
-	public String postDataToDHISEndpoint(String endpoint, String jsonPayload, boolean useAdxNotDXF);
+	public String postDataToDHISEndpoint(String endpoint, String jsonPayload);
 	
 	/**
 	 * Tests to check if the given DHIS server details are correct

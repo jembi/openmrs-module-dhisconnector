@@ -29,7 +29,6 @@ import java.util.List;
     "conflicts",
     "dataSetComplete"
 })
-//TODO dhis upgrade
 public class DHISImportSummary {
 
     @JsonProperty("responseType")
@@ -166,12 +165,10 @@ public class DHISImportSummary {
     public void setDataSetComplete(String dataSetComplete) {
         this.dataSetComplete = dataSetComplete;
     }
-
 	
 	public DHISImportSummaryImportOptions getImportOptions() {
 		return importOptions;
 	}
-
 	
 	public void setImportOptions(DHISImportSummaryImportOptions importOptions) {
 		this.importOptions = importOptions;
