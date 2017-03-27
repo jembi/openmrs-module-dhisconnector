@@ -303,7 +303,7 @@ public class DHISConnectorServiceImpl extends BaseOpenmrsService implements DHIS
 					String catOptCombo = getCodeFromClazz(DHISCategoryOptionCombo.class,
 					    CAT_OPTION_COMBOS_PATH + dv.getCategoryOptionCombo() + JSON_POST_FIX);
 					
-					adxDv.setDataElement(dataElement);
+					adxDv.setDataElement(StringUtils.isNotBlank(dataElement) ? dataElement : dv.getDataElement());
 					adxDv.setValue(new BigDecimal(Integer.parseInt(dv.getValue())));
 					//TODO load all and catOptCombos/disaggregations here 
 					
