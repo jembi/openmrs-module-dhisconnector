@@ -110,17 +110,17 @@ public class AdxDataValueGroupPeriod {
 	public static Duration getPeriodDuration(String period) {
 		if (StringUtils.isNotBlank(period)) {
 			//TODO support all Durations and fix any issues in this logic
-			if ("Weekly".equals(AdxDataValueGroupPeriod.getPeriodTypeFromIsoString(period)))//weekly
+			if ("Weekly".equals(DHISPeriodTypeUnit.getPeriodTypeFromIsoString(period)))//weekly
 				return Duration.P7D;
-			if ("Quarterly".equals(AdxDataValueGroupPeriod.getPeriodTypeFromIsoString(period)))//quaterly
+			if ("Quarterly".equals(DHISPeriodTypeUnit.getPeriodTypeFromIsoString(period)))//quaterly
 				return Duration.P1Q;
-			if ("SixMonthly".equals(AdxDataValueGroupPeriod.getPeriodTypeFromIsoString(period)))//sixmonth
+			if ("SixMonthly".equals(DHISPeriodTypeUnit.getPeriodTypeFromIsoString(period)))//sixmonth
 				return Duration.P6M;
-			if ("Yearly".equals(AdxDataValueGroupPeriod.getPeriodTypeFromIsoString(period)))//annually
+			if ("Yearly".equals(DHISPeriodTypeUnit.getPeriodTypeFromIsoString(period)))//annually
 				return Duration.P1Y;
-			if ("Monthly".equals(AdxDataValueGroupPeriod.getPeriodTypeFromIsoString(period)))//monthly
+			if ("Monthly".equals(DHISPeriodTypeUnit.getPeriodTypeFromIsoString(period)))//monthly
 				return Duration.P1M;
-			if ("Daily".equals(AdxDataValueGroupPeriod.getPeriodTypeFromIsoString(period)))//dailly
+			if ("Daily".equals(DHISPeriodTypeUnit.getPeriodTypeFromIsoString(period)))//dailly
 				return Duration.P1D;
 		}
 		return null;
@@ -160,11 +160,6 @@ public class AdxDataValueGroupPeriod {
 	
 	public void setDateFormat(SimpleDateFormat dateFormat) {
 		this.dateFormat = dateFormat;
-	}
-	
-	public static String getPeriodTypeFromIsoString(String isoPeriod) {
-		DHISPeriodTypeUnit dateUnitType = DHISPeriodTypeUnit.find(isoPeriod);
-		return dateUnitType != null ? dateUnitType.getType() : null;
 	}
 	
 	public String getIsoPeriod() {

@@ -10,6 +10,7 @@ import javax.xml.datatype.XMLGregorianCalendar;
 
 import org.apache.commons.io.IOUtils;
 import org.junit.Test;
+import org.openmrs.module.dhisconnector.DHISPeriodTypeUnit;
 
 import junit.framework.Assert;
 
@@ -55,18 +56,18 @@ public class PostAdxTest {
 	
 	@Test
 	public void testPeriodTypes() {
-		Assert.assertEquals(AdxDataValueGroupPeriod.getPeriodTypeFromIsoString("2011"), "Yearly");
-		Assert.assertEquals(AdxDataValueGroupPeriod.getPeriodTypeFromIsoString("201101"), "Monthly");
-		Assert.assertEquals(AdxDataValueGroupPeriod.getPeriodTypeFromIsoString("2011W1"), "Weekly");
-		Assert.assertEquals(AdxDataValueGroupPeriod.getPeriodTypeFromIsoString("2011W32"), "Weekly");
-		Assert.assertEquals(AdxDataValueGroupPeriod.getPeriodTypeFromIsoString("20110101"), "Daily");
-		Assert.assertEquals(AdxDataValueGroupPeriod.getPeriodTypeFromIsoString("2011Q3"), "Quarterly");
-		Assert.assertEquals(AdxDataValueGroupPeriod.getPeriodTypeFromIsoString("201101B"), "BiMonthly");
-		Assert.assertEquals(AdxDataValueGroupPeriod.getPeriodTypeFromIsoString("2011S1"), "SixMonthly");
-		Assert.assertEquals(AdxDataValueGroupPeriod.getPeriodTypeFromIsoString("2011AprilS1"), "SixMonthlyApril");
-		Assert.assertEquals(AdxDataValueGroupPeriod.getPeriodTypeFromIsoString("2011April"), "FinancialApril");
-		Assert.assertEquals(AdxDataValueGroupPeriod.getPeriodTypeFromIsoString("2011July"), "FinancialJuly");
-		Assert.assertEquals(AdxDataValueGroupPeriod.getPeriodTypeFromIsoString("2011Oct"), "FinancialOct");
+		Assert.assertEquals(DHISPeriodTypeUnit.getPeriodTypeFromIsoString("2011"), "Yearly");
+		Assert.assertEquals(DHISPeriodTypeUnit.getPeriodTypeFromIsoString("201101"), "Monthly");
+		Assert.assertEquals(DHISPeriodTypeUnit.getPeriodTypeFromIsoString("2011W1"), "Weekly");
+		Assert.assertEquals(DHISPeriodTypeUnit.getPeriodTypeFromIsoString("2011W32"), "Weekly");
+		Assert.assertEquals(DHISPeriodTypeUnit.getPeriodTypeFromIsoString("20110101"), "Daily");
+		Assert.assertEquals(DHISPeriodTypeUnit.getPeriodTypeFromIsoString("2011Q3"), "Quarterly");
+		Assert.assertEquals(DHISPeriodTypeUnit.getPeriodTypeFromIsoString("201101B"), "BiMonthly");
+		Assert.assertEquals(DHISPeriodTypeUnit.getPeriodTypeFromIsoString("2011S1"), "SixMonthly");
+		Assert.assertEquals(DHISPeriodTypeUnit.getPeriodTypeFromIsoString("2011AprilS1"), "SixMonthlyApril");
+		Assert.assertEquals(DHISPeriodTypeUnit.getPeriodTypeFromIsoString("2011April"), "FinancialApril");
+		Assert.assertEquals(DHISPeriodTypeUnit.getPeriodTypeFromIsoString("2011July"), "FinancialJuly");
+		Assert.assertEquals(DHISPeriodTypeUnit.getPeriodTypeFromIsoString("2011Oct"), "FinancialOct");
 	
 		AdxDataValueGroupPeriod py = new AdxDataValueGroupPeriod("2017");
 		AdxDataValueGroupPeriod pd = new AdxDataValueGroupPeriod("20110101");
