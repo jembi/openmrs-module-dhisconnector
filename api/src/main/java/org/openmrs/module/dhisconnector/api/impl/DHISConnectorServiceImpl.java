@@ -256,16 +256,19 @@ public class DHISConnectorServiceImpl extends BaseOpenmrsService implements DHIS
 		String code = null;
 		
 		try {
-			Object obj = mapper.readValue(jsonResponse, clazz);
-			
-			if (obj instanceof DHISDataSet)
-				code = ((DHISDataSet) obj).getCode();
-			else if (obj instanceof DHISOrganisationUnit)
-				code = ((DHISOrganisationUnit) obj).getCode();
-			else if (obj instanceof DHISDataElement)
-				code = ((DHISDataElement) obj).getCode();
-			else if (obj instanceof DHISCategoryOptionCombo) {
-				code = ((DHISCategoryOptionCombo) obj).getCode();
+			if (StringUtils.isNotBlank(jsonResponse)) {
+				
+				Object obj = mapper.readValue(jsonResponse, clazz);
+				
+				if (obj instanceof DHISDataSet)
+					code = ((DHISDataSet) obj).getCode();
+				else if (obj instanceof DHISOrganisationUnit)
+					code = ((DHISOrganisationUnit) obj).getCode();
+				else if (obj instanceof DHISDataElement)
+					code = ((DHISDataElement) obj).getCode();
+				else if (obj instanceof DHISCategoryOptionCombo) {
+					code = ((DHISCategoryOptionCombo) obj).getCode();
+				}
 			}
 		}
 		catch (Exception e) {
@@ -300,10 +303,12 @@ public class DHISConnectorServiceImpl extends BaseOpenmrsService implements DHIS
 					AdxDataValue adxDv = new AdxDataValue();
 					String dataElement = getCodeFromClazz(DHISDataElement.class,
 					    DATA_ELEMETS_PATH + dv.getDataElement() + JSON_POST_FIX);
-					String catOptCombo = getCodeFromClazz(DHISCategoryOptionCombo.class,
+					/*String catOptCombo = getCodeFromClazz(DHISCategoryOptionCombo.class,
 					    CAT_OPTION_COMBOS_PATH + dv.getCategoryOptionCombo() + JSON_POST_FIX);
-					
-					adxDv.setDataElement(StringUtils.isNotBlank(dataElement) ? dataElement : dv.getDataElement());
+					*/
+					if (StringUtils.isBlank(dataElement))
+						dataElement = dv.getDataElement();
+					adxDv.setDataElement(dataElement);
 					adxDv.setValue(new BigDecimal(Integer.parseInt(dv.getValue())));
 					//TODO load all and catOptCombos/disaggregations here 
 					
