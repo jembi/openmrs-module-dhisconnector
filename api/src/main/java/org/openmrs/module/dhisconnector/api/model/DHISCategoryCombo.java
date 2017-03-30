@@ -101,7 +101,7 @@ public class DHISCategoryCombo {
      *     The code
      */
     @JsonProperty("code")
-    public String geCode() {
+    public String getCode() {
         return code;
     }
 

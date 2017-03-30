@@ -7,6 +7,7 @@ import java.util.GregorianCalendar;
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
+import javax.xml.namespace.QName;
 
 import org.apache.commons.io.IOUtils;
 import org.junit.Test;
@@ -32,6 +33,9 @@ public class PostAdxTest {
 		AdxDataValueSet adx = new AdxDataValueSet(g, exported);
 		
 		str = factory.translateAdxDataValueSetIntoString(adx);
+		QName q = new QName("GENDER");
+		dv1.getOtherAttributes().put(q, "Male");
+		System.out.println("otherAttrsize::::: " + dv1.getOtherAttributes().size());
 		g2.getDataValues().add(dv1);
 		adx.getGroups().add(g2);
 		
@@ -68,7 +72,7 @@ public class PostAdxTest {
 		Assert.assertEquals(DHISPeriodTypeUnit.getPeriodTypeFromIsoString("2011April"), "FinancialApril");
 		Assert.assertEquals(DHISPeriodTypeUnit.getPeriodTypeFromIsoString("2011July"), "FinancialJuly");
 		Assert.assertEquals(DHISPeriodTypeUnit.getPeriodTypeFromIsoString("2011Oct"), "FinancialOct");
-	
+		
 		AdxDataValueGroupPeriod py = new AdxDataValueGroupPeriod("2017");
 		AdxDataValueGroupPeriod pd = new AdxDataValueGroupPeriod("20110101");
 		AdxDataValueGroupPeriod pm = new AdxDataValueGroupPeriod("201101");
@@ -82,7 +86,7 @@ public class PostAdxTest {
 		Assert.assertEquals("2011-07-01", pyh.getDHISAdxStartDate());
 		Assert.assertEquals("2014-07-01", pyq.getDHISAdxStartDate());
 		Assert.assertEquals("2017-08-06", pw.getDHISAdxStartDate());
-
+		
 		Assert.assertEquals("2011-01-01", pd.getdHISAdxEndDate());
 		Assert.assertEquals("2017-12-31", py.getdHISAdxEndDate());
 		Assert.assertEquals("2011-01-31", pm.getdHISAdxEndDate());

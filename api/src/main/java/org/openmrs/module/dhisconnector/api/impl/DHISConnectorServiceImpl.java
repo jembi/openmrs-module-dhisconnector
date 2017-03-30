@@ -44,6 +44,7 @@ import javax.xml.bind.Unmarshaller;
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
+import javax.xml.namespace.QName;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.OutputKeys;
@@ -83,6 +84,7 @@ import org.openmrs.module.dhisconnector.adx.AdxDataValueSet;
 import org.openmrs.module.dhisconnector.adx.AdxObjectFactory;
 import org.openmrs.module.dhisconnector.adx.importsummary.ImportSummaries;
 import org.openmrs.module.dhisconnector.api.DHISConnectorService;
+import org.openmrs.module.dhisconnector.api.model.DHISCategoryCombo;
 import org.openmrs.module.dhisconnector.api.model.DHISCategoryOptionCombo;
 import org.openmrs.module.dhisconnector.api.model.DHISDataElement;
 import org.openmrs.module.dhisconnector.api.model.DHISDataSet;
@@ -257,7 +259,6 @@ public class DHISConnectorServiceImpl extends BaseOpenmrsService implements DHIS
 		
 		try {
 			if (StringUtils.isNotBlank(jsonResponse)) {
-				
 				Object obj = mapper.readValue(jsonResponse, clazz);
 				
 				if (obj instanceof DHISDataSet)
@@ -277,6 +278,46 @@ public class DHISConnectorServiceImpl extends BaseOpenmrsService implements DHIS
 		return code != null ? code : "";
 	}
 	
+	private DHISCategoryOptionCombo getCategoryOptionCombo(String categoryOptionComboId) {
+		String data = getDataFromDHISEndpoint(CAT_OPTION_COMBOS_PATH + categoryOptionComboId + JSON_POST_FIX);
+		
+		try {
+			return new ObjectMapper().readValue(data, DHISCategoryOptionCombo.class);
+			
+		}
+		catch (JsonParseException e) {
+			e.printStackTrace();
+		}
+		catch (JsonMappingException e) {
+			e.printStackTrace();
+		}
+		catch (IOException e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+	
+	private DHISCategoryCombo getCategoryComboFromOption(String categoryOptionComboId) {
+		String data = getDataFromDHISEndpoint(CAT_OPTION_COMBOS_PATH + categoryOptionComboId + JSON_POST_FIX);
+		DHISCategoryOptionCombo optionCombo;
+		try {
+			optionCombo = new ObjectMapper().readValue(data, DHISCategoryOptionCombo.class);
+			
+			if (optionCombo != null)
+				return optionCombo.getCategoryCombo();
+		}
+		catch (JsonParseException e) {
+			e.printStackTrace();
+		}
+		catch (JsonMappingException e) {
+			e.printStackTrace();
+		}
+		catch (IOException e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+	
 	private AdxDataValueSet convertDHISDataValueSetToAdxDataValueSet(DHISDataValueSet valueSet) {
 		AdxDataValueSet adx = null;
 		
@@ -285,7 +326,7 @@ public class DHISConnectorServiceImpl extends BaseOpenmrsService implements DHIS
 				String dataSet = getCodeFromClazz(DHISDataSet.class, DATASETS_PATH + valueSet.getDataSet() + JSON_POST_FIX);
 				String orgUnit = getCodeFromClazz(DHISOrganisationUnit.class,
 				    ORGUNITS_PATH + valueSet.getOrgUnit() + JSON_POST_FIX);
-				String period = valueSet.getPeriod();//TODO read period type and transform accordingly
+				String period = valueSet.getPeriod();
 				AdxDataValueGroup group = new AdxDataValueGroup();
 				XMLGregorianCalendar exported = DatatypeFactory.newInstance()
 				        .newXMLGregorianCalendar(new GregorianCalendar());
@@ -303,15 +344,21 @@ public class DHISConnectorServiceImpl extends BaseOpenmrsService implements DHIS
 					AdxDataValue adxDv = new AdxDataValue();
 					String dataElement = getCodeFromClazz(DHISDataElement.class,
 					    DATA_ELEMETS_PATH + dv.getDataElement() + JSON_POST_FIX);
-					/*String catOptCombo = getCodeFromClazz(DHISCategoryOptionCombo.class,
-					    CAT_OPTION_COMBOS_PATH + dv.getCategoryOptionCombo() + JSON_POST_FIX);
-					*/
+					
 					if (StringUtils.isBlank(dataElement))
 						dataElement = dv.getDataElement();
 					adxDv.setDataElement(dataElement);
 					adxDv.setValue(new BigDecimal(Integer.parseInt(dv.getValue())));
-					//TODO load all and catOptCombos/disaggregations here 
 					
+					if (StringUtils.isNotBlank(dv.getCategoryOptionCombo())) {
+						DHISCategoryCombo c = getCategoryComboFromOption(dv.getCategoryOptionCombo());
+						DHISCategoryOptionCombo oc = getCategoryOptionCombo(dv.getCategoryOptionCombo());
+						
+						if (c != null && oc != null)
+							adxDv.getOtherAttributes().put(
+							    new QName(StringUtils.isNotBlank(c.getCode()) ? c.getCode() : c.getId()),
+							    StringUtils.isNotBlank(oc.getCode()) ? oc.getCode() : oc.getId());
+					}
 					group.getDataValues().add(adxDv);
 				}
 				adx.getGroups().add(group);
@@ -783,6 +830,7 @@ public class DHISConnectorServiceImpl extends BaseOpenmrsService implements DHIS
 		}
 	}
 	
+	@SuppressWarnings("deprecation")
 	@Override
 	public String getLastSyncedAt() {
 		File backup = new File(

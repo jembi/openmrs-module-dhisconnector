@@ -47,6 +47,8 @@ public class DHISCategoryOptionCombo {
 	@JsonProperty("href")
 	private String href;
 	
+	private DHISCategoryCombo categoryCombo;
+	
 	@JsonIgnore
 	private Map<String, Object> additionalProperties = new HashMap<String, Object>();
 	
@@ -138,6 +140,14 @@ public class DHISCategoryOptionCombo {
 	@JsonProperty("code")
 	public void setCode(String code) {
 		this.code = code;
+	}
+
+	public DHISCategoryCombo getCategoryCombo() {
+		return categoryCombo;
+	}
+
+	public void setCategoryCombo(DHISCategoryCombo categoryCombo) {
+		this.categoryCombo = categoryCombo;
 	}
 	
 }
