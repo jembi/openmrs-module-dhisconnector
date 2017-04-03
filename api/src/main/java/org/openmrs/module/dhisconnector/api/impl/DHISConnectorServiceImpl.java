@@ -195,6 +195,7 @@ public class DHISConnectorServiceImpl extends BaseOpenmrsService implements DHIS
 			enpointBackUp.close();
 		}
 		catch (Exception e) {
+			e.printStackTrace();
 			return;
 		}
 		
@@ -281,18 +282,20 @@ public class DHISConnectorServiceImpl extends BaseOpenmrsService implements DHIS
 	private DHISCategoryOptionCombo getCategoryOptionCombo(String categoryOptionComboId) {
 		String data = getDataFromDHISEndpoint(CAT_OPTION_COMBOS_PATH + categoryOptionComboId + JSON_POST_FIX);
 		
-		try {
-			return new ObjectMapper().readValue(data, DHISCategoryOptionCombo.class);
-			
-		}
-		catch (JsonParseException e) {
-			e.printStackTrace();
-		}
-		catch (JsonMappingException e) {
-			e.printStackTrace();
-		}
-		catch (IOException e) {
-			e.printStackTrace();
+		if (StringUtils.isNotBlank(data)) {
+			try {
+				return new ObjectMapper().readValue(data, DHISCategoryOptionCombo.class);
+				
+			}
+			catch (JsonParseException e) {
+				e.printStackTrace();
+			}
+			catch (JsonMappingException e) {
+				e.printStackTrace();
+			}
+			catch (IOException e) {
+				e.printStackTrace();
+			}
 		}
 		return null;
 	}
@@ -300,20 +303,23 @@ public class DHISConnectorServiceImpl extends BaseOpenmrsService implements DHIS
 	private DHISCategoryCombo getCategoryComboFromOption(String categoryOptionComboId) {
 		String data = getDataFromDHISEndpoint(CAT_OPTION_COMBOS_PATH + categoryOptionComboId + JSON_POST_FIX);
 		DHISCategoryOptionCombo optionCombo;
-		try {
-			optionCombo = new ObjectMapper().readValue(data, DHISCategoryOptionCombo.class);
-			
-			if (optionCombo != null)
-				return optionCombo.getCategoryCombo();
-		}
-		catch (JsonParseException e) {
-			e.printStackTrace();
-		}
-		catch (JsonMappingException e) {
-			e.printStackTrace();
-		}
-		catch (IOException e) {
-			e.printStackTrace();
+		
+		if (StringUtils.isNotBlank(data)) {
+			try {
+				optionCombo = new ObjectMapper().readValue(data, DHISCategoryOptionCombo.class);
+				
+				if (optionCombo != null)
+					return optionCombo.getCategoryCombo();
+			}
+			catch (JsonParseException e) {
+				e.printStackTrace();
+			}
+			catch (JsonMappingException e) {
+				e.printStackTrace();
+			}
+			catch (IOException e) {
+				e.printStackTrace();
+			}
 		}
 		return null;
 	}
@@ -331,6 +337,7 @@ public class DHISConnectorServiceImpl extends BaseOpenmrsService implements DHIS
 				XMLGregorianCalendar exported = DatatypeFactory.newInstance()
 				        .newXMLGregorianCalendar(new GregorianCalendar());
 				AdxDataValueGroupPeriod adxPeriod = new AdxDataValueGroupPeriod(period);
+				List<String> dEs = new ArrayList<String>();
 				
 				adx = new AdxDataValueSet();
 				adx.setExported(exported);
@@ -345,21 +352,22 @@ public class DHISConnectorServiceImpl extends BaseOpenmrsService implements DHIS
 					String dataElement = getCodeFromClazz(DHISDataElement.class,
 					    DATA_ELEMETS_PATH + dv.getDataElement() + JSON_POST_FIX);
 					
-					if (StringUtils.isBlank(dataElement))
-						dataElement = dv.getDataElement();
-					adxDv.setDataElement(dataElement);
-					adxDv.setValue(new BigDecimal(Integer.parseInt(dv.getValue())));
-					
-					if (StringUtils.isNotBlank(dv.getCategoryOptionCombo())) {
-						DHISCategoryCombo c = getCategoryComboFromOption(dv.getCategoryOptionCombo());
-						DHISCategoryOptionCombo oc = getCategoryOptionCombo(dv.getCategoryOptionCombo());
+					if (StringUtils.isNotBlank(dataElement) && !dEs.contains(dataElement)) {
+						adxDv.setDataElement(dataElement);
+						adxDv.setValue(new BigDecimal(Integer.parseInt(dv.getValue())));
 						
-						if (c != null && oc != null)
-							adxDv.getOtherAttributes().put(
-							    new QName(StringUtils.isNotBlank(c.getCode()) ? c.getCode() : c.getId()),
-							    StringUtils.isNotBlank(oc.getCode()) ? oc.getCode() : oc.getId());
+						if (StringUtils.isNotBlank(dv.getCategoryOptionCombo())) {
+							DHISCategoryCombo c = getCategoryComboFromOption(dv.getCategoryOptionCombo());
+							DHISCategoryOptionCombo oc = getCategoryOptionCombo(dv.getCategoryOptionCombo());
+							
+							if (c != null && oc != null)
+								adxDv.getOtherAttributes().put(
+								    new QName(StringUtils.isNotBlank(c.getCode()) ? c.getCode() : c.getId()),
+								    StringUtils.isNotBlank(oc.getCode()) ? oc.getCode() : oc.getId());
+						}
+						group.getDataValues().add(adxDv);
+						dEs.add(dataElement);
 					}
-					group.getDataValues().add(adxDv);
 				}
 				adx.getGroups().add(group);
 			}
@@ -542,6 +550,7 @@ public class DHISConnectorServiceImpl extends BaseOpenmrsService implements DHIS
 			}
 		}
 		catch (Exception e) {
+			e.printStackTrace();
 			return null;
 		}
 		
