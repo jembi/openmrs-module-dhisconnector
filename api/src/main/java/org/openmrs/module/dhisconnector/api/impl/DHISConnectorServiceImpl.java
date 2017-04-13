@@ -337,7 +337,6 @@ public class DHISConnectorServiceImpl extends BaseOpenmrsService implements DHIS
 				XMLGregorianCalendar exported = DatatypeFactory.newInstance()
 				        .newXMLGregorianCalendar(new GregorianCalendar());
 				AdxDataValueGroupPeriod adxPeriod = new AdxDataValueGroupPeriod(period);
-				List<String> dEs = new ArrayList<String>();
 				
 				adx = new AdxDataValueSet();
 				adx.setExported(exported);
@@ -352,7 +351,7 @@ public class DHISConnectorServiceImpl extends BaseOpenmrsService implements DHIS
 					String dataElement = getCodeFromClazz(DHISDataElement.class,
 					    DATA_ELEMETS_PATH + dv.getDataElement() + JSON_POST_FIX);
 					
-					if (StringUtils.isNotBlank(dataElement) && !dEs.contains(dataElement)) {
+					if (StringUtils.isNotBlank(dataElement)) {
 						adxDv.setDataElement(dataElement);
 						adxDv.setValue(new BigDecimal(Integer.parseInt(dv.getValue())));
 						
@@ -366,7 +365,6 @@ public class DHISConnectorServiceImpl extends BaseOpenmrsService implements DHIS
 								    StringUtils.isNotBlank(oc.getCode()) ? oc.getCode() : oc.getId());
 						}
 						group.getDataValues().add(adxDv);
-						dEs.add(dataElement);
 					}
 				}
 				adx.getGroups().add(group);
