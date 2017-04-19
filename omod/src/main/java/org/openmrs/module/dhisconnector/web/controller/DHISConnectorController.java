@@ -335,9 +335,10 @@ public class DHISConnectorController {
 
 	@RequestMapping(value = "/module/dhisconnector/failedData", method = RequestMethod.POST)
 	public void failedData(ModelMap model, HttpServletRequest request) {
-
-		Context.getService(DHISConnectorService.class).postPreviouslyFailedData();
 		// TODO be specific which post went well and if any failed which one
+		Context.getService(DHISConnectorService.class).postPreviouslyFailedData();
+		model.addAttribute("nunmberOfFailedPostAttempts",
+				Context.getService(DHISConnectorService.class).getNumberOfFailedDataPosts());
 		request.getSession().setAttribute(WebConstants.OPENMRS_MSG_ATTR, "Completed successfully!");
 	}
 }

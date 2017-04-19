@@ -108,7 +108,6 @@ import org.xml.sax.SAXException;
  */
 public class DHISConnectorServiceImpl extends BaseOpenmrsService implements DHISConnectorService {
 	
-	
 	public static final String DHISCONNECTOR_MAPPINGS_FOLDER = File.separator + "dhisconnector" + File.separator
 	        + "mappings";
 	
@@ -138,9 +137,6 @@ public class DHISConnectorServiceImpl extends BaseOpenmrsService implements DHIS
 	private Configurations configs = new Configurations();
 	
 	private AdxObjectFactory factory = new AdxObjectFactory();
-	
-
-	int count = 0;
 	
 	private String getFromBackUp(String path) {
 		String backupFilePath = OpenmrsUtil.getApplicationDataDirectory() + DHISCONNECTOR_DHIS2BACKUP_FOLDER + path;
@@ -458,7 +454,7 @@ public class DHISConnectorServiceImpl extends BaseOpenmrsService implements DHIS
 				dataFile.mkdirs();
 			
 			String datafileLocation = dataFile.getPath() + File.separator
-			        + new SimpleDateFormat("ddMMyyy_hhmm").format(new Date()) + extension;
+			        + new SimpleDateFormat("ddMMyyy_hhmmss").format(new Date()) + extension;
 			File datafile = new File(datafileLocation);
 			
 			if (!datafile.exists()) {
