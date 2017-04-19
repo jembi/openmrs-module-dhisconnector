@@ -15,7 +15,6 @@ import java.util.List;
 
 import org.openmrs.api.OpenmrsService;
 import org.openmrs.module.dhisconnector.api.model.DHISDataValueSet;
-import org.openmrs.module.dhisconnector.api.model.DHISImportSummary;
 import org.openmrs.module.dhisconnector.api.model.DHISMapping;
 import org.openmrs.module.dhisconnector.api.model.DHISOrganisationUnit;
 import org.openmrs.module.reporting.report.definition.PeriodIndicatorReportDefinition;
@@ -82,5 +81,9 @@ public interface DHISConnectorService extends OpenmrsService {
 	public boolean permanentlyDeleteMapping(DHISMapping mapping);
 
 	String getAdxFromDxf(DHISDataValueSet dataValueSet);
+
+	Integer getNumberOfFailedDataPosts();
+
+	void postPreviouslyFailedData();
 	
 }

@@ -325,4 +325,19 @@ public class DHISConnectorController {
 		}
 		return adx;
 	}
+
+	@RequestMapping(value = "/module/dhisconnector/failedData", method = RequestMethod.GET)
+	public void failedDataRender(ModelMap model) {
+		model.addAttribute("showLogin", (Context.getAuthenticatedUser() == null) ? true : false);
+		model.addAttribute("nunmberOfFailedPostAttempts",
+				Context.getService(DHISConnectorService.class).getNumberOfFailedDataPosts());
+	}
+
+	@RequestMapping(value = "/module/dhisconnector/failedData", method = RequestMethod.POST)
+	public void failedData(ModelMap model, HttpServletRequest request) {
+
+		Context.getService(DHISConnectorService.class).postPreviouslyFailedData();
+		// TODO be specific which post went well and if any failed which one
+		request.getSession().setAttribute(WebConstants.OPENMRS_MSG_ATTR, "Completed successfully!");
+	}
 }

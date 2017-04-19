@@ -59,6 +59,12 @@
 				href="${pageContext.request.contextPath}/module/dhisconnector/runReports.form"><spring:message
 				code="dhisconnector.runReports" /></a>
 	</li>
+	<li
+			<c:if test='<%= request.getRequestURI().contains("/failedData") %>'>class="active"</c:if>>
+		<a
+				href="${pageContext.request.contextPath}/module/dhisconnector/failedData.form"><spring:message
+				code="dhisconnector.failedData" /></a>
+	</li>
 	
 	<!-- Add further links here -->
 </ul>

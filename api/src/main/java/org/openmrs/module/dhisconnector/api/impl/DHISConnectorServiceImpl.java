@@ -28,6 +28,7 @@ import java.io.Writer;
 import java.math.BigDecimal;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -132,9 +133,14 @@ public class DHISConnectorServiceImpl extends BaseOpenmrsService implements DHIS
 	
 	private String CAT_OPTION_COMBOS_PATH = "/api/categoryOptionCombos/";
 	
+	public static final String DHISCONNECTOR_DATA_FOLDER = File.separator + "dhisconnector" + File.separator + "data";
+	
 	private Configurations configs = new Configurations();
 	
 	private AdxObjectFactory factory = new AdxObjectFactory();
+	
+
+	int count = 0;
 	
 	private String getFromBackUp(String path) {
 		String backupFilePath = OpenmrsUtil.getApplicationDataDirectory() + DHISCONNECTOR_DHIS2BACKUP_FOLDER + path;
@@ -377,6 +383,91 @@ public class DHISConnectorServiceImpl extends BaseOpenmrsService implements DHIS
 		return adx;
 	}
 	
+	/**
+	 * TODO this should support selection of a failed attempt(s) to push again
+	 */
+	@Override
+	public void postPreviouslyFailedData() {
+		subDirectoryJSONAndXMLFilePost(new File(OpenmrsUtil.getApplicationDataDirectory() + DHISCONNECTOR_DATA_FOLDER));
+	}
+	
+	private void subDirectoryJSONAndXMLFilePost(File file) {
+		if (file != null && file.exists()) {
+			if (file.isFile() && (file.getName().endsWith(".json") || file.getName().endsWith(".xml"))) {
+				try {
+					String data = FileUtils.readFileToString(file);
+					String endPoint = file.getPath()
+					        .replace(OpenmrsUtil.getApplicationDataDirectory() + DHISCONNECTOR_DATA_FOLDER, "")
+					        .replace(File.separator + file.getName(), "");
+					
+					if (StringUtils.isNotBlank(data) && StringUtils.isNotBlank(endPoint)) {
+						file.delete();
+						postDataToDHISEndpoint(endPoint, data);
+					}
+				}
+				catch (IOException e) {
+					e.printStackTrace();
+				}
+			} else if (file.isDirectory()) {
+				for (File f : file.listFiles()) {
+					subDirectoryJSONAndXMLFilePost(f);
+				}
+			}
+		}
+	}
+	
+	@Override
+	public Integer getNumberOfFailedDataPosts() {
+		File dataDir = new File(OpenmrsUtil.getApplicationDataDirectory() + DHISCONNECTOR_DATA_FOLDER);
+		
+		if (dataDir.exists() && dataDir.isDirectory()) {
+			for (File f : dataDir.listFiles()) {
+				subDirectoryJSONAndXMLFileCount(f);
+			}
+		}
+		return count;
+	}
+	
+	private void subDirectoryJSONAndXMLFileCount(File dataDir) {
+		if (dataDir != null && dataDir.exists()) {
+			if (dataDir.isFile() && (dataDir.getName().endsWith(".json") || dataDir.getName().endsWith(".xml")))
+				count++;
+			else if (dataDir.isDirectory()) {
+				for (File f : dataDir.listFiles()) {
+					subDirectoryJSONAndXMLFileCount(f);
+				}
+			}
+		}
+	}
+	
+	private void backUpData(String endPoint, String data, String extension) {
+		if (StringUtils.isNotBlank(endPoint) && StringUtils.isNotBlank(data)) {
+			if (StringUtils.isBlank(extension))
+				extension = ".json";
+			if (!endPoint.startsWith(File.separator))
+				endPoint = File.separator + endPoint;
+			
+			String dataLocation = OpenmrsUtil.getApplicationDataDirectory() + DHISCONNECTOR_DATA_FOLDER + endPoint;
+			File dataFile = new File(dataLocation);
+			
+			if (!dataFile.exists())
+				dataFile.mkdirs();
+			
+			String datafileLocation = dataFile.getPath() + File.separator
+			        + new SimpleDateFormat("ddMMyyy_hhmm").format(new Date()) + extension;
+			File datafile = new File(datafileLocation);
+			
+			if (!datafile.exists()) {
+				try {
+					FileUtils.writeStringToFile(datafile, data);
+				}
+				catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+	}
+	
 	@Override
 	public String postDataToDHISEndpoint(String endpoint, String data) {
 		String url = Context.getAdministrationService().getGlobalProperty("dhisconnector.url");
@@ -385,6 +476,7 @@ public class DHISConnectorServiceImpl extends BaseOpenmrsService implements DHIS
 		
 		DefaultHttpClient client = null;
 		String payload = "";
+		String extension = ".json";
 		
 		try {
 			URL dhisURL = new URL(url);
@@ -402,8 +494,10 @@ public class DHISConnectorServiceImpl extends BaseOpenmrsService implements DHIS
 			
 			Credentials creds = new UsernamePasswordCredentials(user, pass);
 			Header bs = new BasicScheme().authenticate(creds, httpPost, localcontext);
+			
 			httpPost.addHeader("Authorization", bs.getValue());
 			if (configs.useAdxInsteadOfDxf()) {
+				extension = ".xml";
 				httpPost.addHeader("Content-Type", "application/xml+adx");
 				httpPost.addHeader("Accept", "application/xml");
 			} else {
@@ -419,10 +513,12 @@ public class DHISConnectorServiceImpl extends BaseOpenmrsService implements DHIS
 			if (entity != null) {
 				payload = EntityUtils.toString(entity);
 			} else {
+				backUpData(endpoint, data, extension);
 				System.out.println("Failed to get entity from dhis2 server, network failure!");
 			}
 		}
 		catch (Exception ex) {
+			backUpData(endpoint, data, extension);
 			ex.printStackTrace();
 		}
 		finally {
@@ -538,20 +634,21 @@ public class DHISConnectorServiceImpl extends BaseOpenmrsService implements DHIS
 			        : mapper.writeValueAsString(dataValueSet);
 			responseString = postDataToDHISEndpoint(DATAVALUESETS_PATH, jsonOrXmlString);
 			
-			if (configs.useAdxInsteadOfDxf()) {
-				JAXBContext jaxbImportSummaryContext = JAXBContext.newInstance(ImportSummaries.class);
-				Unmarshaller importSummaryUnMarshaller = jaxbImportSummaryContext.createUnmarshaller();
-				
-				return (ImportSummaries) importSummaryUnMarshaller.unmarshal(new StringReader(responseString));
-			} else {
-				return mapper.readValue(responseString, DHISImportSummary.class);
+			if (StringUtils.isNotBlank(responseString)) {
+				if (configs.useAdxInsteadOfDxf()) {
+					JAXBContext jaxbImportSummaryContext = JAXBContext.newInstance(ImportSummaries.class);
+					Unmarshaller importSummaryUnMarshaller = jaxbImportSummaryContext.createUnmarshaller();
+					
+					return (ImportSummaries) importSummaryUnMarshaller.unmarshal(new StringReader(responseString));
+				} else {
+					return mapper.readValue(responseString, DHISImportSummary.class);
+				}
 			}
 		}
 		catch (Exception e) {
 			e.printStackTrace();
-			return null;
 		}
-		
+		return null;
 	}
 	
 	@Override
