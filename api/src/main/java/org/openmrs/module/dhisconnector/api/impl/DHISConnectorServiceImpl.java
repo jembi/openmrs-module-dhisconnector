@@ -420,24 +420,28 @@ public class DHISConnectorServiceImpl extends BaseOpenmrsService implements DHIS
 	public Integer getNumberOfFailedDataPosts() {
 		File dataDir = new File(OpenmrsUtil.getApplicationDataDirectory() + DHISCONNECTOR_DATA_FOLDER);
 		
+		int count = 0;
 		if (dataDir.exists() && dataDir.isDirectory()) {
 			for (File f : dataDir.listFiles()) {
-				subDirectoryJSONAndXMLFileCount(f);
+				count += subDirectoryJSONAndXMLFileCount(f);
 			}
 		}
 		return count;
 	}
 	
-	private void subDirectoryJSONAndXMLFileCount(File dataDir) {
+	private int subDirectoryJSONAndXMLFileCount(File dataDir) {
+		int count = 0;
 		if (dataDir != null && dataDir.exists()) {
 			if (dataDir.isFile() && (dataDir.getName().endsWith(".json") || dataDir.getName().endsWith(".xml")))
 				count++;
 			else if (dataDir.isDirectory()) {
 				for (File f : dataDir.listFiles()) {
-					subDirectoryJSONAndXMLFileCount(f);
+					count += subDirectoryJSONAndXMLFileCount(f);
 				}
 			}
 		}
+		
+		return count;
 	}
 	
 	private void backUpData(String endPoint, String data, String extension) {
