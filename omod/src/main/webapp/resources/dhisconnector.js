@@ -100,8 +100,8 @@ function getDataElementsAndCategoryComboOptions() {
 
         for (var i = 0; i < dataElements.length; i++) {
             var dataElementOptionRow = jQuery('<div class="reportRow row"></div>');
-            var name = (data.dataElements.length == 0 && data.dataSetElements.length > 0) ? dataElements[i].dataElement.name : dataElements[i].name;
-            var id = (data.dataElements.length == 0 && data.dataSetElements.length > 0) ? dataElements[i].dataElement.id : dataElements[i].id;
+            var name = (data.dataElements.length == 0 && data.dataSetElements.length > 0 && dataElements[i] && dataElements[i].dataElement) ? dataElements[i].dataElement.name : dataElements[i].name;
+            var id = (data.dataElements.length == 0 && data.dataSetElements.length > 0 && dataElements[i] && dataElements[i].dataElement) ? dataElements[i].dataElement.id : dataElements[i].id;
             var dataElementOptionBox = jQuery('<div class="reportIndicator box" data-uid="' + id + '" title="' + name + '">' + renderDHIS2DatasetDragablePhrase(name) + '</div>');
             
             requests.push(getCategoryComboOptions(id, requests));
@@ -427,7 +427,7 @@ function loadMappingToBeDisplayed(mapping) {
 			jq("#dataSetSelect").val(mapping.dataSetUID);
 			onReportSelect();
 			onDataSetSelect();
-			if(jq("#create-mapping-action").val() === "edit" || jq("#create-mapping-action").val() === "copy") {
+			if(jq("#create-mapping-action").val() === "edit") {
 				jq('#mappingName').attr("disabled", true);
 			    jq('#dataSetSelect').attr("disabled", true);
 			    jq('#reportSelect').attr("disabled", true);

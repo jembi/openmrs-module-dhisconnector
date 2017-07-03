@@ -36,7 +36,7 @@
 
     <properties>
         <openMRSVersion>1.8.2</openMRSVersion>
-        <reportingVersion>0.9.7</reportingVersion>
+        <reportingVersion>0.9.4</reportingVersion>
         <calculationVersion>1.1</calculationVersion>
         <reportingRestVersion>1.5</reportingRestVersion>
         <webservicesRestVersion>2.5</webservicesRestVersion>
