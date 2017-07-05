@@ -56,23 +56,25 @@ function getCategoryComboOptions(dataElementId, requests) {
     var def = jQuery.Deferred();
     var requests = [];
 
-    // fetch data element details
-    displayDatasetsAjax = jQuery.get(OMRS_WEBSERVICES_BASE_URL + "/ws/rest/v1/dhisconnector/dhisdataelements/" + dataElementId + "?v=full&limit=100", function (dataelement) {
-        // fetch the category combo options
-        requests.push(jQuery.get(OMRS_WEBSERVICES_BASE_URL + "/ws/rest/v1/dhisconnector/dhiscategorycombos/" + dataelement.categoryCombo.id + "?v=full&limit=100", function (categorycombo) {
-            if (categorycombo !== null && categorycombo !== undefined) {
-				for (var i = 0; i < categorycombo.categoryOptionCombos.length; i++) {
-					if (!categoryComboOptions
-							.hasOwnProperty(categorycombo.categoryOptionCombos[i].id)) {
-						categoryComboOptions[categorycombo.categoryOptionCombos[i].id] = categorycombo.categoryOptionCombos[i];
+	if(dataElementId) {
+		// fetch data element details
+		displayDatasetsAjax = jQuery.get(OMRS_WEBSERVICES_BASE_URL + "/ws/rest/v1/dhisconnector/dhisdataelements/" + dataElementId + "?v=full&limit=100", function (dataelement) {
+			// fetch the category combo options
+			requests.push(jQuery.get(OMRS_WEBSERVICES_BASE_URL + "/ws/rest/v1/dhisconnector/dhiscategorycombos/" + dataelement.categoryCombo.id + "?v=full&limit=100", function (categorycombo) {
+				if (categorycombo !== null && categorycombo !== undefined) {
+					for (var i = 0; i < categorycombo.categoryOptionCombos.length; i++) {
+						if (!categoryComboOptions
+								.hasOwnProperty(categorycombo.categoryOptionCombos[i].id)) {
+							categoryComboOptions[categorycombo.categoryOptionCombos[i].id] = categorycombo.categoryOptionCombos[i];
+						}
 					}
 				}
-			}
-        }));
-        jQuery.when.apply($, requests).then(function () {
-            def.resolve();
-        });
-    });
+			}));
+			jQuery.when.apply($, requests).then(function () {
+				def.resolve();
+			});
+		});
+	}
 
     return def;
 }
@@ -100,8 +102,8 @@ function getDataElementsAndCategoryComboOptions() {
 
         for (var i = 0; i < dataElements.length; i++) {
             var dataElementOptionRow = jQuery('<div class="reportRow row"></div>');
-            var name = (data.dataElements.length == 0 && data.dataSetElements.length > 0 && dataElements[i] && dataElements[i].dataElement) ? dataElements[i].dataElement.name : dataElements[i].name;
-            var id = (data.dataElements.length == 0 && data.dataSetElements.length > 0 && dataElements[i] && dataElements[i].dataElement) ? dataElements[i].dataElement.id : dataElements[i].id;
+            var name = (data.dataElements.length == 0 && data.dataSetElements.length > 0 && dataElements[i] && dataElements[i].dataElement) ? dataElements[i].dataElement.name : (dataElements[i] ? dataElements[i].name : "");
+            var id = (data.dataElements.length == 0 && data.dataSetElements.length > 0 && dataElements[i] && dataElements[i].dataElement) ? dataElements[i].dataElement.id : (dataElements[i] ? dataElements[i].id : "");
             var dataElementOptionBox = jQuery('<div class="reportIndicator box" data-uid="' + id + '" title="' + name + '">' + renderDHIS2DatasetDragablePhrase(name) + '</div>');
             
             requests.push(getCategoryComboOptions(id, requests));
@@ -194,7 +196,7 @@ function populateReportsDropdown() {
     // fetch reports
     reportsDropDownAjax = jQuery.get(OMRS_WEBSERVICES_BASE_URL + "/ws/rest/v1/dhisconnector/periodindicatorreports?limit=100", function (data) {
 
-        var reportSelect = jQuery('<select id="reportSelect"></select>');
+        var reportSelect = jQuery('<select id="reportSelect"><option>Select</option></select>');
         reportSelect.on('change', onReportSelect);
 
         for (var i = 0; i < data.results.length; i++) {
@@ -212,7 +214,7 @@ function populateDataSetsDropdown() {
     // fetch datasets
 	dataSetsDropDownAjax = jQuery.get(OMRS_WEBSERVICES_BASE_URL + "/ws/rest/v1/dhisconnector/dhisdatasets?v=full&limit=100", function (data) {
 
-        var reportSelect = jQuery('<select id="dataSetSelect"></select>');
+        var reportSelect = jQuery('<select id="dataSetSelect"><option>Select</option></select>');
         reportSelect.on('change', onDataSetSelect);
 
         for (var i = 0; i < data.results.length; i++) {
@@ -357,7 +359,7 @@ function renderDragablePhrase(phrase, maxChars) {
 	if(jq(window).width() > 1280) {
 		maxChars += 5;//wide screen resolution probably
 	}
-	if(phrase.length > maxChars) {
+	if(phrase && phrase.length > maxChars) {
 		return phrase.substring(0, maxChars - 2) + "...";
 	} else {
 		return phrase;
@@ -427,7 +429,7 @@ function loadMappingToBeDisplayed(mapping) {
 			jq("#dataSetSelect").val(mapping.dataSetUID);
 			onReportSelect();
 			onDataSetSelect();
-			if(jq("#create-mapping-action").val() === "edit") {
+			if(jq("#create-mapping-action").val() === "edit" || jq("#create-mapping-action").val() === "copy") {
 				jq('#mappingName').attr("disabled", true);
 			    jq('#dataSetSelect').attr("disabled", true);
 			    jq('#reportSelect').attr("disabled", true);
@@ -436,9 +438,11 @@ function loadMappingToBeDisplayed(mapping) {
 				for (var i = 0; i < jq('.indicatorContainer').length; i++) {
 					var elementsIndex = elementsMatchIndicator(mapping.elements, i);
 					var dataElement = (elementsIndex !== -1 && mapping.elements[elementsIndex] !== undefined) ? fetchElementFromGlobalDataElements(mapping.elements[elementsIndex].dataElement) : undefined;
-					
+
 					if(dataElement !== undefined) {
-						jq('.row > .dataElementDragDestination.row-' + i).append('<div class="reportIndicator box" data-uid="' + dataElement.id + '" title="' + dataElement.name + '">' + renderMappingsDragablePhrase(dataElement.name) + '<span onclick="deleteMapping(this);" class="close">x</span></div>');
+						var nom = (dataElement.name) ? dataElement.name : dataElement.dataElement.name;
+
+						jq('.row > .dataElementDragDestination.row-' + i).append('<div class="reportIndicator box" data-uid="' + dataElement.id + '" title="' + nom + '">' + renderMappingsDragablePhrase(nom) + '<span onclick="deleteMapping(this);" class="close">x</span></div>');
 					}
 			    }
 			});
@@ -452,7 +456,7 @@ function fetchElementFromGlobalDataElements(element) {
 	
 	if(element !== undefined) {
 		for(i = 0; i < dataElements.length; i++) {
-			if(dataElements[i].id === element) {
+			if((dataElements[i].dataSet && dataElements[i].dataElement.id === element) || dataElements[i].id === element) {
 				dataElement = dataElements[i];
 			}
 		}

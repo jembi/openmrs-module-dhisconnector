@@ -1,20 +1,13 @@
 package org.openmrs.module.dhisconnector.adx;
 
+import javax.xml.bind.annotation.*;
+import javax.xml.bind.annotation.adapters.CollapsedStringAdapter;
+import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+import javax.xml.namespace.QName;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlAnyAttribute;
-import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlSchemaType;
-import javax.xml.bind.annotation.XmlType;
-import javax.xml.bind.annotation.adapters.CollapsedStringAdapter;
-import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
-import javax.xml.namespace.QName;
 
 /**
  * <p>
@@ -43,7 +36,7 @@ public class AdxDataValueGroup {
 	@XmlElement(required = true)
 	protected List<AdxDataValue> dataValue;
 	
-	@XmlAttribute(name = "datSet", required = true)
+	@XmlAttribute(name = "dataSet", required = true)
 	protected String dataSet;
 	
 	//TODO evaluate this to AdxDataValueGroupPeriod#period to evaluate as a string

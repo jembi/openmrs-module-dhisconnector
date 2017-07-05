@@ -11,6 +11,7 @@
  */
 package org.openmrs.module.dhisconnector.web.resource;
 
+import org.codehaus.jackson.map.DeserializationConfig;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.dhisconnector.api.DHISConnectorService;
@@ -32,7 +33,7 @@ public class DHISCategoryCombosResource extends DataDelegatingCrudResource imple
 
 	public static final String CATEGORYCOMBOS_PATH = "/api/categoryCombos";
 
-	private static final String COC_FIELDS_PARAM = "?fields=id,name,code,categoryOptionCombos[id,name,code],categories[id,name,code]";
+	private static final String COC_FIELDS_PARAM = "?fields=id,name,displayName,code,categoryOptionCombos[id,name,displayName,code],categories[id,name,displayName,code]";
 
 	@Override
 	public DHISCategoryCombo getByUniqueId(String s) {
@@ -44,6 +45,7 @@ public class DHISCategoryCombosResource extends DataDelegatingCrudResource imple
 		DHISCategoryCombo ret = null;
 
 		try {
+			mapper.configure(DeserializationConfig.Feature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 			ret = mapper.readValue(jsonResponse, DHISCategoryCombo.class);
 		}
 		catch (Exception e) {

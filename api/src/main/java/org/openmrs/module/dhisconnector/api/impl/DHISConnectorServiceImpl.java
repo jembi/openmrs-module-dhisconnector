@@ -11,53 +11,9 @@
  */
 package org.openmrs.module.dhisconnector.api.impl;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.FilenameFilter;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.StringReader;
-import java.io.StringWriter;
-import java.io.UnsupportedEncodingException;
-import java.io.Writer;
-import java.math.BigDecimal;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.Enumeration;
-import java.util.GregorianCalendar;
-import java.util.List;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipFile;
-import java.util.zip.ZipInputStream;
-import java.util.zip.ZipOutputStream;
-
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.Unmarshaller;
-import javax.xml.datatype.DatatypeConfigurationException;
-import javax.xml.datatype.DatatypeFactory;
-import javax.xml.datatype.XMLGregorianCalendar;
-import javax.xml.namespace.QName;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.OutputKeys;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamResult;
-
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpHost;
@@ -73,27 +29,16 @@ import org.apache.http.protocol.BasicHttpContext;
 import org.apache.http.util.EntityUtils;
 import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.JsonParseException;
+import org.codehaus.jackson.map.DeserializationConfig;
 import org.codehaus.jackson.map.JsonMappingException;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.openmrs.api.context.Context;
 import org.openmrs.api.impl.BaseOpenmrsService;
 import org.openmrs.module.dhisconnector.Configurations;
-import org.openmrs.module.dhisconnector.adx.AdxDataValue;
-import org.openmrs.module.dhisconnector.adx.AdxDataValueGroup;
-import org.openmrs.module.dhisconnector.adx.AdxDataValueGroupPeriod;
-import org.openmrs.module.dhisconnector.adx.AdxDataValueSet;
-import org.openmrs.module.dhisconnector.adx.AdxObjectFactory;
+import org.openmrs.module.dhisconnector.adx.*;
 import org.openmrs.module.dhisconnector.adx.importsummary.ImportSummaries;
 import org.openmrs.module.dhisconnector.api.DHISConnectorService;
-import org.openmrs.module.dhisconnector.api.model.DHISCategoryCombo;
-import org.openmrs.module.dhisconnector.api.model.DHISCategoryOptionCombo;
-import org.openmrs.module.dhisconnector.api.model.DHISDataElement;
-import org.openmrs.module.dhisconnector.api.model.DHISDataSet;
-import org.openmrs.module.dhisconnector.api.model.DHISDataValue;
-import org.openmrs.module.dhisconnector.api.model.DHISDataValueSet;
-import org.openmrs.module.dhisconnector.api.model.DHISImportSummary;
-import org.openmrs.module.dhisconnector.api.model.DHISMapping;
-import org.openmrs.module.dhisconnector.api.model.DHISOrganisationUnit;
+import org.openmrs.module.dhisconnector.api.model.*;
 import org.openmrs.module.reporting.report.definition.PeriodIndicatorReportDefinition;
 import org.openmrs.module.reporting.report.definition.ReportDefinition;
 import org.openmrs.module.reporting.report.definition.service.ReportDefinitionService;
@@ -102,6 +47,31 @@ import org.springframework.web.multipart.MultipartFile;
 import org.w3c.dom.Document;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
+
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.Unmarshaller;
+import javax.xml.datatype.DatatypeConfigurationException;
+import javax.xml.datatype.DatatypeFactory;
+import javax.xml.datatype.XMLGregorianCalendar;
+import javax.xml.namespace.QName;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
+import java.io.*;
+import java.math.BigDecimal;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.text.SimpleDateFormat;
+import java.util.*;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
+import java.util.zip.ZipInputStream;
+import java.util.zip.ZipOutputStream;
 
 /**
  * It is a default implementation of {@link DHISConnectorService}.
@@ -118,7 +88,7 @@ public class DHISConnectorServiceImpl extends BaseOpenmrsService implements DHIS
 	
 	public static final String DHISCONNECTOR_MAPPING_FILE_SUFFIX = ".mapping.json";
 	
-	public static final String DHISCONNECTOR_ORGUNIT_RESOURCE = "/api/organisationUnits.json?paging=false&fields=id,name";
+	public static final String DHISCONNECTOR_ORGUNIT_RESOURCE = "/api/organisationUnits.json?paging=false&fields=id,name,displayName";
 	
 	public static final String DATAVALUESETS_PATH = "/api/dataValueSets";
 	
@@ -212,45 +182,44 @@ public class DHISConnectorServiceImpl extends BaseOpenmrsService implements DHIS
 		
 		DefaultHttpClient client = null;
 		String payload = "";
-		
-		try {
-			URL dhisURL = new URL(url);
-			
-			String host = dhisURL.getHost();
-			int port = dhisURL.getPort();
-			
-			HttpHost targetHost = new HttpHost(host, port, dhisURL.getProtocol());
-			client = new DefaultHttpClient();
-			BasicHttpContext localcontext = new BasicHttpContext();
-			
-			HttpGet httpGet = new HttpGet(dhisURL.getPath() + endpoint);
-			Credentials creds = new UsernamePasswordCredentials(user, pass);
-			Header bs = new BasicScheme().authenticate(creds, httpGet, localcontext);
-			httpGet.addHeader("Authorization", bs.getValue());
-			httpGet.addHeader("Content-Type", "application/json");
-			httpGet.addHeader("Accept", "application/json");
-			HttpResponse response = client.execute(targetHost, httpGet, localcontext);
-			HttpEntity entity = response.getEntity();
-			
-			if (entity != null && response.getStatusLine().getStatusCode() == 200) {
-				payload = EntityUtils.toString(entity);
-				
-				saveToBackUp(endpoint, payload);
-			} else {
-				payload = getFromBackUp(endpoint);
-			}
+
+		if (StringUtils.isNotBlank(endpoint)) {
+			try {
+                URL dhisURL = new URL(url);
+                String host = dhisURL.getHost();
+                int port = dhisURL.getPort();
+
+                HttpHost targetHost = new HttpHost(host, port, dhisURL.getProtocol());
+                client = new DefaultHttpClient();
+                BasicHttpContext localcontext = new BasicHttpContext();
+
+                HttpGet httpGet = new HttpGet(dhisURL.getPath() + endpoint);
+                Credentials creds = new UsernamePasswordCredentials(user, pass);
+                Header bs = new BasicScheme().authenticate(creds, httpGet, localcontext);
+                httpGet.addHeader("Authorization", bs.getValue());
+                httpGet.addHeader("Content-Type", "application/json");
+                httpGet.addHeader("Accept", "application/json");
+                HttpResponse response = client.execute(targetHost, httpGet, localcontext);
+                HttpEntity entity = response.getEntity();
+
+                if (entity != null && response.getStatusLine().getStatusCode() == 200) {
+                    payload = EntityUtils.toString(entity);
+                    saveToBackUp(endpoint, payload);
+                } else {
+                    payload = getFromBackUp(endpoint);
+                }
+            }
+            catch (Exception ex) {
+                ex.printStackTrace();
+                payload = getFromBackUp(endpoint);
+            }
+            finally {
+                if (client != null) {
+                    client.getConnectionManager().shutdown();
+                }
+            }
 		}
-		catch (Exception ex) {
-			ex.printStackTrace();
-			
-			payload = getFromBackUp(endpoint);
-		}
-		finally {
-			if (client != null) {
-				client.getConnectionManager().shutdown();
-			}
-		}
-		
+
 		return payload;
 	}
 	
@@ -261,6 +230,7 @@ public class DHISConnectorServiceImpl extends BaseOpenmrsService implements DHIS
 		String code = null;
 		
 		try {
+			mapper.configure(DeserializationConfig.Feature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 			if (StringUtils.isNotBlank(jsonResponse)) {
 				Object obj = mapper.readValue(jsonResponse, clazz);
 				
@@ -629,6 +599,7 @@ public class DHISConnectorServiceImpl extends BaseOpenmrsService implements DHIS
 		String responseString;
 		
 		try {
+			mapper.configure(DeserializationConfig.Feature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 			jsonOrXmlString = configs.useAdxInsteadOfDxf()
 			        ? factory.translateAdxDataValueSetIntoString(convertDHISDataValueSetToAdxDataValueSet(dataValueSet))
 			        : mapper.writeValueAsString(dataValueSet);
@@ -675,6 +646,7 @@ public class DHISConnectorServiceImpl extends BaseOpenmrsService implements DHIS
 		
 		for (File f : files) {
 			try {
+				mapper.configure(DeserializationConfig.Feature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 				mappings.add(mapper.readValue(f, DHISMapping.class));
 			}
 			catch (Exception e) {
@@ -711,6 +683,7 @@ public class DHISConnectorServiceImpl extends BaseOpenmrsService implements DHIS
 		jsonResponse = getDataFromDHISEndpoint(DHISCONNECTOR_ORGUNIT_RESOURCE);
 		
 		try {
+			mapper.configure(DeserializationConfig.Feature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 			node = mapper.readTree(jsonResponse);
 			orgUnits = Arrays
 			        .asList(mapper.readValue(node.get("organisationUnits").toString(), DHISOrganisationUnit[].class));
@@ -1152,6 +1125,7 @@ public class DHISConnectorServiceImpl extends BaseOpenmrsService implements DHIS
 			});
 			if (files.length == 1 && files[0] != null) {
 				try {
+					mapper.configure(DeserializationConfig.Feature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 					mappingObj = mapper.readValue(files[0], DHISMapping.class);
 				}
 				catch (JsonParseException e) {
@@ -1198,12 +1172,10 @@ public class DHISConnectorServiceImpl extends BaseOpenmrsService implements DHIS
 				Document document = DocumentBuilderFactory.newInstance().newDocumentBuilder()
 				        .parse(new InputSource(new ByteArrayInputStream(xml.getBytes("utf-8"))));
 				Transformer tf = TransformerFactory.newInstance().newTransformer();
-				
+				Writer out = new StringWriter();
+
 				tf.setOutputProperty(OutputKeys.ENCODING, "UTF-8");
 				tf.setOutputProperty(OutputKeys.INDENT, "yes");
-				
-				Writer out = new StringWriter();
-				
 				tf.transform(new DOMSource(document), new StreamResult(out));
 				
 				return out.toString();

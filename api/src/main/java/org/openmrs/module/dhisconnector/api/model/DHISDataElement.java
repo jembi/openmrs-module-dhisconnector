@@ -26,11 +26,10 @@ import java.util.List;
         "displayDescription", "aggregationType", "type", "dataDimension", "description", "externalAccess", "publicAccess",
         "aggregationOperator", "allItems", "url", "numberType", "domainType", "dimension", "optionSetValue", "displayName",
         "displayShortName", "access", "categoryCombo", "user", "aggregationLevels", "dataElementGroups", "dataSets",
-        "attributeValues", "items", "userGroupAccesses" })
+        "attributeValues", "items", "userGroupAccesses", "dataSetElements" })
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class DHISDataElement {
-	
-	
+
 	@JsonProperty("id")
 	private String id;
 	
@@ -111,13 +110,19 @@ public class DHISDataElement {
 	
 	@JsonProperty("user")
 	private DHISUser user;
+
+	@JsonProperty("dataSetElements")
+	private List<DHISDataSetElement> dataSetElements;
 	
 	@JsonProperty("aggregationLevels")
 	private List<Object> aggregationLevels = new ArrayList<Object>();
 	
 	@JsonProperty("dataElementGroups")
 	private List<Object> dataElementGroups = new ArrayList<Object>();
-	
+
+	/**
+	 * deprecated from DHIS 2.25
+	 */
 	@JsonProperty("dataSets")
 	private List<DHISDataSet> dataSets = new ArrayList<DHISDataSet>();
 	
@@ -651,5 +656,14 @@ public class DHISDataElement {
 	public void setCode(String code) {
 		this.code = code;
 	}
-	
+
+
+	public List<DHISDataSetElement> getDataSetElements() {
+		return dataSetElements;
+	}
+
+	public void setDataSetElements(List<DHISDataSetElement> dataSetElements) {
+		this.dataSetElements = dataSetElements;
+	}
+
 }

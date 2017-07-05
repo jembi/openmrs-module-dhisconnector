@@ -59,6 +59,8 @@ The date selector will changed based on the period type of the DHIS2 Data Set.
 
 Once you have selected a value for all the fields, click *Send Data* to post data directly to the DHIS2 server, or *Download JSON* to download the data in DXF format.
 
+> To post backedup DHIS2 API, run; `bash postDHIS2API.sh` and enter required details
+
 ## DHIS2 Backup
 
 Every time a request is sent to the DHIS2 server, the resulting JSON is stored on the file system at `OPENMRS_DIR/dhisconnector/dhis2Backup/`. On Ubuntu, this usually corresponds to `/usr/share/tomcat7/.OpenMRS/dhisconnector/dhis2Backup/`. If the DHIS2 server is no longer reachable, these backed up API values will be used by the DHIS Connector Module.

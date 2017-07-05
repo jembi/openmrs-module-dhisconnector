@@ -1,5 +1,7 @@
 package org.openmrs.module.dhisconnector.web.resource;
 
+import org.apache.commons.lang3.StringUtils;
+import org.codehaus.jackson.map.DeserializationConfig;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.dhisconnector.api.DHISConnectorService;
@@ -27,12 +29,14 @@ public class DHISDataSetElementResource extends DataDelegatingCrudResource imple
 		ObjectMapper mapper = new ObjectMapper();
 
 		String jsonResponse = Context.getService(DHISConnectorService.class).getDataFromDHISEndpoint(
-				DATASETELEMENTS_PATH + "/" + s + ".json");
+				DATASETELEMENTS_PATH + "/" + s + CO_FIELDS_PARAM);
 
+		mapper.configure(DeserializationConfig.Feature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 		DHISDataSetElement ret = null;
 
 		try {
-			ret = mapper.readValue(jsonResponse, DHISDataSetElement.class);
+			if(StringUtils.isNotBlank(jsonResponse))
+				ret = mapper.readValue(jsonResponse, DHISDataSetElement.class);
 		} catch (Exception e) {
 			log.error(e.getMessage());
 		}

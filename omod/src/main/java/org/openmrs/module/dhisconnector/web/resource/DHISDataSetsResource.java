@@ -11,7 +11,9 @@
  */
 package org.openmrs.module.dhisconnector.web.resource;
 
+import org.apache.commons.lang3.StringUtils;
 import org.codehaus.jackson.JsonNode;
+import org.codehaus.jackson.map.DeserializationConfig;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.dhisconnector.api.DHISConnectorService;
@@ -43,9 +45,9 @@ public class DHISDataSetsResource extends DataDelegatingCrudResource implements 
 
 	public static final String NO_PAGING_PARAM = "?paging=false";
 
-	private static final String NO_PAGING_IDENTIFIABLE_PARAM = "&fields=id,name,code";
+	private static final String NO_PAGING_IDENTIFIABLE_PARAM = "&fields=name,displayName,code,id,periodType,dataElements[id,name,displayName,code],dataSetElements[id,dataElement[id,name,displayName,code],dataSet]";
 
-    private static final String DE_IDENTIFIABLE_PARAM = "?fields=*,dataElements[id,name,code],dataSetElements[id,name,code]";
+    private static final String DE_IDENTIFIABLE_PARAM = "?fields=name,displayName,code,id,periodType,dataElements[id,name,displayName,code],dataSetElements[id,dataElement[id,name,displayName,code],dataSet]";
 
 	@Override
 	public DHISDataSet getByUniqueId(String s) {
@@ -57,8 +59,10 @@ public class DHISDataSetsResource extends DataDelegatingCrudResource implements 
 
 		DHISDataSet ret = null;
 
+		mapper.configure(DeserializationConfig.Feature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 		try {
-			ret = mapper.readValue(jsonResponse, DHISDataSet.class);
+			if(StringUtils.isNotBlank(jsonResponse))
+				ret = mapper.readValue(jsonResponse, DHISDataSet.class);
 		}
 		catch (Exception e) {
 			log.error(e.getMessage());
@@ -100,8 +104,11 @@ public class DHISDataSetsResource extends DataDelegatingCrudResource implements 
 				.getDataFromDHISEndpoint(DATASETS_PATH + JSON_SUFFIX + NO_PAGING_PARAM + NO_PAGING_IDENTIFIABLE_PARAM);
 
 		try {
-			node = mapper.readTree(jsonResponse);
-			dataSets = Arrays.asList(mapper.readValue(node.get("dataSets").toString(), DHISDataSet[].class));
+			mapper.configure(DeserializationConfig.Feature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+			if(StringUtils.isNotBlank(jsonResponse)) {
+				node = mapper.readTree(jsonResponse);
+				dataSets = Arrays.asList(mapper.readValue(node.get("dataSets").toString(), DHISDataSet[].class));
+			}
 		}
 		catch (Exception ex) {
 			System.out.print(ex.getMessage());

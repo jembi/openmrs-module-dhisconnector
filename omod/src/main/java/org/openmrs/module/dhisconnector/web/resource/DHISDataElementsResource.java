@@ -12,6 +12,7 @@
 package org.openmrs.module.dhisconnector.web.resource;
 
 import org.apache.commons.lang3.StringUtils;
+import org.codehaus.jackson.map.DeserializationConfig;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.dhisconnector.api.DHISConnectorService;
@@ -33,7 +34,7 @@ public class DHISDataElementsResource extends DataDelegatingCrudResource impleme
 
 	public static final String DATAELEMENTS_PATH = "/api/dataElements";
 
-	private static final String CO_FIELDS_PARAM = "?fields=id,name,code,categoryCombo[id,name,code]";
+		private static final String CO_FIELDS_PARAM = "?fields=id,name,displayName,code,dataSet,categoryCombo[id,name,displayName,code]";
 
 	@Override
 	public DHISDataElement getByUniqueId(String s) {
@@ -42,6 +43,7 @@ public class DHISDataElementsResource extends DataDelegatingCrudResource impleme
 		String jsonResponse = Context.getService(DHISConnectorService.class).getDataFromDHISEndpoint(
 				DATAELEMENTS_PATH + "/" + s + DHISDataSetsResource.JSON_SUFFIX + CO_FIELDS_PARAM);
 
+		mapper.configure(DeserializationConfig.Feature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 		DHISDataElement ret = null;
 
 		try {

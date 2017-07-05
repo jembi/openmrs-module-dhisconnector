@@ -11,18 +11,6 @@
  */
 package org.openmrs.module.dhisconnector.web.controller;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.text.ParseException;
-import java.util.Date;
-import java.util.List;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -44,6 +32,13 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.multipart.MultipartFile;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.*;
+import java.text.ParseException;
+import java.util.Date;
+import java.util.List;
 
 /**
  * Controller for the DHIS Connector Module admin pages
@@ -313,9 +308,11 @@ public class DHISConnectorController {
 		ObjectMapper mapper = new ObjectMapper();
 		DHISDataValueSet dvs = null;
 		try {
-			dvs = mapper.readValue(dxfDataValueSet, DHISDataValueSet.class);
+			if(StringUtils.isNotBlank(dxfDataValueSet)) {
+				dvs = mapper.readValue(dxfDataValueSet, DHISDataValueSet.class);
 
-			return Context.getService(DHISConnectorService.class).getAdxFromDxf(dvs);
+				return Context.getService(DHISConnectorService.class).getAdxFromDxf(dvs);
+			}
 		} catch (JsonParseException e) {
 			e.printStackTrace();
 		} catch (JsonMappingException e) {

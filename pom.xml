@@ -72,6 +72,20 @@
 
             <dependency>
                 <groupId>org.openmrs.module</groupId>
+                <artifactId>calculation-api</artifactId>
+                <version>${calculationVersion}</version>
+                <scope>provided</scope>
+            </dependency>
+
+            <dependency>
+                <groupId>org.openmrs.module</groupId>
+                <artifactId>serialization.xstream-api</artifactId>
+                <version>${serializationXstreamVersion}</version>
+                <scope>provided</scope>
+            </dependency>
+
+            <dependency>
+                <groupId>org.openmrs.module</groupId>
                 <artifactId>webservices.rest-omod-common</artifactId>
                 <version>${webservicesRestVersion}</version>
                 <classifier>tests</classifier>

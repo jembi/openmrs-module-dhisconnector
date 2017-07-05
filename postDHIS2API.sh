@@ -15,13 +15,13 @@ read -s PASSWORD
 LOG_FILE=postDHIS2APILog.txt
 
 if [ -z "$USERNAME" ] || [ -z "$PASSWORD" ] ||  [ -z "$API_URL" ] || [ -z "$API_HOME" ] || [ ! -d "$API_HOME" ]; then
+    echo "Please enter a right Path, & URL, username, password"
     exit 1
 fi
 
-echo "*************";
-API_FILES=`find $API_HOME -name '*.json'`
-
-rm $LOG_FILE
+if [ -f "$LOG_FILE" ]; then
+    rm $LOG_FILE
+fi
 touch $LOG_FILE
 find $API_HOME -name '*.json' | while read API_FILE; do
     END_POINT=${API_FILE#*$API_HOME/}

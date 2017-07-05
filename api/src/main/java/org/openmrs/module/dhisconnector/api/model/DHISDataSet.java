@@ -732,15 +732,17 @@ public class DHISDataSet {
 	 */
 	@JsonProperty("dataSetElements")
 	public void setDataSetElements(List<DHISDataSetElement> dataSetElements) {
-		List<DHISDataSetElement> regeneratedDataSetElements = new ArrayList<DHISDataSetElement>();
+		/*List<DHISDataSetElement> regeneratedDataSetElements = new ArrayList<DHISDataSetElement>();
 		
 		if (dataSetElements != null && dataSetElements.size() > 0
 		        && (getDataElements() == null || getDataElements().size() <= 0)) {
 			for (DHISDataSetElement d : dataSetElements) {
-				regeneratedDataSetElements.add(getDataSetElementFromDataSetElementId(d.getId()));
+				DHISDataSetElement d1 = getDataSetElementFromDataSetElementId(d.getId());
+
+				regeneratedDataSetElements.add(d1 != null ? d1 : d);
 			}
 			this.dataSetElements = regeneratedDataSetElements;
-		} else
+		} else*/
 			this.dataSetElements = dataSetElements;
 	}
 	
@@ -748,8 +750,8 @@ public class DHISDataSet {
 	private DHISDataSetElement getDataSetElementFromDataSetElementId(String dataSetElementId) {
 		ObjectMapper mapper = new ObjectMapper();
 		String jsonResponse = Context.getService(DHISConnectorService.class)
-		        .getDataFromDHISEndpoint("/api/dataSetElements/" + dataSetElementId + ".json");
-		DHISDataSetElement ret = null;
+					.getDataFromDHISEndpoint("/api/dataSetElements/" + dataSetElementId + ".json");
+        DHISDataSetElement ret = null;
 		
 		try {
 			ret = mapper.readValue(jsonResponse, DHISDataSetElement.class);
