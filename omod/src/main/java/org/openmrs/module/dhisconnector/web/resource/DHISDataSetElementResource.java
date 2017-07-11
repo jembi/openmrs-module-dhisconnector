@@ -22,7 +22,7 @@ import org.openmrs.module.webservices.rest.web.response.ResponseException;
 public class DHISDataSetElementResource extends DataDelegatingCrudResource implements Retrievable {
 	public static final String DATASETELEMENTS_PATH = "/api/dataSetElements";
 
-	private static final String CO_FIELDS_PARAM = ".json?fields=id,dataElement[id],categoryCombo[id],dataSet[id]";
+	private static final String CO_FIELDS_PARAM = ".json?fields=:identifiable,dataElement[:identifiable],categoryCombo[:identifiable],dataSet[:identifiable]";
 
 	@Override
 	public DHISDataSetElement getByUniqueId(String s) {

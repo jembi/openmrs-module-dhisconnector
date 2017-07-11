@@ -34,7 +34,7 @@ public class DHISDataElementsResource extends DataDelegatingCrudResource impleme
 
 	public static final String DATAELEMENTS_PATH = "/api/dataElements";
 
-		private static final String CO_FIELDS_PARAM = "?fields=id,name,displayName,code,dataSet,categoryCombo[id,name,displayName,code]";
+	private static final String CO_FIELDS_PARAM = "?fields=:identifiable,displayName,code,dataSet,categoryCombo[:identifiable,displayName,code]";
 
 	@Override
 	public DHISDataElement getByUniqueId(String s) {
