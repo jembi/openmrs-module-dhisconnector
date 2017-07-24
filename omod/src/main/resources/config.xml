@@ -64,7 +64,14 @@
 		<property>dhisreporting.config.dxfToAdxSwitch</property>
 		<defaultValue>false</defaultValue>
 		<description>
-			true/false whether or not to use the DXF to ADX conversion before sending data to DHIS2
+			DHIS Connector: true/false whether or not to use the DXF to ADX conversion before sending data to DHIS2
+		</description>
+	</globalProperty>
+	<globalProperty>
+		<property>dhisreporting.config.dataAndLogsStoragePeriod</property>
+		<defaultValue>3</defaultValue>
+		<description>
+			DHIS Connector: Number of months backwards from current date for which to store both stored logs and data
 		</description>
 	</globalProperty>
 

@@ -85,7 +85,9 @@ public class DHISConnectorServiceImpl extends BaseOpenmrsService implements DHIS
 	        + "dhis2Backup";
 	
 	public static final String DHISCONNECTOR_TEMP_FOLDER = File.separator + "dhisconnector" + File.separator + "temp";
-	
+
+	public static final String DHISCONNECTOR_LOGS_FOLDER = File.separator + "dhisconnector" + File.separator + "logs";
+
 	public static final String DHISCONNECTOR_MAPPING_FILE_SUFFIX = ".mapping.json";
 
 	public static final String DHISCONNECTOR_ORGUNIT_RESOURCE = "/api/organisationUnits.json?paging=false&fields=:identifiable,displayName";
@@ -482,6 +484,7 @@ public class DHISConnectorServiceImpl extends BaseOpenmrsService implements DHIS
 			
 			if (entity != null) {
 				payload = EntityUtils.toString(entity);
+				logPayload(payload);
 			} else {
 				backUpData(endpoint, data, extension);
 				System.out.println("Failed to get entity from dhis2 server, network failure!");
@@ -498,6 +501,21 @@ public class DHISConnectorServiceImpl extends BaseOpenmrsService implements DHIS
 		}
 		
 		return payload;
+	}
+
+	private void logPayload(String payload) {
+		File logFolder = new File(OpenmrsUtil.getApplicationDataDirectory() + DHISCONNECTOR_LOGS_FOLDER);
+		String endpoint = payload.startsWith("<?xml") ? ".xml" : ".json";
+
+		if(!logFolder.exists())
+			logFolder.mkdirs();
+		try {
+		FileUtils.writeStringToFile(new File(logFolder.getAbsolutePath() + File.separator + "dhisResponse-"
+				+ new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss").format(new Date()) + endpoint), payload);
+		}
+		catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 	
 	@Override
@@ -526,12 +544,10 @@ public class DHISConnectorServiceImpl extends BaseOpenmrsService implements DHIS
 			httpGet.addHeader("Authorization", bs.getValue());
 			httpGet.addHeader("Content-Type", "application/json");
 			httpGet.addHeader("Accept", "application/json");
-			
-			HttpResponse response = httpclient.execute(targetHost, httpGet, localcontext); // Execute
-			                                                                               // the
-			                                                                               // test
-			                                                                               // query
-			
+
+			//execute the test query
+			HttpResponse response = httpclient.execute(targetHost, httpGet, localcontext);
+
 			if (response.getStatusLine().getStatusCode() != 200) {
 				success = false;
 				
