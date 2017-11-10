@@ -42,6 +42,9 @@ function populateReportsDropdown() {
 
 function onMappingSelect() {
     // clear the date
+    document.getElementById('custom-range-option').checked = false;
+    jQuery('#un-recognized-period').html('');
+    toggleCustomRangeCheckbox(false);
     jQuery('#periodSelector').val("");
     jQuery('#periodSelector').monthpicker('destroy');
     jQuery('#periodSelector').datepicker('destroy');
@@ -99,36 +102,72 @@ function onMappingSelect() {
         jQuery('#periodSelector').monthpicker({
             pattern: 'yyyymm'
         });
+    } else {
+        // This is unknown
+        var text = 'DHIS period: ' + selectedPeriodType + ', Please type the appropriate value';
+        jQuery('#un-recognized-period').html(text);
+        toggleCustomRangeCheckbox(true);
+    }
+}
+
+function toggleCustomRangeCheckbox(checkDisable) {
+    var elem = document.getElementById('custom-range-option');
+    if(checkDisable) {
+        elem.checked = true;
+        elem.disabled = true;
+        jQuery('#date-range-section').show();
+    }
+    else {
+        elem.disabled = false;
+        elem.checked = false;
+        jQuery('#date-range-section').hide();
     }
 }
 
 function getPeriodDates() {
     var startDate, endDate;
+    if(document.getElementById('custom-range-option').checked) {
+        // Do the custom thing.
+        startDate = jQuery('#openmrs-start-date').datepicker('getDate');
+        endDate = jQuery('#openmrs-end-date').datepicker('getDate');
+        if( startDate == '' ||  endDate == '') {
+            alert('Please choose start & end date');
+        }
+        else {
+            return {
+                startDate: startDate,
+                endDate: endDate
+            };
+        }
 
-    // get periodType
-    var selectedPeriodType = mappings.filter(function (v) {
-        return v.created == jQuery('#mappingSelect').val();
-    })[0].periodType;
-
-    if (selectedPeriodType == undefined)
-        return;
-
-    if (selectedPeriodType === 'Daily') {
-        var date = jQuery('#periodSelector').datepicker('getDate');
-        startDate = date;
-        endDate = date;
-    } else if (selectedPeriodType === 'Weekly') {
-        startDate = weekStartDate;
-        endDate = weekEndDate;
-    } else if (selectedPeriodType === 'Monthly') {
-        var date = jQuery('#periodSelector').monthpicker('getDate');
-        startDate = new Date(date.getFullYear(), date.getMonth(), 1);
-        endDate = new Date(date.getFullYear(), date.getMonth() + 1, 0);
     }
+    else {
 
-    return {
-        startDate: startDate,
-        endDate: endDate
+        // get periodType
+        var selectedPeriodType = mappings.filter(function (v) {
+            return v.created == jQuery('#mappingSelect').val();
+        })[0].periodType;
+
+        if (selectedPeriodType == undefined)
+            return;
+
+        if (selectedPeriodType === 'Daily') {
+            var date = jQuery('#periodSelector').datepicker('getDate');
+            startDate = date;
+            endDate = date;
+        } else if (selectedPeriodType === 'Weekly') {
+            startDate = weekStartDate;
+            endDate = weekEndDate;
+        } else if (selectedPeriodType === 'Monthly') {
+            var date = jQuery('#periodSelector').monthpicker('getDate');
+            startDate = new Date(date.getFullYear(), date.getMonth(), 1);
+            endDate = new Date(date.getFullYear(), date.getMonth() + 1, 0);
+        }
+
+        return {
+            startDate: startDate,
+            endDate: endDate
+        }
     }
 }
 
@@ -402,4 +441,12 @@ jQuery(function () {
     populateOpenMRSLocationsDropdown();
     populateDHISOrgUnitsDropdown();
     hljs.initHighlightingOnLoad();
+
+    // Attach datepickers
+    jQuery('#openmrs-start-date').datepicker();
+    jQuery('#openmrs-end-date').datepicker();
+
+    jQuery('#custom-range-option').click(function() {
+        jQuery('#date-range-section').toggle();
+    });
 });
