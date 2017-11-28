@@ -21,7 +21,7 @@ var OMRS_WEBSERVICES_BASE_URL = '../..';
 
 function populateReportsDropdown() {
     // fetch reports
-    jQuery.get(OMRS_WEBSERVICES_BASE_URL + "/ws/rest/v1/dhisconnector/periodindicatorreports?limit=2000&q=hasMapping", function (data) {
+    jQuery.get(OMRS_WEBSERVICES_BASE_URL + "/ws/rest/v1/dhisconnector/periodindicatorreports?q=hasMapping", function (data) {
 
         var reportSelect = jQuery('<select id="reportSelect"></select>');
         reportSelect.append('<option value="">Select</option>');
@@ -134,7 +134,7 @@ function getPeriodDates() {
 
 function populateMappingsDropdown() {
     // fetch mappings
-    jQuery.get(OMRS_WEBSERVICES_BASE_URL + "/ws/rest/v1/dhisconnector/mappings?limit=2000", function (data) {
+    jQuery.get(OMRS_WEBSERVICES_BASE_URL + "/ws/rest/v1/dhisconnector/mappings", function (data) {
 
         var mappingSelect = jQuery('<select id="mappingSelect"></select>');
         mappingSelect.append('<option value="">Select</option>');
@@ -157,7 +157,7 @@ function populateMappingsDropdown() {
 
 function populateOpenMRSLocationsDropdown() {
     // fetch locations
-    jQuery.get(OMRS_WEBSERVICES_BASE_URL + "/ws/rest/v1/location?limit=2000", function (data) {
+    jQuery.get(OMRS_WEBSERVICES_BASE_URL + "/ws/rest/v1/location", function (data) {
 
         var locationSelect = jQuery('<select id="locationSelect"></select>');
         locationSelect.append('<option value="">Select</option>');
@@ -180,7 +180,7 @@ function populateOpenMRSLocationsDropdown() {
 
 function populateDHISOrgUnitsDropdown() {
     // fetch orgunits
-    jQuery.get(OMRS_WEBSERVICES_BASE_URL + "/ws/rest/v1/dhisconnector/orgunits?limit=2000", function (data) {
+    jQuery.get(OMRS_WEBSERVICES_BASE_URL + "/ws/rest/v1/dhisconnector/orgunits", function (data) {
 
         var orgUnitSelect = jQuery('<select id="orgUnitSelect"></select>');
         orgUnitSelect.append('<option value="">Select</option>');

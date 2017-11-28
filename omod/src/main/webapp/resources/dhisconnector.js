@@ -391,7 +391,7 @@ function initializeMappings() {
 	var initializeMappings = [];
 	
 	jq.ajax({
-		url: OMRS_WEBSERVICES_BASE_URL + "/ws/rest/v1/dhisconnector/mappings?limit=2000",
+		url: OMRS_WEBSERVICES_BASE_URL + "/ws/rest/v1/dhisconnector/mappings",
 		async: false,
 		method: "GET",
 		dataType: "json",
