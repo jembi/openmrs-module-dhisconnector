@@ -14,6 +14,7 @@ package org.openmrs.module.dhisconnector.api;
 import java.util.List;
 
 import org.openmrs.api.OpenmrsService;
+import org.openmrs.module.dhisconnector.ReportToDataSetMapping;
 import org.openmrs.module.dhisconnector.api.model.DHISDataValueSet;
 import org.openmrs.module.dhisconnector.api.model.DHISMapping;
 import org.openmrs.module.dhisconnector.api.model.DHISOrganisationUnit;
@@ -32,7 +33,7 @@ import org.springframework.web.multipart.MultipartFile;
  */
 @Transactional
 public interface DHISConnectorService extends OpenmrsService {
-
+	
 	
 	/**
 	 * Queries a DHIS endoint and returns the result as JSON
@@ -79,11 +80,27 @@ public interface DHISConnectorService extends OpenmrsService {
 	public DHISMapping getMapping(String s);
 	
 	public boolean permanentlyDeleteMapping(DHISMapping mapping);
-
+	
 	String getAdxFromDxf(DHISDataValueSet dataValueSet);
-
+	
 	Integer getNumberOfFailedDataPosts();
-
+	
 	void postPreviouslyFailedData();
+	
+	List<ReportToDataSetMapping> getAllReportToDataSetMappings();
+	
+	ReportToDataSetMapping getReportToDataSetMappingByUuid(String uuid);
+	
+	ReportToDataSetMapping getReportToDataSetMapping(Integer id);
+	
+	void deleteReportToDataSetMapping(ReportToDataSetMapping reportToDataSetMapping);
+	
+	void saveReportToDataSetMapping(ReportToDataSetMapping reportToDataSetMapping);
+	
+	void deleteReportToDataSetMapping(Integer reportToDataSetMappingId);
+	
+	String runAndPushReportToDHIS(ReportToDataSetMapping reportToDatasetMapping);
+	
+	String runAllAutomatedReportsAndPostToDHIS();
 	
 }

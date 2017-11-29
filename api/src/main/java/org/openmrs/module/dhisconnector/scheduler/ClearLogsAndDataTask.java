@@ -16,7 +16,7 @@ import static org.openmrs.module.dhisconnector.api.impl.DHISConnectorServiceImpl
 /**
  * Created by k-joseph on 25/07/2017.
  */
-public class ClearLogsAndDataTask  extends AbstractTask {
+public class ClearLogsAndDataTask extends AbstractTask {
 
     @Override
     public void execute() {

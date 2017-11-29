@@ -12,6 +12,13 @@
 	</li>
 	
 	<li
+		<c:if test='<%= request.getRequestURI().contains("/automation") %>'>class="active"</c:if>>
+		<a
+		href="${pageContext.request.contextPath}/module/dhisconnector/automation.form"><spring:message
+				code="dhisconnector.automation" /></a>
+	</li>
+	
+	<li
 			<c:if test='<%= request.getRequestURI().contains("/dhis2BackupImport") %>'>class="active"</c:if>>
 		<a
 				href="${pageContext.request.contextPath}/module/dhisconnector/dhis2BackupImport.form"><spring:message

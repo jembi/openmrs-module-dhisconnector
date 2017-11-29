@@ -33,8 +33,6 @@ import java.util.List;
 		"1.9.*, 1.10.*, 1.11.*", "1.12.*", "2.0.*" })
 public class DHISOrganisationUnitResource extends DataDelegatingCrudResource implements Retrievable {
 
-	public static final String ORGUNITS_PATH = "/api/organisationUnits";
-
 	protected NeedsPaging<DHISOrganisationUnit> doGetAll(RequestContext context) {
 		List<DHISOrganisationUnit> orgUnits = Context.getService(DHISConnectorService.class).getDHISOrgUnits();
 		return new NeedsPaging<DHISOrganisationUnit>(orgUnits, context);

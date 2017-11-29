@@ -32,5 +32,78 @@
             <column name="uuid" value="rr0f5r3t-a5a0-11e6-80f5-76304dec7er5" />
         </insert>
     </changeSet>
-    
+    <changeSet id="20171128-2319" author="k-joseph">
+		<preConditions onFail="MARK_RAN">
+			<not>
+				<tableExists tableName="dhisconnector_report_to_dataset" />
+			</not>
+		</preConditions>
+		<comment>
+			Create dhisconnector_report_to_dataset table
+		</comment>
+		<createTable tableName="dhisconnector_report_to_dataset">
+			<column name="id" type="int" autoIncrement="true">
+				<constraints primaryKey="true" nullable="false" />
+			</column>
+			<column name="uuid" type="char(38)">
+				<constraints nullable="false" />
+			</column>
+			<column name="creator" type="int">
+                <constraints nullable="false"/>
+            </column>
+            <column name="date_created" type="DATETIME">
+                <constraints nullable="false"/>
+            </column>
+            <column name="last_run" type="DATETIME"/>
+			<column name="mapping" type="text">
+				<constraints nullable="false" />
+			</column>
+			<column name="org_unit_uid" type="text">
+				<constraints nullable="false" />
+			</column>
+			<column name="location" type="int">
+				<constraints nullable="false" />
+			</column>
+		</createTable>
+		<addForeignKeyConstraint constraintName="dhisconnector_report_to_dataset_location_fk"
+			baseTableName="dhisconnector_report_to_dataset" baseColumnNames="location"
+			referencedTableName="location" referencedColumnNames="location_id" />
+	</changeSet>
+	<changeSet id="20171128-2333" author="k-joseph">
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">SELECT COUNT(*) FROM
+                scheduler_task_config WHERE schedulable_class =
+                'org.openmrs.module.dhisconnector.scheduler.ReportingAutoRunTask';
+            </sqlCheck>
+        </preConditions>
+        <comment>Run reports and posts data to DHIS2 every day towards mid-day</comment>
+        <insert tableName="scheduler_task_config">
+            <column name="name" value="Reporting Auto Running" />
+            <column name="schedulable_class"
+                    value="org.openmrs.module.dhisconnector.scheduler.ReportingAutoRunTask" />
+            <column name="description"
+                    value="Run reports and posts data to DHIS2" />
+            <column name="start_time" value="2017-11-29 16:00:00" />
+            <column name="start_time_pattern" value="MM/dd/yyyy HH:mm:ss" />
+            <column name="repeat_interval" value="86400" />
+            <column name="start_on_startup" value="1" />
+            <column name="started" value="1" />
+            <column name="created_by" value="1" />
+            <column name="date_created" value="2017-11-28 23:36:00" />
+            <column name="uuid" value="uu0f5r3t-a5v0-11e6-80f5-76304dec7cc9" />
+        </insert>
+	</changeSet>
+	<changeSet id="2017Nov291320" author="k-joseph">
+		<preConditions onFail="MARK_RAN">
+			<sqlCheck expectedResult="1">SELECT COUNT(*) FROM global_property WHERE property = 'dhisreporting.config.dxfToAdxSwitch'</sqlCheck>
+		</preConditions>
+		<comment>
+			Updates dhisreporting.config.dxfToAdxSwitch to true
+		</comment>
+		<update tableName="global_property">
+			<column name="property_value" value="false"/>
+			<column name="property" value="dhisconnector.config.dxfToAdxSwitch"/>
+			<where>property='dhisreporting.config.dxfToAdxSwitch'</where>
+		</update>
+	</changeSet>
 </databaseChangeLog>

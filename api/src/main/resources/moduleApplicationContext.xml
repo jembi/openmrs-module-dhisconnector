@@ -19,13 +19,13 @@
 					</property>
 					<property name="target">
 						<bean class="${project.parent.groupId}.${project.parent.artifactId}.api.impl.DHISConnectorServiceImpl">
-							<!--<property name="dao">-->
-								<!--<bean class="${project.parent.groupId}.${project.parent.artifactId}.api.db.hibernate.HibernateReportingRESTtoDHISDAO">-->
-									<!--<property name="sessionFactory">-->
-										<!--<ref bean="sessionFactory" />-->
-									<!--</property>-->
-								<!--</bean>-->
-							<!--</property>-->
+							<property name="dao">
+								<bean class="${project.parent.groupId}.${project.parent.artifactId}.api.db.hibernate.HibernateDHISConnectorDAO">
+									<property name="sessionFactory">
+										<ref bean="dbSessionFactory" />
+									</property>
+								</bean>
+							</property>
 						</bean>
 					</property>
 					<property name="preInterceptors">

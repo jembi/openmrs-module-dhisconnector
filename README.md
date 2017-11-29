@@ -27,6 +27,7 @@ The first step is to configure the link to your DHIS2 server. This is done by cl
 |Password | district|
 
 > :warning: **NB:** Since DHIS API pagination isn't handled yet, you will have to change the *Rest Max Results Absolute* Webservices Module global property to 2000. Do this by clicking the *Settings* link on the OpenMRS Administration page, then click *Webservices* on the bottom left. Change the value of the *Rest Max Results Absolute* property to 2000 and click save.
+> Ensure to build your reports in OpenMRS but making sure each indicator id is uniquely named
 
 ## Mappings
 
@@ -85,11 +86,13 @@ Implemented
   - [x] Managing/editing mappings
   - [X] Scroll page when dragging mapping to top and bottom of page if necessary
   - [X] Generation, Downloading & Posting of ADX
+  - [x] Automated reporting and posting to DHIS2 using configured mapping
 
 TODO
   - [ ] Support other types of OpenMRS reports
   - [ ] DHIS2 API pagination
   - [ ] Upgrade all dhis endpoints or api to work after 2.20
+  - [ ] Support Quaterly, SixMonthly, SixMonthlyApril, BiMonthly, FinancialApril, FinancialJuly, FinancialOct period types
 
 ## License
 

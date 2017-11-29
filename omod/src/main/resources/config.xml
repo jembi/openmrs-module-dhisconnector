@@ -61,17 +61,24 @@
 		</description>
 	</globalProperty>
 	<globalProperty>
-		<property>dhisreporting.config.dxfToAdxSwitch</property>
+		<property>dhisconnector.config.dxfToAdxSwitch</property>
 		<defaultValue>false</defaultValue>
 		<description>
 			DHIS Connector: true/false whether or not to use the DXF to ADX conversion before sending data to DHIS2
 		</description>
 	</globalProperty>
 	<globalProperty>
-		<property>dhisreporting.config.dataAndLogsStoragePeriod</property>
-		<defaultValue>3</defaultValue>
+		<property>dhisconnector.config.dataAndLogsStoragePeriod</property>
+		<defaultValue>6</defaultValue>
 		<description>
 			DHIS Connector: Number of months backwards from current date for which to store both stored logs and data
+		</description>
+	</globalProperty>
+	<globalProperty>
+		<property>dhisconnector.config.enableAutoRun</property>
+		<defaultValue>false</defaultValue>
+		<description>
+			Set to true to enable this module to run configured openmrs reports and post data into DHIS2 automatically
 		</description>
 	</globalProperty>
 

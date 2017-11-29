@@ -11,6 +11,51 @@
  */
 package org.openmrs.module.dhisconnector.api.impl;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.FilenameFilter;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringReader;
+import java.io.StringWriter;
+import java.io.UnsupportedEncodingException;
+import java.io.Writer;
+import java.math.BigDecimal;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.Enumeration;
+import java.util.GregorianCalendar;
+import java.util.List;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
+import java.util.zip.ZipInputStream;
+import java.util.zip.ZipOutputStream;
+
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.Unmarshaller;
+import javax.xml.datatype.DatatypeConfigurationException;
+import javax.xml.datatype.DatatypeFactory;
+import javax.xml.datatype.XMLGregorianCalendar;
+import javax.xml.namespace.QName;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
+
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
@@ -32,51 +77,58 @@ import org.codehaus.jackson.JsonParseException;
 import org.codehaus.jackson.map.DeserializationConfig;
 import org.codehaus.jackson.map.JsonMappingException;
 import org.codehaus.jackson.map.ObjectMapper;
+import org.codehaus.jackson.map.SerializationConfig;
+import org.openmrs.Location;
 import org.openmrs.api.context.Context;
 import org.openmrs.api.impl.BaseOpenmrsService;
 import org.openmrs.module.dhisconnector.Configurations;
-import org.openmrs.module.dhisconnector.adx.*;
+import org.openmrs.module.dhisconnector.ReportToDataSetMapping;
+import org.openmrs.module.dhisconnector.ReportToDataSetMapping.ReportingPeriodType;
+import org.openmrs.module.dhisconnector.adx.AdxDataValue;
+import org.openmrs.module.dhisconnector.adx.AdxDataValueGroup;
+import org.openmrs.module.dhisconnector.adx.AdxDataValueGroupPeriod;
+import org.openmrs.module.dhisconnector.adx.AdxDataValueSet;
+import org.openmrs.module.dhisconnector.adx.AdxObjectFactory;
 import org.openmrs.module.dhisconnector.adx.importsummary.ImportSummaries;
 import org.openmrs.module.dhisconnector.api.DHISConnectorService;
-import org.openmrs.module.dhisconnector.api.model.*;
+import org.openmrs.module.dhisconnector.api.db.DHISConnectorDAO;
+import org.openmrs.module.dhisconnector.api.model.DHISCategoryCombo;
+import org.openmrs.module.dhisconnector.api.model.DHISCategoryOptionCombo;
+import org.openmrs.module.dhisconnector.api.model.DHISDataElement;
+import org.openmrs.module.dhisconnector.api.model.DHISDataSet;
+import org.openmrs.module.dhisconnector.api.model.DHISDataValue;
+import org.openmrs.module.dhisconnector.api.model.DHISDataValueSet;
+import org.openmrs.module.dhisconnector.api.model.DHISImportSummary;
+import org.openmrs.module.dhisconnector.api.model.DHISMapping;
+import org.openmrs.module.dhisconnector.api.model.DHISMappingElement;
+import org.openmrs.module.dhisconnector.api.model.DHISOrganisationUnit;
+import org.openmrs.module.reporting.dataset.DataSet;
+import org.openmrs.module.reporting.dataset.DataSetColumn;
+import org.openmrs.module.reporting.dataset.DataSetRow;
+import org.openmrs.module.reporting.evaluation.parameter.Mapped;
+import org.openmrs.module.reporting.report.Report;
+import org.openmrs.module.reporting.report.ReportRequest;
+import org.openmrs.module.reporting.report.ReportRequest.Priority;
+import org.openmrs.module.reporting.report.ReportRequest.Status;
 import org.openmrs.module.reporting.report.definition.PeriodIndicatorReportDefinition;
 import org.openmrs.module.reporting.report.definition.ReportDefinition;
 import org.openmrs.module.reporting.report.definition.service.ReportDefinitionService;
+import org.openmrs.module.reporting.report.renderer.RenderingMode;
+import org.openmrs.module.reporting.report.service.ReportService;
+import org.openmrs.module.reporting.web.renderers.DefaultWebRenderer;
 import org.openmrs.util.OpenmrsUtil;
 import org.springframework.web.multipart.MultipartFile;
 import org.w3c.dom.Document;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.Unmarshaller;
-import javax.xml.datatype.DatatypeConfigurationException;
-import javax.xml.datatype.DatatypeFactory;
-import javax.xml.datatype.XMLGregorianCalendar;
-import javax.xml.namespace.QName;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.OutputKeys;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamResult;
-import java.io.*;
-import java.math.BigDecimal;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.text.SimpleDateFormat;
-import java.util.*;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipFile;
-import java.util.zip.ZipInputStream;
-import java.util.zip.ZipOutputStream;
-
 /**
  * It is a default implementation of {@link DHISConnectorService}.
  */
 public class DHISConnectorServiceImpl extends BaseOpenmrsService implements DHISConnectorService {
+	
+	
+	private DHISConnectorDAO dao;
 	
 	public static final String DHISCONNECTOR_MAPPINGS_FOLDER = File.separator + "dhisconnector" + File.separator
 	        + "mappings";
@@ -85,11 +137,11 @@ public class DHISConnectorServiceImpl extends BaseOpenmrsService implements DHIS
 	        + "dhis2Backup";
 	
 	public static final String DHISCONNECTOR_TEMP_FOLDER = File.separator + "dhisconnector" + File.separator + "temp";
-
+	
 	public static final String DHISCONNECTOR_LOGS_FOLDER = File.separator + "dhisconnector" + File.separator + "logs";
-
+	
 	public static final String DHISCONNECTOR_MAPPING_FILE_SUFFIX = ".mapping.json";
-
+	
 	public static final String DHISCONNECTOR_ORGUNIT_RESOURCE = "/api/organisationUnits.json?paging=false&fields=:identifiable,displayName";
 	
 	public static final String DATAVALUESETS_PATH = "/api/dataValueSets";
@@ -98,7 +150,7 @@ public class DHISConnectorServiceImpl extends BaseOpenmrsService implements DHIS
 	
 	public static final String ORGUNITS_PATH = "/api/organisationUnits/";
 	
-	public static String JSON_POST_FIX = ".json";
+	public static String JSON_POST_FIX = ".json?paging=false";
 	
 	private String DATA_ELEMETS_PATH = "/api/dataElements/";
 	
@@ -109,6 +161,20 @@ public class DHISConnectorServiceImpl extends BaseOpenmrsService implements DHIS
 	private Configurations configs = new Configurations();
 	
 	private AdxObjectFactory factory = new AdxObjectFactory();
+	
+	/**
+	 * @param dao the dao to set
+	 */
+	public void setDao(DHISConnectorDAO dao) {
+		this.dao = dao;
+	}
+	
+	/**
+	 * @return the dao
+	 */
+	public DHISConnectorDAO getDao() {
+		return dao;
+	}
 	
 	private String getFromBackUp(String path) {
 		String backupFilePath = OpenmrsUtil.getApplicationDataDirectory() + DHISCONNECTOR_DHIS2BACKUP_FOLDER + path;
@@ -184,44 +250,44 @@ public class DHISConnectorServiceImpl extends BaseOpenmrsService implements DHIS
 		
 		DefaultHttpClient client = null;
 		String payload = "";
-
+		
 		if (StringUtils.isNotBlank(endpoint)) {
 			try {
-                URL dhisURL = new URL(url);
-                String host = dhisURL.getHost();
-                int port = dhisURL.getPort();
-
-                HttpHost targetHost = new HttpHost(host, port, dhisURL.getProtocol());
-                client = new DefaultHttpClient();
-                BasicHttpContext localcontext = new BasicHttpContext();
-
-                HttpGet httpGet = new HttpGet(dhisURL.getPath() + endpoint);
-                Credentials creds = new UsernamePasswordCredentials(user, pass);
-                Header bs = new BasicScheme().authenticate(creds, httpGet, localcontext);
-                httpGet.addHeader("Authorization", bs.getValue());
-                httpGet.addHeader("Content-Type", "application/json");
-                httpGet.addHeader("Accept", "application/json");
-                HttpResponse response = client.execute(targetHost, httpGet, localcontext);
-                HttpEntity entity = response.getEntity();
-
-                if (entity != null && response.getStatusLine().getStatusCode() == 200) {
-                    payload = EntityUtils.toString(entity);
-                    saveToBackUp(endpoint, payload);
-                } else {
-                    payload = getFromBackUp(endpoint);
-                }
-            }
-            catch (Exception ex) {
-                ex.printStackTrace();
-                payload = getFromBackUp(endpoint);
-            }
-            finally {
-                if (client != null) {
-                    client.getConnectionManager().shutdown();
-                }
-            }
+				URL dhisURL = new URL(url);
+				String host = dhisURL.getHost();
+				int port = dhisURL.getPort();
+				
+				HttpHost targetHost = new HttpHost(host, port, dhisURL.getProtocol());
+				client = new DefaultHttpClient();
+				BasicHttpContext localcontext = new BasicHttpContext();
+				
+				HttpGet httpGet = new HttpGet(dhisURL.getPath() + endpoint);
+				Credentials creds = new UsernamePasswordCredentials(user, pass);
+				Header bs = new BasicScheme().authenticate(creds, httpGet, localcontext);
+				httpGet.addHeader("Authorization", bs.getValue());
+				httpGet.addHeader("Content-Type", "application/json");
+				httpGet.addHeader("Accept", "application/json");
+				HttpResponse response = client.execute(targetHost, httpGet, localcontext);
+				HttpEntity entity = response.getEntity();
+				
+				if (entity != null && response.getStatusLine().getStatusCode() == 200) {
+					payload = EntityUtils.toString(entity);
+					saveToBackUp(endpoint, payload);
+				} else {
+					payload = getFromBackUp(endpoint);
+				}
+			}
+			catch (Exception ex) {
+				ex.printStackTrace();
+				payload = getFromBackUp(endpoint);
+			}
+			finally {
+				if (client != null) {
+					client.getConnectionManager().shutdown();
+				}
+			}
 		}
-
+		
 		return payload;
 	}
 	
@@ -502,16 +568,17 @@ public class DHISConnectorServiceImpl extends BaseOpenmrsService implements DHIS
 		
 		return payload;
 	}
-
+	
 	private void logPayload(String payload) {
 		File logFolder = new File(OpenmrsUtil.getApplicationDataDirectory() + DHISCONNECTOR_LOGS_FOLDER);
 		String endpoint = payload.startsWith("<?xml") ? ".xml" : ".json";
-
-		if(!logFolder.exists())
+		
+		if (!logFolder.exists())
 			logFolder.mkdirs();
 		try {
-		FileUtils.writeStringToFile(new File(logFolder.getAbsolutePath() + File.separator + "dhisResponse-"
-				+ new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss").format(new Date()) + endpoint), payload);
+			FileUtils.writeStringToFile(new File(logFolder.getAbsolutePath() + File.separator + "dhisResponse-"
+			        + new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss").format(new Date()) + endpoint),
+			    payload);
 		}
 		catch (IOException e) {
 			e.printStackTrace();
@@ -544,10 +611,10 @@ public class DHISConnectorServiceImpl extends BaseOpenmrsService implements DHIS
 			httpGet.addHeader("Authorization", bs.getValue());
 			httpGet.addHeader("Content-Type", "application/json");
 			httpGet.addHeader("Accept", "application/json");
-
+			
 			//execute the test query
 			HttpResponse response = httpclient.execute(targetHost, httpGet, localcontext);
-
+			
 			if (response.getStatusLine().getStatusCode() != 200) {
 				success = false;
 				
@@ -1004,9 +1071,9 @@ public class DHISConnectorServiceImpl extends BaseOpenmrsService implements DHIS
 	private boolean matchingDHIS2APIBackUpStructure(File file) {
 		return StringUtils.equals(file.getName(), "api") || StringUtils.equals(file.getName(), "categoryCombos")
 		        || StringUtils.equals(file.getName(), "dataElements") || StringUtils.equals(file.getName(), "dataSets")
-				|| StringUtils.equals(file.getName(), "organisationUnits.json?paging=false&fields=:identifiable")
-				|| StringUtils.equals(file.getName(), "dataSets.json?paging=false&fields=:identifiable")
-				|| file.getName().endsWith(".json");
+		        || StringUtils.equals(file.getName(), "organisationUnits.json?paging=false&fields=:identifiable")
+		        || StringUtils.equals(file.getName(), "dataSets.json?paging=false&fields=:identifiable")
+		        || file.getName().endsWith(".json");
 	}
 	
 	@Override
@@ -1124,39 +1191,18 @@ public class DHISConnectorServiceImpl extends BaseOpenmrsService implements DHIS
 	
 	@Override
 	public DHISMapping getMapping(String s) {
-		File mappingsFolder = new File(OpenmrsUtil.getApplicationDataDirectory() + DHISCONNECTOR_MAPPINGS_FOLDER);
-		final String mapping = s.replace("[@]",
-		    ".");/*meant to be uuid, however we are hacking it to contain what we want (mappingName<@>dateTimeStampWhenCreated)*/
-		DHISMapping mappingObj = null;
-		
-		if (mappingsFolder.exists() && checkIfDirContainsFile(mappingsFolder, mapping + DHISCONNECTOR_MAPPING_FILE_SUFFIX)) {
-			ObjectMapper mapper = new ObjectMapper();
-			File[] files = mappingsFolder.listFiles(new FilenameFilter() {
-				
-				
-				@Override
-				public boolean accept(File dir, String name) {
-					return name.equals(mapping + DHISCONNECTOR_MAPPING_FILE_SUFFIX);
-				}
-			});
-			if (files.length == 1 && files[0] != null) {
-				try {
-					mapper.configure(DeserializationConfig.Feature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-					mappingObj = mapper.readValue(files[0], DHISMapping.class);
-				}
-				catch (JsonParseException e) {
-					e.printStackTrace();
-				}
-				catch (JsonMappingException e) {
-					e.printStackTrace();
-				}
-				catch (IOException e) {
-					e.printStackTrace();
+		if (StringUtils.isNotBlank(s)) {
+			String mapping = s.replace("[@]",
+			    ".");/*meant to be uuid, however we are hacking it to contain what we want (mappingName<@>dateTimeStampWhenCreated)*/
+			
+			for (DHISMapping m : getMappings()) {
+				if (mapping.equals(m.getName() + "." + m.getCreated().toString())) {
+					return m;
 				}
 			}
 		}
 		
-		return mappingObj;
+		return null;
 	}
 	
 	@Override
@@ -1189,7 +1235,7 @@ public class DHISConnectorServiceImpl extends BaseOpenmrsService implements DHIS
 				        .parse(new InputSource(new ByteArrayInputStream(xml.getBytes("utf-8"))));
 				Transformer tf = TransformerFactory.newInstance().newTransformer();
 				Writer out = new StringWriter();
-
+				
 				tf.setOutputProperty(OutputKeys.ENCODING, "UTF-8");
 				tf.setOutputProperty(OutputKeys.INDENT, "yes");
 				tf.transform(new DOMSource(document), new StreamResult(out));
@@ -1215,4 +1261,202 @@ public class DHISConnectorServiceImpl extends BaseOpenmrsService implements DHIS
 		return xml;
 	}
 	
+	@Override
+	public List<ReportToDataSetMapping> getAllReportToDataSetMappings() {
+		return getDao().getAllReportToDataSetMappings();
+	}
+	
+	@Override
+	public ReportToDataSetMapping getReportToDataSetMappingByUuid(String uuid) {
+		return getDao().getReportToDataSetMappingByUuid(uuid);
+	}
+	
+	@Override
+	public ReportToDataSetMapping getReportToDataSetMapping(Integer id) {
+		return getDao().getReportToDataSetMapping(id);
+	}
+	
+	@Override
+	public void deleteReportToDataSetMapping(ReportToDataSetMapping reportToDataSetMapping) {
+		getDao().deleteReportToDataSetMapping(reportToDataSetMapping);
+	}
+	
+	@Override
+	public void saveReportToDataSetMapping(ReportToDataSetMapping reportToDataSetMapping) {
+		getDao().saveReportToDataSetMapping(reportToDataSetMapping);
+	}
+	
+	@Override
+	public void deleteReportToDataSetMapping(Integer reportToDataSetMappingId) {
+		deleteReportToDataSetMapping(getReportToDataSetMapping(reportToDataSetMappingId));
+	}
+	
+	@Override
+	public String runAndPushReportToDHIS(ReportToDataSetMapping reportToDatasetMapping) {
+		if (reportToDatasetMapping != null) {
+			Calendar startDate = Calendar.getInstance(Context.getLocale());
+			Calendar endDate = Calendar.getInstance(Context.getLocale());
+			DHISMapping mapping = getMapping(reportToDatasetMapping.getMapping());
+			
+			if (mapping != null) {
+				Location location = reportToDatasetMapping.getLocation();
+				String periodType = mapping.getPeriodType();
+				PeriodIndicatorReportDefinition ranReportDef = (PeriodIndicatorReportDefinition) Context
+				        .getService(ReportDefinitionService.class)
+				        .getDefinitionByUuid(mapping.getPeriodIndicatorReportGUID());
+				String period = "";
+				String orgUnitUid = reportToDatasetMapping.getOrgUnitUid();
+				Date lastRun = reportToDatasetMapping.getLastRun();
+				if (location != null && ranReportDef != null) {
+					period = transformToDHISPeriod(startDate, endDate, periodType, period, lastRun);
+					
+					if (StringUtils.isNotBlank(period)) {
+						Report ranReport = runPeriodIndicatorReport(ranReportDef, startDate.getTime(), endDate.getTime(),
+						    location);
+						if (ranReport != null) {
+							Object response = sendReportDataToDHIS(ranReport, mapping, period, orgUnitUid);
+							
+							if (response != null) {
+								reportToDatasetMapping.setLastRun(endDate.getTime());
+								saveReportToDataSetMapping(reportToDatasetMapping);
+								
+								return getPostSummary(response);
+							}
+						}
+					}
+				}
+			}
+		}
+		return null;
+	}
+	
+	private String getPostSummary(Object o) {
+		String s = "";
+		ObjectMapper mapper = new ObjectMapper();
+		
+		mapper.configure(SerializationConfig.Feature.INDENT_OUTPUT, true);
+		if (o != null) {
+			try {
+				if (o instanceof ImportSummaries)
+					s += mapper.writeValueAsString(mapper.readTree(mapper.writeValueAsString((ImportSummaries) o)));
+				else if (o instanceof DHISImportSummary)
+					s += mapper.writeValueAsString((DHISImportSummary) o);
+			}
+			catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+		
+		return s;
+	}
+	
+	// TODO support more period types
+	private String transformToDHISPeriod(Calendar startDate, Calendar endDate, String periodType, String period,
+	        Date lastRun) {
+		//endDate is generally the current date
+		if (ReportingPeriodType.Quarterly.name().equals(periodType)) {
+			//TODO Quarterly should be revised when not to run
+			startDate.add(Calendar.MONTH, -3);// Quarterly period
+			period += startDate.get(Calendar.YEAR) + "Q" + ((startDate.get(Calendar.MONTH) / 3) + 1);
+		} else if (ReportingPeriodType.Monthly.name().equals(periodType) && endDate.get(Calendar.DAY_OF_MONTH) >= 28) {
+			//runs only on/after 28
+			startDate.set(Calendar.DAY_OF_MONTH, 1);
+			period += new SimpleDateFormat("yyyyMM").format(startDate.getTime());
+		} else if (ReportingPeriodType.Yearly.name().equals(periodType) && endDate.get(Calendar.MONTH) == 11) {
+			//runs only in December
+			startDate.set(Calendar.DAY_OF_YEAR, 1);
+			period += startDate.get(Calendar.YEAR);
+		} else if (ReportingPeriodType.Weekly.name().equals(periodType) && endDate.get(Calendar.DAY_OF_WEEK) >= 6) {
+			//runs only on/after Friday
+			startDate.set(Calendar.DAY_OF_WEEK, 1);
+			period += startDate.get(Calendar.YEAR) + "W" + startDate.get(Calendar.WEEK_OF_YEAR);
+		} else if (ReportingPeriodType.Daily.name().equals(periodType) && endDate.get(Calendar.HOUR_OF_DAY) >= 15) {
+			//runs on/after 4pm
+			startDate.set(Calendar.HOUR_OF_DAY, 0);
+			period += new SimpleDateFormat("yyyyMMdd").format(startDate.getTime());
+		}
+		/* TODO maybe only allow one run per period
+		if (lastRun != null && lastRun.after(startDate.getTime()))
+			period = null;
+		*/
+		return period;
+	}
+	
+	public Object sendReportDataToDHIS(Report ranReport, DHISMapping mapping, String dhisPeriod, String orgUnitUid) {
+		DHISDataValueSet dataValueSet = new DHISDataValueSet();
+		DataSet ds = ranReport.getReportData().getDataSets().get("defaultDataSet");
+		List<DataSetColumn> columns = ds.getMetaData().getColumns();
+		DataSetRow row = ds.iterator().next();
+		List<DHISDataValue> dataValues = new ArrayList<DHISDataValue>();
+		String dataSetId = mapping.getDataSetUID();
+		
+		for (int i = 0; i < columns.size(); i++) {
+			DHISDataValue dv = new DHISDataValue();
+			String column = columns.get(i).getName();
+			
+			if (StringUtils.isNotBlank(column)) {
+				DHISMappingElement de = getDataElementForIndicator(column, mapping.getElements());
+				String value = row.getColumnValue(column).toString();
+				
+				if (mapping != null && de != null && StringUtils.isNotBlank(value)) {
+					dv.setValue(value);
+					dv.setComment(column);
+					dv.setDataElement(de.getDataElement());
+					dv.setCategoryOptionCombo(de.getComboOption());
+					dataValues.add(dv);
+				}
+			}
+		}
+		dataValueSet.setDataValues(dataValues);
+		dataValueSet.setOrgUnit(orgUnitUid);
+		dataValueSet.setPeriod(dhisPeriod);
+		dataValueSet.setDataSet(dataSetId);
+		
+		if (!dataValueSet.getDataValues().isEmpty())
+			return postDataValueSet(dataValueSet);
+		
+		return null;
+	}
+	
+	private DHISMappingElement getDataElementForIndicator(String indicator, List<DHISMappingElement> list) {
+		if (StringUtils.isNotBlank(indicator) && list != null) {
+			for (DHISMappingElement de : list) {
+				if (StringUtils.isNotBlank(de.getIndicator()) && de.getIndicator().equals(indicator)) {
+					return de;
+				}
+			}
+		}
+		return null;
+	}
+	
+	public Report runPeriodIndicatorReport(PeriodIndicatorReportDefinition reportDef, Date startDate, Date endDate,
+	        Location location) {
+		ReportRequest request = new ReportRequest(new Mapped<ReportDefinition>(reportDef, null), null,
+		        new RenderingMode(new DefaultWebRenderer(), "Web", null, 100), Priority.HIGHEST, null);
+		
+		request.getReportDefinition().addParameterMapping("startDate", startDate);
+		request.getReportDefinition().addParameterMapping("endDate", endDate);
+		request.getReportDefinition().addParameterMapping("location", location);
+		request.setStatus(Status.PROCESSING);
+		request = Context.getService(ReportService.class).saveReportRequest(request);
+		
+		return Context.getService(ReportService.class).runReport(request);
+	}
+	
+	@Override
+	public String runAllAutomatedReportsAndPostToDHIS() {
+		String responses = "";
+		List<ReportToDataSetMapping> mps = getAllReportToDataSetMappings();
+		
+		if (mps != null) {
+			for (ReportToDataSetMapping m : mps) {
+				String resp = runAndPushReportToDHIS(m);
+				
+				if (StringUtils.isNotBlank(resp))
+					responses += " => " + resp;
+			}
+		}
+		
+		return responses;
+	}
 }
