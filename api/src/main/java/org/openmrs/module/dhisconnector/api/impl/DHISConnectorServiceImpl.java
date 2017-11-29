@@ -577,7 +577,7 @@ public class DHISConnectorServiceImpl extends BaseOpenmrsService implements DHIS
 			logFolder.mkdirs();
 		try {
 			FileUtils.writeStringToFile(new File(logFolder.getAbsolutePath() + File.separator + "dhisResponse-"
-			        + new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss").format(new Date()) + endpoint),
+			        + new SimpleDateFormat("yyyy-MM-dd").format(new Date()) + endpoint),
 			    payload);
 		}
 		catch (IOException e) {

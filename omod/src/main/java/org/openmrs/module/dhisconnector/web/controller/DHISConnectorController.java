@@ -408,12 +408,10 @@ public class DHISConnectorController {
 				response += " Run was successful";
 		}
 
-		if (request.getParameter("toogleAutomation") != null && !configs.automationEnabled()) {
+		if (request.getParameter("toogleAutomation") != null)
 			configs.toogleAutomation(true);
-		} else {
-			if (configs.automationEnabled())
-				configs.toogleAutomation(false);
-		}
+		else
+			configs.toogleAutomation(false);
 
 		if (StringUtils.isNotBlank(mapping) && StringUtils.isNotBlank(orgUnitUId)
 				&& StringUtils.isNotBlank(locationUuid)) {
