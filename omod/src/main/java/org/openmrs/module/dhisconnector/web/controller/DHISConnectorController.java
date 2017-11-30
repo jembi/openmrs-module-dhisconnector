@@ -408,9 +408,9 @@ public class DHISConnectorController {
 				response += " Run was successful";
 		}
 
-		if (request.getParameter("toogleAutomation") != null)
+		if (request.getParameter("toogleAutomation") != null && !configs.automationEnabled())
 			configs.toogleAutomation(true);
-		else
+		else if(configs.automationEnabled())
 			configs.toogleAutomation(false);
 
 		if (StringUtils.isNotBlank(mapping) && StringUtils.isNotBlank(orgUnitUId)
