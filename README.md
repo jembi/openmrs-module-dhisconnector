@@ -16,6 +16,57 @@ First install the [Reporting Rest Module](https://modules.openmrs.org/#/show/121
 
 † You will actually need to download [this build](https://github.com/psbrandt/openmrs-module-reportingrest/releases/download/1.5.1/reportingrest-1.5.1.omod) of the Reporting Rest Module until [this change](https://github.com/psbrandt/openmrs-module-reportingrest/commit/270a44b45b88bf1ba60d60e90938475d1265f12e) is merged and released.
 
+> Development installation Steps
+
+Install depended on modules
+* git clone https://github.com/openmrs/openmrs-module-reporting.git
+  * Depends on some other modules
+    * cd ../
+      * git clone https://github.com/openmrs/openmrs-module-serialization.xstream.git
+        * cd openmrs-module-serialization.xstream
+        * git checkout tags/0.2.10
+        * mvn clean install
+        * cp omod/target/*.omod ~/.OpenMRS/modules
+      * cd ../
+      * git clone https://github.com/openmrs/openmrs-module-htmlwidgets.git
+        * cd openmrs-module-htmlwidgets
+        * git checkout tags/1.7.2
+        * mvn clean install
+        * cp omod/target/*.omod ~/.OpenMRS/modules
+      * cd ../
+      * git clone https://github.com/openmrs/openmrs-module-calculation.git
+        * cd openmrs-module-calculation
+        * git checkout tags/1.1
+        * mvn clean install
+        * cp omod/target/*.omod ~/.OpenMRS/modules
+   * cd ../
+   * cd openmrs-module-reporting
+   * git checkout tags/0.9.4
+   * mvn clean install
+   * cp omod/target/*.omod ~/.OpenMRS/modules
+* cd ../
+* git clone https://github.com/openmrs/openmrs-module-reportingrest.git
+  * Depends on rest webservices module as well as reporting above
+    * cd ../
+      * git clone https://github.com/openmrs/openmrs-module-webservices.rest.git
+      * cd openmrs-module-webservices.rest
+      * git checkout tags/2.5
+      * mvn clean install
+      * cp omod/target/*.omod ~/.OpenMRS/modules
+  * cd ../
+  * cd openmrs-module-reportingrest
+  * git checkout tags/1.5
+  * mvn clean install
+  * cp omod/target/*.omod ~/.OpenMRS/modules
+
+* Install DHIS connector module
+  * cd ../
+  * git clone http://github.com/jembi/openmrs-module-dhisconnector.git
+  * mvn clean install
+  * cp omod/target/*.omod ~/.OpenMRS/modules
+* Start OpenMRS.
+
+
 ### Configuration
 
 The first step is to configure the link to your DHIS2 server. This is done by clicking the *Configure DHIS Server* link under the *DHIS Connector Module* heading on the OpenMRS Administration page. You will need to know the URL of your target DHIS2 instance as well the details of a user that has access to the API. To test with the DHIS2 demo server, use the following details:
