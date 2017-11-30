@@ -20,8 +20,8 @@ First install the [Reporting Rest Module](https://modules.openmrs.org/#/show/121
 
 Install depended on modules
 * git clone https://github.com/openmrs/openmrs-module-reporting.git
-  * Depends on some other modules
-    * cd ../
+  * Depends on some other modules
+    * cd ../
       * git clone https://github.com/openmrs/openmrs-module-serialization.xstream.git
         * cd openmrs-module-serialization.xstream
         * git checkout tags/0.2.10
