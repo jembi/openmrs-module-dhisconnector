@@ -1302,11 +1302,10 @@ public class DHISConnectorServiceImpl extends BaseOpenmrsService implements DHIS
 				PeriodIndicatorReportDefinition ranReportDef = (PeriodIndicatorReportDefinition) Context
 				        .getService(ReportDefinitionService.class)
 				        .getDefinitionByUuid(mapping.getPeriodIndicatorReportGUID());
-				String period = "";
 				String orgUnitUid = reportToDatasetMapping.getOrgUnitUid();
 				Date lastRun = reportToDatasetMapping.getLastRun();
 				if (location != null && ranReportDef != null) {
-					period = transformToDHISPeriod(startDate, endDate, periodType, period, lastRun);
+					String period = transformToDHISPeriod(startDate, endDate, periodType, lastRun);
 					
 					if (StringUtils.isNotBlank(period)) {
 						Report ranReport = runPeriodIndicatorReport(ranReportDef, startDate.getTime(), endDate.getTime(),
@@ -1328,6 +1327,55 @@ public class DHISConnectorServiceImpl extends BaseOpenmrsService implements DHIS
 		return null;
 	}
 	
+	// TODO support more period types besides, daily, weekly and monthly
+	/**
+	 * This now uses last (day, week, month, quarter, year etc), it should take set startDate and
+	 * endDate using periodType and return formated DHIS2 period only if lastRan isn't for returned
+	 * period
+	 */
+	@Override
+	public String transformToDHISPeriod(Calendar startDate, Calendar endDate, String periodType, Date lastRun) {
+		String period = null;
+		SimpleDateFormat sdf = null;
+		Calendar lastRan = Calendar.getInstance();
+		
+		if (lastRun != null)
+			lastRan.setTime(lastRun);
+		endDate.setTime(startDate.getTime());
+		if (ReportingPeriodType.Daily.name().equals(periodType)) {
+			sdf = new SimpleDateFormat("yyyyMMdd");
+			startDate.add(Calendar.DAY_OF_YEAR, -1);
+			setBasicsStartsAndEnds(startDate, endDate);
+			if (lastRun == null || !sdf.format(lastRun).equals(sdf.format(endDate.getTime())))
+				period = sdf.format(startDate.getTime());
+		} else if (ReportingPeriodType.Weekly.name().equals(periodType)) {
+			startDate.add(Calendar.WEEK_OF_YEAR, -1);
+			startDate.set(Calendar.DAY_OF_WEEK, 1);
+			setBasicsStartsAndEnds(startDate, endDate);
+			endDate.set(Calendar.DAY_OF_WEEK, 7);
+			if (lastRun == null || !(lastRan.get(Calendar.YEAR) + "W" + lastRan.get(Calendar.WEEK_OF_YEAR))
+			        .equals(endDate.get(Calendar.YEAR) + "W" + endDate.get(Calendar.WEEK_OF_YEAR)))
+				period = startDate.get(Calendar.YEAR) + "W" + startDate.get(Calendar.WEEK_OF_YEAR);
+		} else if (ReportingPeriodType.Monthly.name().equals(periodType)) {
+			sdf = new SimpleDateFormat("yyyyMM");
+			startDate.add(Calendar.MONTH, -1);
+			startDate.set(Calendar.DAY_OF_MONTH, 1);
+			setBasicsStartsAndEnds(startDate, endDate);
+			endDate.set(Calendar.DAY_OF_MONTH, startDate.getActualMaximum(Calendar.DAY_OF_MONTH));
+			if (lastRun == null || !sdf.format(lastRun).equals(sdf.format(endDate.getTime())))
+				period = new SimpleDateFormat("yyyyMM").format(startDate.getTime());
+		}
+		return period;
+	}
+	
+	private void setBasicsStartsAndEnds(Calendar startDate, Calendar endDate) {
+		startDate.set(Calendar.HOUR_OF_DAY, 0);
+		startDate.set(Calendar.MINUTE, 0);
+		endDate.setTime(startDate.getTime());
+		endDate.set(Calendar.HOUR_OF_DAY, 23);
+		endDate.set(Calendar.MINUTE, 59);
+	}
+	
 	private String getPostSummary(Object o) {
 		String s = "";
 		ObjectMapper mapper = new ObjectMapper();
@@ -1346,38 +1394,6 @@ public class DHISConnectorServiceImpl extends BaseOpenmrsService implements DHIS
 		}
 		
 		return s;
-	}
-	
-	// TODO support more period types
-	private String transformToDHISPeriod(Calendar startDate, Calendar endDate, String periodType, String period,
-	        Date lastRun) {
-		//endDate is generally the current date
-		if (ReportingPeriodType.Quarterly.name().equals(periodType)) {
-			//TODO Quarterly should be revised when not to run
-			startDate.add(Calendar.MONTH, -3);// Quarterly period
-			period += startDate.get(Calendar.YEAR) + "Q" + ((startDate.get(Calendar.MONTH) / 3) + 1);
-		} else if (ReportingPeriodType.Monthly.name().equals(periodType) && endDate.get(Calendar.DAY_OF_MONTH) >= 28) {
-			//runs only on/after 28
-			startDate.set(Calendar.DAY_OF_MONTH, 1);
-			period += new SimpleDateFormat("yyyyMM").format(startDate.getTime());
-		} else if (ReportingPeriodType.Yearly.name().equals(periodType) && endDate.get(Calendar.MONTH) == 11) {
-			//runs only in December
-			startDate.set(Calendar.DAY_OF_YEAR, 1);
-			period += startDate.get(Calendar.YEAR);
-		} else if (ReportingPeriodType.Weekly.name().equals(periodType) && endDate.get(Calendar.DAY_OF_WEEK) >= 6) {
-			//runs only on/after Friday
-			startDate.set(Calendar.DAY_OF_WEEK, 1);
-			period += startDate.get(Calendar.YEAR) + "W" + startDate.get(Calendar.WEEK_OF_YEAR);
-		} else if (ReportingPeriodType.Daily.name().equals(periodType) && endDate.get(Calendar.HOUR_OF_DAY) >= 15) {
-			//runs on/after 4pm
-			startDate.set(Calendar.HOUR_OF_DAY, 0);
-			period += new SimpleDateFormat("yyyyMMdd").format(startDate.getTime());
-		}
-		/* TODO maybe only allow one run per period
-		if (lastRun != null && lastRun.after(startDate.getTime()))
-			period = null;
-		*/
-		return period;
 	}
 	
 	public Object sendReportDataToDHIS(Report ranReport, DHISMapping mapping, String dhisPeriod, String orgUnitUid) {

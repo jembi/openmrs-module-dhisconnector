@@ -11,6 +11,8 @@
  */
 package org.openmrs.module.dhisconnector.api;
 
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 
 import org.openmrs.api.OpenmrsService;
@@ -102,5 +104,7 @@ public interface DHISConnectorService extends OpenmrsService {
 	String runAndPushReportToDHIS(ReportToDataSetMapping reportToDatasetMapping);
 	
 	String runAllAutomatedReportsAndPostToDHIS();
+
+	String transformToDHISPeriod(Calendar startDate, Calendar endDate, String periodType, Date lastRun);
 	
 }
