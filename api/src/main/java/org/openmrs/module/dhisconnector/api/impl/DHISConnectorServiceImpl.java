@@ -1071,9 +1071,7 @@ public class DHISConnectorServiceImpl extends BaseOpenmrsService implements DHIS
 	private boolean matchingDHIS2APIBackUpStructure(File file) {
 		return StringUtils.equals(file.getName(), "api") || StringUtils.equals(file.getName(), "categoryCombos")
 		        || StringUtils.equals(file.getName(), "dataElements") || StringUtils.equals(file.getName(), "dataSets")
-		        || StringUtils.equals(file.getName(), "organisationUnits.json?paging=false&fields=:identifiable")
-		        || StringUtils.equals(file.getName(), "dataSets.json?paging=false&fields=:identifiable")
-		        || file.getName().endsWith(".json");
+		        || file.getName().indexOf(".json") > 0;
 	}
 	
 	@Override
