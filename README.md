@@ -5,7 +5,7 @@
 This module posts OpenMRS Period Indicator Report data to DHIS2 using the Reporting Rest module. Mappings between Period
 Indicator Reports and DHIS2 Data Sets can be generated via the UI. The DHIS2 API is backed up for offline operation and
 DXF files can be downloaded instead of posting to DHIS2 directly.
-- This module so-far is only tested to support daily, weekly and monthly period types
+- This module so-far is only tested to support daily, weekly and monthly period types, For automated reporting, the module will only run once for each day, week or month only for the previous past period
 
 ## Setup
 

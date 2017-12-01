@@ -18,6 +18,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
@@ -389,35 +390,60 @@ public class DHISConnectorController {
 		String locationUuid = request.getParameter("location");
 		Configurations configs = new Configurations();
 		List<String> postResponse = new ArrayList<String>();
-
-		if (request.getParameterValues("mappingIds") != null) {
-			for (String s : request.getParameterValues("mappingIds")) {
-				Context.getService(DHISConnectorService.class).deleteReportToDataSetMapping(Integer.parseInt(s));
-			}
-			response += "Delete was successful";
-		}
-
-		if (request.getParameterValues("mappingUuids") != null) {
-			for (String s : request.getParameterValues("mappingUuids")) {
-				Object resp = Context.getService(DHISConnectorService.class).runAndPushReportToDHIS(
-						Context.getService(DHISConnectorService.class).getReportToDataSetMappingByUuid(s));
-				if (resp != null)
-					postResponse.add(resp.toString());
-			}
-			if (postResponse.size() > 0)
-				response += " Run was successful";
-		}
+		List<String> toBeRan = new ArrayList<String>();
 
 		if (request.getParameter("toogleAutomation") != null)
 			configs.toogleAutomation(true);
 		else
 			configs.toogleAutomation(false);
 
+		if (request.getParameterValues("mappingIds") != null) {
+			for (String s : request.getParameterValues("mappingIds")) {
+				Context.getService(DHISConnectorService.class).deleteReportToDataSetMapping(Integer.parseInt(s));
+			}
+			response += " -> Delete was successful";
+		}
+
+		if (request.getParameterValues("reRuns") != null) {
+			for (String s : request.getParameterValues("reRuns")) {
+				ReportToDataSetMapping r2d = Context.getService(DHISConnectorService.class)
+						.getReportToDataSetMappingByUuid(s);
+
+				if (r2d != null) {
+					toBeRan.add(s);
+					r2d.setLastRun(null);
+					Context.getService(DHISConnectorService.class).saveReportToDataSetMapping(r2d);
+				}
+			}
+		}
+
+		if (request.getParameterValues("runs") != null) {
+			for (String s : request.getParameterValues("runs")) {
+				if (!toBeRan.contains(s))
+					toBeRan.add(s);
+			}
+		}
+
+		if (toBeRan.size() > 0) {
+			for (String s : toBeRan) {
+				ReportToDataSetMapping r2d = Context.getService(DHISConnectorService.class)
+						.getReportToDataSetMappingByUuid(s);
+
+				if (r2d != null) {
+					Object resp = Context.getService(DHISConnectorService.class).runAndPushReportToDHIS(r2d);
+					if (resp != null)
+						postResponse.add(resp.toString());
+				}
+			}
+		}
+		if (postResponse.size() > 0)
+			response += " -> Run was successful";
+
 		if (StringUtils.isNotBlank(mapping) && StringUtils.isNotBlank(orgUnitUId)
 				&& StringUtils.isNotBlank(locationUuid)) {
 			Context.getService(DHISConnectorService.class).saveReportToDataSetMapping(new ReportToDataSetMapping(
 					mapping, Context.getLocationService().getLocationByUuid(locationUuid), orgUnitUId));
-			response += " Save was successful";
+			response += " -> Save was successful";
 		}
 
 		initialiseAutomation(model, configs.automationEnabled(), postResponse);

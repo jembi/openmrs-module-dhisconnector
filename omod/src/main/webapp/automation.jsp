@@ -9,6 +9,8 @@
 
 <h3>Setting up OpenMRS reports to automatically report into the configured DHIS2 instance</h3>
 
+NB: Running is contextualised; the module will only run once for each day, week or month only for the previous past period respectively.
+Otherwise you may trigger a re-run which is likewise contextual
 <form method="post">
 	<br />
 		<input type="checkbox" name="toogleAutomation" <c:if test="${automationEnabled}">checked="checked"</c:if>>Enable/Disable Automation</input>
@@ -21,7 +23,7 @@
                 <th>Mapping</th>
                 <th>OpenMRS Location</th>
                 <th>DHIS2 Organization Unit</th>
-                <th>Last Run</th>
+                <th>Re/Last Run</th>
             </tr>
         </thead>
         <tbody>
@@ -57,11 +59,11 @@
             <c:forEach items="${reportToDataSetMappings}" var="mpg">
                 <tr class="evenRow">
                     <td><input type="checkbox" name="mappingIds" value="${mpg.id}"/></td>
-                    <td><input type="checkbox" name="mappingUuids" value="${mpg.uuid}"/></td>
+                    <td><input type="checkbox" name="runs" value="${mpg.uuid}"/></td>
                     <td>${fn:substringBefore(mpg.mapping, '.')}</td>
                     <td>${mpg.location.name}</td>
                     <td>${orgUnitsByIds[mpg.orgUnitUid]}</td>
-                    <td>${mpg.lastRun}</td>
+                    <td><c:if test="${not empty mpg.lastRun}"><input type="checkbox" name="reRuns" value="${mpg.uuid}"/></c:if> ${mpg.lastRun}</td>
                 </tr>
            </c:forEach>
         </tbody>
