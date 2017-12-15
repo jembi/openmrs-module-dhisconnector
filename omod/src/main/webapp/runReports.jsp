@@ -52,7 +52,33 @@
     </tr>
     <tr>
       <th class="runHeader"><spring:message code="dhisconnector.date"/></th>
-      <td><input type="text" name="date" id="periodSelector" class="periodSelector"/></td>
+      <td>
+        <input type="text" name="date" id="periodSelector" class="periodSelector"/>
+        <small><span id="un-recognized-period" style="color: red; font-size:small;"></span>
+      </td>
+    </tr>
+    <tr>
+        <th class="runHeader"><spring:message code="dhisconnector.customRange.openmrs.choose"/></th>
+        <td><input type="checkbox" name="customRange" id="custom-range-option"/></td>
+    </tr>
+    <tr id="date-range-section" style="display:none">
+     <th class="runHeader"><spring:message code="dhisconnector.customRange.openmrs.Date"/></th>
+     <td>
+       <table>
+         <thead>
+           <tr>
+             <th class="runHeader"><spring:message code="dhisconnector.openmrsStartDate"/></th>
+             <th class="runHeader"><spring:message code="dhisconnector.openmrsEndDate"/></th>
+           </tr>
+         </thead>
+         <tbody>
+           <tr>
+             <td><input type="text" name="openmrsStartDate" id="openmrs-start-date" class="periodSelector"/></td>
+             <td><input type="text" name="openmrsEndDate" id="openmrs-end-date" class="periodSelector"/></td>
+           </tr>
+         </tbody>
+       </table>
+     </td>
     </tr>
     <tr>
       <th class="runHeader"><spring:message code="dhisconnector.action"/></th>
