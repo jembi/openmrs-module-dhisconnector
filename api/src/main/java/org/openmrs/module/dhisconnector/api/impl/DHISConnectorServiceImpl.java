@@ -256,11 +256,12 @@ public class DHISConnectorServiceImpl extends BaseOpenmrsService implements DHIS
 		
 		if (StringUtils.isNotBlank(endpoint)) {
 			try {
-				
-				String fieldsJsonFormat = endpoint.split("&fields=")[1];
-				if (StringUtils.isNotBlank(fieldsJsonFormat)  ) {
-					fieldsJsonFormat = URLEncoder.encode(fieldsJsonFormat, "UTF-8");
-					endpoint = endpoint.replace(endpoint.split("&fields=")[1], fieldsJsonFormat);
+				if( endpoint.contains("fields=") ) {
+					String fieldsJsonFormat = endpoint.split("fields=")[1];
+					if (StringUtils.isNotBlank(fieldsJsonFormat)  ) {
+						fieldsJsonFormat = URLEncoder.encode(fieldsJsonFormat, "UTF-8");
+						endpoint = endpoint.replace(endpoint.split("fields=")[1], fieldsJsonFormat);
+					}
 				}
 				
 				URL dhisURL = new URL(url);
