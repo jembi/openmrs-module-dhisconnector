@@ -28,6 +28,7 @@ import java.io.Writer;
 import java.math.BigDecimal;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLEncoder;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -212,7 +213,7 @@ public class DHISConnectorServiceImpl extends BaseOpenmrsService implements DHIS
 		}
 		
 		String directoryStructure = OpenmrsUtil.getApplicationDataDirectory() + DHISCONNECTOR_DHIS2BACKUP_FOLDER
-		        + path.substring(0, path.lastIndexOf(File.separator));
+		        + path.substring(0, path.lastIndexOf(File.separator) == -1? path.length() - 1 :path.lastIndexOf(File.separator));
 		
 		File directory = new File(directoryStructure);
 		
@@ -248,11 +249,21 @@ public class DHISConnectorServiceImpl extends BaseOpenmrsService implements DHIS
 		String user = Context.getAdministrationService().getGlobalProperty("dhisconnector.user");
 		String pass = Context.getAdministrationService().getGlobalProperty("dhisconnector.pass");
 		
+		
+		
 		DefaultHttpClient client = null;
 		String payload = "";
 		
 		if (StringUtils.isNotBlank(endpoint)) {
 			try {
+				if( endpoint.contains("fields=") ) {
+					String fieldsJsonFormat = endpoint.split("fields=")[1];
+					if (StringUtils.isNotBlank(fieldsJsonFormat)  ) {
+						fieldsJsonFormat = URLEncoder.encode(fieldsJsonFormat, "UTF-8");
+						endpoint = endpoint.replace(endpoint.split("fields=")[1], fieldsJsonFormat);
+					}
+				}
+				
 				URL dhisURL = new URL(url);
 				String host = dhisURL.getHost();
 				int port = dhisURL.getPort();
@@ -260,13 +271,13 @@ public class DHISConnectorServiceImpl extends BaseOpenmrsService implements DHIS
 				HttpHost targetHost = new HttpHost(host, port, dhisURL.getProtocol());
 				client = new DefaultHttpClient();
 				BasicHttpContext localcontext = new BasicHttpContext();
-				
-				HttpGet httpGet = new HttpGet(dhisURL.getPath() + endpoint);
+				HttpGet httpGet = new HttpGet(dhisURL.getPath() +  endpoint );
 				Credentials creds = new UsernamePasswordCredentials(user, pass);
 				Header bs = new BasicScheme().authenticate(creds, httpGet, localcontext);
 				httpGet.addHeader("Authorization", bs.getValue());
 				httpGet.addHeader("Content-Type", "application/json");
 				httpGet.addHeader("Accept", "application/json");
+				
 				HttpResponse response = client.execute(targetHost, httpGet, localcontext);
 				HttpEntity entity = response.getEntity();
 				
