@@ -64,11 +64,30 @@
 			<column name="location" type="int">
 				<constraints nullable="false" />
 			</column>
+		
 		</createTable>
 		<addForeignKeyConstraint constraintName="dhisconnector_report_to_dataset_location_fk"
 			baseTableName="dhisconnector_report_to_dataset" baseColumnNames="location"
 			referencedTableName="location" referencedColumnNames="location_id" />
 	</changeSet>
+	 
+	 <changeSet id="20181221-1519" author="a-hammi">
+		<preConditions onFail="MARK_RAN">
+			<tableExists tableName="dhisconnector_report_to_dataset" />
+			<not><columnExists columnName="is_full_mapping" tableName="dhisconnector_report_to_dataset"/></not>
+			
+		</preConditions>
+		<comment>
+			Add new column to the table dhisconnector_report_to_dataset table
+		</comment>
+		<addColumn 
+            tableName="dhisconnector_report_to_dataset">
+       		<column name="is_full_mapping" type="char(1)">
+				<constraints nullable="true" />
+			</column>
+  		  </addColumn>
+	</changeSet> 
+	
 	<changeSet id="20171128-2333" author="k-joseph">
         <preConditions onFail="MARK_RAN">
             <sqlCheck expectedResult="0">SELECT COUNT(*) FROM

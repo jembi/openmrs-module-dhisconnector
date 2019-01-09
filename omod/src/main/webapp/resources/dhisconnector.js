@@ -79,6 +79,18 @@ function getCategoryComboOptions(dataElementId, requests) {
     return def;
 }
 
+function getFullMappingValues(){
+	var fullMappingValues = "";
+	jQuery("select[name^='location_']").each(function() {
+	    console.log( this.value + ":" + this.checked );
+	    if(jQuery("[name='orgUnit_"+this.value+"']").val() != "") {
+	    	fullMappingValues += this.value + "=" + jQuery("[name='orgUnit_"+this.value+"']").val() + ",";
+	    }
+	});
+	fullMappingValues = fullMappingValues.replace(/,\s*$/, "");
+	jQuery("input[name='fullMappingValues']").val( fullMappingValues );
+}
+
 function getDataElementsAndCategoryComboOptions() {
     var def = jQuery.Deferred();
     var requests = [];
@@ -530,6 +542,26 @@ function autoScrollWhenDraggingToHeaderOrFooter(currentMouseTopPos) {
 }
 
 jQuery(function () {//self invoked only if the whole page has completely loaded
+	
+	jQuery('#idFullMapping').change(function() {
+
+		if( this.checked ) {
+		      var test = jQuery("[name='location'] option:last").val();
+		      jQuery("[name='location']").val( jQuery("[name='location'] option:last").val() );
+		      jQuery("[name='orgUnit']").val( jQuery("[name='orgUnit'] option:last").val() );
+		      jQuery("[name='location']").hide();
+		      jQuery("[name='orgUnit']").hide();
+		   } else {
+			  
+			   jQuery("[name='location']").val( '' );
+			   jQuery("[name='orgUnit']").val( '' );
+			   jQuery("[name='location']").show();
+			   jQuery("[name='orgUnit']").show();
+		   //'unchecked' event code
+		   }
+
+	}); 
+	
     if (window.location.pathname.indexOf("createMapping.form") !== -1) {//loaded only at createMapping page
 		//TODO this code block takes long time while loading, speed it up
     	
@@ -592,4 +624,6 @@ jQuery(function () {//self invoked only if the whole page has completely loaded
 		});
 	}
 });
+
+
 

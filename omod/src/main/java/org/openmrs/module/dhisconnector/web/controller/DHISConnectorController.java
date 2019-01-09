@@ -20,6 +20,7 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
@@ -51,6 +52,8 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.google.common.base.Splitter;
+
 /**
  * Controller for the DHIS Connector Module admin pages
  */
@@ -64,6 +67,8 @@ public class DHISConnectorController {
 	public static final String GLOBAL_PROPERTY_USER = "dhisconnector.user";
 
 	public static final String GLOBAL_PROPERTY_PASS = "dhisconnector.pass";
+	
+	public static final String GLOBAL_PROPERTY_FULL_MAPPING  = "dhisconnector.fullmappingvalues";
 
 	@RequestMapping(value = "/module/dhisconnector/manage", method = RequestMethod.GET)
 	public void manage(ModelMap model) {
@@ -168,6 +173,42 @@ public class DHISConnectorController {
 		}
 		passOnUploadingFeedback(model, successMessage, failedMessage);
 	}
+	
+	@RequestMapping(value = "/module/dhisconnector/fullMapping", method = RequestMethod.POST)
+	public void fullMapping (ModelMap model, @RequestParam(value = "fullMappingValues", required = true) String fullMappingValues
+			, WebRequest request) {
+		
+		AdministrationService as = Context.getAdministrationService();
+		GlobalProperty fullMappingProperty = as.getGlobalPropertyObject(GLOBAL_PROPERTY_FULL_MAPPING);
+		
+		fullMappingProperty.setPropertyValue(fullMappingValues);
+		as.saveGlobalProperty( fullMappingProperty );
+		
+		
+		request.setAttribute(WebConstants.OPENMRS_MSG_ATTR,
+				" -> Save was successful",
+				WebRequest.SCOPE_SESSION);
+		
+		renderFullMappingPage(model) ;
+	}
+	
+	@RequestMapping(value = "/module/dhisconnector/fullMapping", method = RequestMethod.GET)
+	public void renderFullMappingPage(ModelMap model) {
+		List<DHISOrganisationUnit> orgUnits = Context.getService(DHISConnectorService.class).getDHISOrgUnits();
+
+		
+		model.addAttribute("locations", Context.getLocationService().getAllLocations(false));
+		model.addAttribute("orgUnits", orgUnits);
+		AdministrationService as = Context.getAdministrationService();
+		String fullMappingProperty = as.getGlobalProperty(GLOBAL_PROPERTY_FULL_MAPPING);
+		
+		if (StringUtils.isNotBlank ( fullMappingProperty ) && fullMappingProperty.contains("=") )
+			model.addAttribute("fullMappingsMap", Splitter.on(",").withKeyValueSeparator("=").split((CharSequence) fullMappingProperty) );
+		else 
+			model.addAttribute("fullMappingsMap",  new HashMap<String, String>() );
+		/*model.addAttribute("postResponse", postResponse);*/
+	}
+
 
 	private void passOnUploadingFeedback(ModelMap model, String successMessage, String failedMessage) {
 		model.addAttribute("failureWhileUploading", failedMessage);
@@ -388,6 +429,7 @@ public class DHISConnectorController {
 		String mapping = request.getParameter("mapping");
 		String orgUnitUId = request.getParameter("orgUnit");
 		String locationUuid = request.getParameter("location");
+		String isFullMapping = request.getParameter("isFullMapping");
 		Configurations configs = new Configurations();
 		List<String> postResponse = new ArrayList<String>();
 		List<String> toBeRan = new ArrayList<String>();
@@ -430,7 +472,7 @@ public class DHISConnectorController {
 						.getReportToDataSetMappingByUuid(s);
 
 				if (r2d != null) {
-					Object resp = Context.getService(DHISConnectorService.class).runAndPushReportToDHIS(r2d);
+					Object resp = Context.getService(DHISConnectorService.class).runReportsAndPostToDHIS( Arrays.asList(r2d) );
 					if (resp != null)
 						postResponse.add(resp.toString());
 				}
@@ -442,7 +484,7 @@ public class DHISConnectorController {
 		if (StringUtils.isNotBlank(mapping) && StringUtils.isNotBlank(orgUnitUId)
 				&& StringUtils.isNotBlank(locationUuid)) {
 			Context.getService(DHISConnectorService.class).saveReportToDataSetMapping(new ReportToDataSetMapping(
-					mapping, Context.getLocationService().getLocationByUuid(locationUuid), orgUnitUId));
+					mapping, Context.getLocationService().getLocationByUuid(locationUuid), orgUnitUId, StringUtils.isNotBlank(isFullMapping) ? "Y" : "N"));
 			response += " -> Save was successful";
 		}
 

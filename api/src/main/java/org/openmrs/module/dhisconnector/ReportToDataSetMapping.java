@@ -50,6 +50,9 @@ public class ReportToDataSetMapping extends BaseOpenmrsObject {
 	@Column(name = "org_unit_uid", nullable = false)
 	private String orgUnitUid;
 	
+	@Column(name = "is_full_mapping")
+	private String isFullMapping;
+	
 	@Column(name = "last_run")
 	private Date lastRun;
 	
@@ -61,10 +64,11 @@ public class ReportToDataSetMapping extends BaseOpenmrsObject {
 	public ReportToDataSetMapping() {
 	}
 	
-	public ReportToDataSetMapping(String mapping, Location location, String orgUnitId) {
+	public ReportToDataSetMapping(String mapping, Location location, String orgUnitId, String isFullMapping) {
 		setMapping(mapping);
 		setLocation(location);
 		setOrgUnitUid(orgUnitId);
+		setIsFullMapping(isFullMapping);
 	}
 	
 	public Integer getId() {
@@ -75,6 +79,14 @@ public class ReportToDataSetMapping extends BaseOpenmrsObject {
 		this.id = id;
 	}
 	
+	public String getIsFullMapping() {
+		return isFullMapping;
+	}
+
+	public void setIsFullMapping(String isFullMapping) {
+		this.isFullMapping = isFullMapping;
+	}
+
 	public String getOrgUnitUid() {
 		return orgUnitUid;
 	}
