@@ -1,6 +1,12 @@
 <%@ include file="/WEB-INF/template/include.jsp" %>
 <%@ include file="/WEB-INF/template/header.jsp" %>
 
+<openmrs:htmlInclude file="/moduleResources/dhisconnector/flexboxgrid.min.css"/>
+<openmrs:htmlInclude file="/moduleResources/dhisconnector/dragula.min.css"/>
+<openmrs:htmlInclude file="/moduleResources/dhisconnector/dhisconnector.css"/>
+<openmrs:htmlInclude file="/moduleResources/dhisconnector/dragula.min.js"/>
+<openmrs:htmlInclude file="/moduleResources/dhisconnector/dhisconnector.js"/>
+
 <%@ include file="template/localHeader.jsp" %>
 
 <c:if test="${showLogin == 'true'}">
@@ -21,6 +27,7 @@ Otherwise you may trigger a re-run which is likewise contextual
             	<th>Delete</th>
             	<th>Run</th>
                 <th>Mapping</th>
+                <td>Use Custom Location Mapping</td>
                 <th>OpenMRS Location</th>
                 <th>DHIS2 Organization Unit</th>
                 <th>Re/Last Run</th>
@@ -38,6 +45,7 @@ Otherwise you may trigger a re-run which is likewise contextual
                         </c:forEach>
                     </select>
                 </td>
+                <td><input type="checkbox" id="idFullMapping" name="isFullMapping" ></td>
                 <td>
                     <select name="location">
                         <option></option>
@@ -61,8 +69,9 @@ Otherwise you may trigger a re-run which is likewise contextual
                     <td><input type="checkbox" name="mappingIds" value="${mpg.id}"/></td>
                     <td><input type="checkbox" name="runs" value="${mpg.uuid}"/></td>
                     <td>${fn:substringBefore(mpg.mapping, '.')}</td>
-                    <td>${mpg.location.name}</td>
-                    <td>${orgUnitsByIds[mpg.orgUnitUid]}</td>
+                    <td>${mpg.isFullMapping == 'Y' ? 'Yes' : 'No' }</td>
+                    <td>${mpg.isFullMapping == 'Y' ? '' : mpg.location.name}</td>
+                    <td>${mpg.isFullMapping == 'Y' ? '' : orgUnitsByIds[mpg.orgUnitUid]}</td>
                     <td><c:if test="${not empty mpg.lastRun}"><input type="checkbox" name="reRuns" value="${mpg.uuid}"/></c:if> ${mpg.lastRun}</td>
                 </tr>
            </c:forEach>

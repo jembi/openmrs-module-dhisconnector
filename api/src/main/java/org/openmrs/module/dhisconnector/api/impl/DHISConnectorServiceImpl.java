@@ -35,7 +35,9 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.GregorianCalendar;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipInputStream;
@@ -79,6 +81,7 @@ import org.codehaus.jackson.map.JsonMappingException;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.map.SerializationConfig;
 import org.openmrs.Location;
+import org.openmrs.api.AdministrationService;
 import org.openmrs.api.context.Context;
 import org.openmrs.api.impl.BaseOpenmrsService;
 import org.openmrs.module.dhisconnector.Configurations;
@@ -122,6 +125,8 @@ import org.w3c.dom.Document;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
+import com.google.common.base.Splitter;
+
 /**
  * It is a default implementation of {@link DHISConnectorService}.
  */
@@ -147,6 +152,8 @@ public class DHISConnectorServiceImpl extends BaseOpenmrsService implements DHIS
 	public static final String DATAVALUESETS_PATH = "/api/dataValueSets";
 	
 	public static final String DATASETS_PATH = "/api/dataSets/";
+	
+	public static final String GLOBAL_PROPERTY_FULL_MAPPING  = "dhisconnector.fullmappingvalues";
 	
 	public static final String ORGUNITS_PATH = "/api/organisationUnits/";
 	
@@ -1290,32 +1297,34 @@ public class DHISConnectorServiceImpl extends BaseOpenmrsService implements DHIS
 	}
 	
 	@Override
-	public String runAndPushReportToDHIS(ReportToDataSetMapping reportToDatasetMapping) {
+	public String runAndPushReportToDHIS(ReportToDataSetMapping reportToDatasetMapping, Location location, String orgUnitUid, boolean isEndOfFullMapping) {
 		if (reportToDatasetMapping != null) {
 			Calendar startDate = Calendar.getInstance(Context.getLocale());
 			Calendar endDate = Calendar.getInstance(Context.getLocale());
 			DHISMapping mapping = getMapping(reportToDatasetMapping.getMapping());
 			
 			if (mapping != null) {
-				Location location = reportToDatasetMapping.getLocation();
+				//Location location = reportToDatasetMapping.getLocation();
 				String periodType = mapping.getPeriodType();
 				PeriodIndicatorReportDefinition ranReportDef = (PeriodIndicatorReportDefinition) Context
 				        .getService(ReportDefinitionService.class)
 				        .getDefinitionByUuid(mapping.getPeriodIndicatorReportGUID());
-				String orgUnitUid = reportToDatasetMapping.getOrgUnitUid();
+				//String orgUnitUid = reportToDatasetMapping.getOrgUnitUid();
 				Date lastRun = reportToDatasetMapping.getLastRun();
 				if (location != null && ranReportDef != null) {
 					String period = transformToDHISPeriod(startDate, endDate, periodType, lastRun);
 					
-					if (StringUtils.isNotBlank(period)) {
+					if (StringUtils.isNotBlank(period) ) {
 						Report ranReport = runPeriodIndicatorReport(ranReportDef, startDate.getTime(), endDate.getTime(),
 						    location);
 						if (ranReport != null) {
 							Object response = sendReportDataToDHIS(ranReport, mapping, period, orgUnitUid);
 							
-							if (response != null) {
-								reportToDatasetMapping.setLastRun(endDate.getTime());
-								saveReportToDataSetMapping(reportToDatasetMapping);
+							if (response != null   ) {
+								if ( isEndOfFullMapping ) {
+									reportToDatasetMapping.setLastRun(endDate.getTime());
+									saveReportToDataSetMapping(reportToDatasetMapping);
+								}
 								
 								return getPostSummary(response);
 							}
@@ -1459,15 +1468,50 @@ public class DHISConnectorServiceImpl extends BaseOpenmrsService implements DHIS
 	
 	@Override
 	public String runAllAutomatedReportsAndPostToDHIS() {
-		String responses = "";
+
 		List<ReportToDataSetMapping> mps = getAllReportToDataSetMappings();
+		
+		return runReportsAndPostToDHIS(mps);
+	}
+	
+	@Override
+	public String runReportsAndPostToDHIS(List<ReportToDataSetMapping> mps) {
+		String responses = "";
+		
+		/////////////
+		AdministrationService as = Context.getAdministrationService();
+		String fullMappingProperty = as.getGlobalProperty(GLOBAL_PROPERTY_FULL_MAPPING);
+		Map<String, String> locOrgUnits = null;
+		if (StringUtils.isNotBlank ( fullMappingProperty ) && fullMappingProperty.contains("=") )
+			locOrgUnits = Splitter.on(",").withKeyValueSeparator("=").split((CharSequence) fullMappingProperty) ;
+		else 
+			locOrgUnits =  new HashMap<String, String>() ;
+		///////////////
 		
 		if (mps != null) {
 			for (ReportToDataSetMapping m : mps) {
-				String resp = runAndPushReportToDHIS(m);
+				if (StringUtils.isNotBlank( m.getIsFullMapping()) &&  m.getIsFullMapping().equals( "Y" ) ) {
+					int counting = 0;
+					boolean isEndOfFullMapping = false;
+					for (Map.Entry mapentry : locOrgUnits.entrySet()) {
+						if ( StringUtils.isNotBlank((String)mapentry.getKey()) 
+								&& StringUtils.isNotBlank((String)mapentry.getValue()) ) {
+							if (locOrgUnits.size() - 1 == counting )
+								isEndOfFullMapping = true;
+						String resp = runAndPushReportToDHIS(m, Context.getLocationService().getLocationByUuid((String)mapentry.getKey()), (String)mapentry.getValue(), isEndOfFullMapping );
+						
+						if (StringUtils.isNotBlank(resp))
+							responses += " => " + resp;
+							counting ++;
+						}
+					}
 				
-				if (StringUtils.isNotBlank(resp))
-					responses += " => " + resp;
+				} else {
+					String resp = runAndPushReportToDHIS(m, m.getLocation(), m.getOrgUnitUid(), true);
+					
+					if (StringUtils.isNotBlank(resp))
+						responses += " => " + resp;
+				}
 			}
 		}
 		

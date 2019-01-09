@@ -11,9 +11,13 @@
  */
 package org.openmrs.module.dhisconnector;
 
+import java.io.File;
+
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.openmrs.module.ModuleActivator;
+import org.openmrs.util.OpenmrsUtil;
 
 /**
  * This class contains the logic that is run every time this module is either started or stopped.
@@ -21,7 +25,10 @@ import org.openmrs.module.ModuleActivator;
 public class DHISConnectorActivator implements ModuleActivator {
 
 	protected Log log = LogFactory.getLog(getClass());
-
+	
+	public static final String DHISCONNECTOR_MAPPINGS_FOLDER = File.separator + "dhisconnector" + File.separator
+	        + "mappings";
+	
 	/**
 	 * @see ModuleActivator#willRefreshContext()
 	 */
@@ -45,6 +52,25 @@ public class DHISConnectorActivator implements ModuleActivator {
 	 * @see ModuleActivator#started()
 	 */
 	public void started() {
+		String mappingsDirecoryPath = OpenmrsUtil.getApplicationDataDirectory() + DHISCONNECTOR_MAPPINGS_FOLDER;
+		File mappingsDirecory = new File(mappingsDirecoryPath);
+		
+		if (!mappingsDirecory.exists()) {
+			try {
+				if (!mappingsDirecory.mkdirs()) {
+					log.warn("Not able to create resource folder");
+				}else{
+					File directory = new File(getClass().getClassLoader().getResource("mappings").getFile());
+					FileUtils.copyDirectory(directory, mappingsDirecory);
+					log.debug("Copiyed all the mapping files to:"+mappingsDirecory);
+				}
+				
+			}
+			catch (Exception e) {
+				e.printStackTrace();
+				log.error("Error while creating "+DHISCONNECTOR_MAPPINGS_FOLDER+ "Directory");
+			}
+		}
 		log.info("DHIS Connector started");
 	}
 

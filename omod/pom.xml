@@ -28,6 +28,21 @@
             <artifactId>reportingrest-api</artifactId>
         </dependency>
 
+   <dependency>
+            <groupId>org.openmrs.module</groupId>
+            <artifactId>webservices.rest-omod</artifactId>
+            <version>${webservicesRestVersion}</version>
+            <scope>provided</scope>
+        </dependency>
+
+   <dependency>
+            <groupId>org.openmrs.module</groupId>
+            <artifactId>webservices.rest-omod</artifactId>
+            <version>${webservicesRestVersion}</version>
+            <scope>provided</scope>
+        </dependency>
+
+
         <dependency>
             <groupId>org.openmrs.module</groupId>
             <artifactId>webservices.rest-omod-common</artifactId>
@@ -93,6 +108,12 @@
 		    <artifactId>commons-io</artifactId>
 		    <version>2.4</version>
 		</dependency>
+		
+		<dependency>
+  <groupId>com.google.guava</groupId>
+  <artifactId>guava</artifactId>
+  <version>27.0.1-jre</version>
+</dependency>
     </dependencies>
 
     <build>
@@ -221,6 +242,7 @@
             </plugin>
         </plugins>
     </build>
+
 
     <profiles>
         <profile>

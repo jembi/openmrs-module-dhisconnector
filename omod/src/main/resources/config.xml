@@ -61,6 +61,13 @@
 		</description>
 	</globalProperty>
 	<globalProperty>
+		<property>${project.parent.artifactId}.fullmappingvalues</property>
+		<defaultValue>1=2</defaultValue>
+		<description>
+			key1=value1,key2=value2 mapping between locations and OrgUnits
+		</description>
+	</globalProperty>
+	<globalProperty>
 		<property>dhisconnector.config.dxfToAdxSwitch</property>
 		<defaultValue>false</defaultValue>
 		<description>
