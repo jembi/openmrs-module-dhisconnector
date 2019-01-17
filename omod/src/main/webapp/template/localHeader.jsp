@@ -38,6 +38,12 @@
 				href="${pageContext.request.contextPath}/module/dhisconnector/uploadMapping.form"><spring:message
 				code="dhisconnector.uploadMapping" /></a>
 	</li>
+	<li
+			<c:if test='<%= request.getRequestURI().contains("/fullMapping") %>'>class="active"</c:if>>
+		<a
+				href="${pageContext.request.contextPath}/module/dhisconnector/fullMapping.form"><spring:message
+				code="dhisconnector.fullMapping" /></a>
+	</li>
 	
 	<li
 			<c:if test='<%= request.getRequestURI().contains("/exportMappings") %>'>class="active"</c:if>>
