@@ -132,7 +132,6 @@ import com.google.common.base.Splitter;
  */
 public class DHISConnectorServiceImpl extends BaseOpenmrsService implements DHISConnectorService {
 	
-	
 	private DHISConnectorDAO dao;
 	
 	public static final String DHISCONNECTOR_MAPPINGS_FOLDER = File.separator + "dhisconnector" + File.separator
@@ -153,7 +152,7 @@ public class DHISConnectorServiceImpl extends BaseOpenmrsService implements DHIS
 	
 	public static final String DATASETS_PATH = "/api/dataSets/";
 	
-	public static final String GLOBAL_PROPERTY_FULL_MAPPING  = "dhisconnector.fullmappingvalues";
+	public static final String GLOBAL_PROPERTY_FULL_MAPPING = "dhisconnector.fullmappingvalues";
 	
 	public static final String ORGUNITS_PATH = "/api/organisationUnits/";
 	
@@ -533,9 +532,11 @@ public class DHISConnectorServiceImpl extends BaseOpenmrsService implements DHIS
 			client = new DefaultHttpClient();
 			BasicHttpContext localcontext = new BasicHttpContext();
 			
-			HttpPost httpPost = new HttpPost(
-			        dhisURL.getPath() + endpoint + (configs.useAdxInsteadOfDxf() ? (endpoint.indexOf("?") > -1 ? "&"
-			                : "?" + "dataElementIdScheme=CODE&orgUnitIdScheme=CODE&idScheme=CODE") : ""));
+			HttpPost httpPost = new HttpPost(dhisURL.getPath() + endpoint
+			        + (configs.useAdxInsteadOfDxf()
+			                ? (endpoint.indexOf("?") > -1 ? "&"
+			                        : "?" + "dataElementIdScheme=CODE&orgUnitIdScheme=CODE&idScheme=CODE")
+			                : ""));
 			
 			Credentials creds = new UsernamePasswordCredentials(user, pass);
 			Header bs = new BasicScheme().authenticate(creds, httpPost, localcontext);
@@ -700,7 +701,7 @@ public class DHISConnectorServiceImpl extends BaseOpenmrsService implements DHIS
 					JAXBContext jaxbImportSummaryContext = JAXBContext.newInstance(ImportSummaries.class);
 					Unmarshaller importSummaryUnMarshaller = jaxbImportSummaryContext.createUnmarshaller();
 					
-					return (ImportSummaries) importSummaryUnMarshaller.unmarshal(new StringReader(responseString));
+					return importSummaryUnMarshaller.unmarshal(new StringReader(responseString));
 				} else {
 					return mapper.readValue(responseString, DHISImportSummary.class);
 				}
@@ -723,7 +724,6 @@ public class DHISConnectorServiceImpl extends BaseOpenmrsService implements DHIS
 		File mappingsDirecory = new File(mappingsDirecoryPath);
 		
 		File[] files = mappingsDirecory.listFiles(new FilenameFilter() {
-			
 			
 			@Override
 			public boolean accept(File dir, String name) {
@@ -1297,7 +1297,8 @@ public class DHISConnectorServiceImpl extends BaseOpenmrsService implements DHIS
 	}
 	
 	@Override
-	public String runAndPushReportToDHIS(ReportToDataSetMapping reportToDatasetMapping, Location location, String orgUnitUid, boolean isEndOfFullMapping) {
+	public String runAndPushReportToDHIS(ReportToDataSetMapping reportToDatasetMapping, Location location, String orgUnitUid,
+	        boolean isEndOfFullMapping) {
 		if (reportToDatasetMapping != null) {
 			Calendar startDate = Calendar.getInstance(Context.getLocale());
 			Calendar endDate = Calendar.getInstance(Context.getLocale());
@@ -1314,14 +1315,14 @@ public class DHISConnectorServiceImpl extends BaseOpenmrsService implements DHIS
 				if (location != null && ranReportDef != null) {
 					String period = transformToDHISPeriod(startDate, endDate, periodType, lastRun);
 					
-					if (StringUtils.isNotBlank(period) ) {
+					if (StringUtils.isNotBlank(period)) {
 						Report ranReport = runPeriodIndicatorReport(ranReportDef, startDate.getTime(), endDate.getTime(),
 						    location);
 						if (ranReport != null) {
 							Object response = sendReportDataToDHIS(ranReport, mapping, period, orgUnitUid);
 							
-							if (response != null   ) {
-								if ( isEndOfFullMapping ) {
+							if (response != null) {
+								if (isEndOfFullMapping) {
 									reportToDatasetMapping.setLastRun(endDate.getTime());
 									saveReportToDataSetMapping(reportToDatasetMapping);
 								}
@@ -1393,9 +1394,9 @@ public class DHISConnectorServiceImpl extends BaseOpenmrsService implements DHIS
 		if (o != null) {
 			try {
 				if (o instanceof ImportSummaries)
-					s += mapper.writeValueAsString(mapper.readTree(mapper.writeValueAsString((ImportSummaries) o)));
+					s += mapper.writeValueAsString(mapper.readTree(mapper.writeValueAsString(o)));
 				else if (o instanceof DHISImportSummary)
-					s += mapper.writeValueAsString((DHISImportSummary) o);
+					s += mapper.writeValueAsString(o);
 			}
 			catch (IOException e) {
 				e.printStackTrace();
@@ -1468,7 +1469,7 @@ public class DHISConnectorServiceImpl extends BaseOpenmrsService implements DHIS
 	
 	@Override
 	public String runAllAutomatedReportsAndPostToDHIS() {
-
+		
 		List<ReportToDataSetMapping> mps = getAllReportToDataSetMappings();
 		
 		return runReportsAndPostToDHIS(mps);
@@ -1482,30 +1483,32 @@ public class DHISConnectorServiceImpl extends BaseOpenmrsService implements DHIS
 		AdministrationService as = Context.getAdministrationService();
 		String fullMappingProperty = as.getGlobalProperty(GLOBAL_PROPERTY_FULL_MAPPING);
 		Map<String, String> locOrgUnits = null;
-		if (StringUtils.isNotBlank ( fullMappingProperty ) && fullMappingProperty.contains("=") )
-			locOrgUnits = Splitter.on(",").withKeyValueSeparator("=").split((CharSequence) fullMappingProperty) ;
-		else 
-			locOrgUnits =  new HashMap<String, String>() ;
+		if (StringUtils.isNotBlank(fullMappingProperty) && fullMappingProperty.contains("="))
+			locOrgUnits = Splitter.on(",").withKeyValueSeparator("=").split(fullMappingProperty);
+		else
+			locOrgUnits = new HashMap<String, String>();
 		///////////////
 		
 		if (mps != null) {
 			for (ReportToDataSetMapping m : mps) {
-				if (StringUtils.isNotBlank( m.getIsFullMapping()) &&  m.getIsFullMapping().equals( "Y" ) ) {
+				if (StringUtils.isNotBlank(m.getIsFullMapping()) && m.getIsFullMapping().equals("Y")) {
 					int counting = 0;
 					boolean isEndOfFullMapping = false;
 					for (Map.Entry mapentry : locOrgUnits.entrySet()) {
-						if ( StringUtils.isNotBlank((String)mapentry.getKey()) 
-								&& StringUtils.isNotBlank((String)mapentry.getValue()) ) {
-							if (locOrgUnits.size() - 1 == counting )
+						if (StringUtils.isNotBlank((String) mapentry.getKey())
+						        && StringUtils.isNotBlank((String) mapentry.getValue())) {
+							if (locOrgUnits.size() - 1 == counting)
 								isEndOfFullMapping = true;
-						String resp = runAndPushReportToDHIS(m, Context.getLocationService().getLocationByUuid((String)mapentry.getKey()), (String)mapentry.getValue(), isEndOfFullMapping );
-						
-						if (StringUtils.isNotBlank(resp))
-							responses += " => " + resp;
-							counting ++;
+							String resp = runAndPushReportToDHIS(m,
+							    Context.getLocationService().getLocationByUuid((String) mapentry.getKey()),
+							    (String) mapentry.getValue(), isEndOfFullMapping);
+							
+							if (StringUtils.isNotBlank(resp))
+								responses += " => " + resp;
+							counting++;
 						}
 					}
-				
+					
 				} else {
 					String resp = runAndPushReportToDHIS(m, m.getLocation(), m.getOrgUnitUid(), true);
 					
